@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "sera": {
+      "command": "node",
+      "args": ["/absolute/path/to/sera-mcp/dist/index.js"],
+      "env": {
+        "SERA_NETWORK": "mainnet",
+        "POLICY_PRESET": "standard",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}

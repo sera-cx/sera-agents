@@ -1,0 +1,22 @@
+# gitleaks config — allowlist documentation patterns that the default rules
+# false-positive on. Real secrets still get caught by the upstream rules.
+
+title = "sera-agents gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documentation examples that are not real secrets"
+paths = [
+  ".env.example",
+  "**/.env.example",
+]
+regexes = [
+  # placeholder-style env values shown in docs (sk-..., 0x..., your-token, etc.)
+  '''(?i)(your[-_])?(api[-_]?key|secret|token|password)["\s:=]+(your-|<|\$\{|\.\.\.|placeholder|REPLACE)''',
+  # bash variable substitutions in code blocks (Bearer $VAR, Bearer ${VAR})
+  '''Bearer\s+\$\{?[A-Z_][A-Z0-9_]*\}?''',
+  # env-example placeholders
+  '''=\s*(\.\.\.|<[^>]+>|REPLACE_ME|YOUR_|sk-\.\.\.)''',
+]

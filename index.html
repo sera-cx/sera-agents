@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sera for Agents — multi-currency settlement infrastructure for AI agents</title>
+  <meta name="description" content="Sera gives AI agents the ability to quote, convert, and settle across 40+ stablecoins and 20+ fiat currencies. Open MCP for any host, plus templates, a bundled agent, and a working x402 endpoint." />
+  <meta name="theme-color" content="#06070A" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+          },
+          colors: {
+            ink: { 950: '#06070A', 900: '#0B0D12', 800: '#11141B', 700: '#181C26' },
+            chalk: { 50: '#F8F8F4', 100: '#EDEDE6', 300: '#A4A89C', 500: '#6B7180' },
+            accent: { 400: '#7DF9C2', 500: '#3DE8A0', 600: '#10C77F' },
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    html, body { background: #06070A; color: #F8F8F4; }
+    body { overflow-x: hidden; }
+
+    .grain {
+      position: absolute; inset: 0; pointer-events: none; opacity: .04; mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    }
+    .glow {
+      background:
+        radial-gradient(60% 50% at 50% 0%, rgba(61,232,160,.15), transparent 70%),
+        radial-gradient(40% 60% at 90% 30%, rgba(125,249,194,.07), transparent 70%);
+    }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    .ring-soft-hover:hover {
+      box-shadow: inset 0 0 0 1px rgba(125,249,194,.4), 0 0 60px -10px rgba(61,232,160,.2);
+      transform: translateY(-2px);
+    }
+    .ring-soft-hover { transition: transform .18s ease, box-shadow .18s ease; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .marquee { animation: marquee 50s linear infinite; }
+
+    .gradient-text {
+      background: linear-gradient(180deg, #F8F8F4 0%, #A4A89C 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .accent-text {
+      background: linear-gradient(90deg, #7DF9C2 0%, #3DE8A0 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    a { color: inherit; }
+
+    .codeblock {
+      font-family: 'JetBrains Mono', monospace;
+      background: #0B0D12;
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 12px;
+    }
+    .codeblock pre { font-size: 13px; }
+
+    /* Accordion */
+    details.acc { border-top: 1px solid rgba(255,255,255,.06); }
+    details.acc:last-of-type { border-bottom: 1px solid rgba(255,255,255,.06); }
+    details.acc summary {
+      list-style: none; cursor: pointer; padding: 18px 4px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    details.acc summary::-webkit-details-marker { display: none; }
+    details.acc summary .chev {
+      transition: transform .18s ease; color: #6B7180;
+    }
+    details.acc[open] summary .chev { transform: rotate(180deg); color: #7DF9C2; }
+    details.acc[open] summary .acc-title { color: #F8F8F4; }
+    details.acc summary:hover .acc-title { color: #F8F8F4; }
+    details.acc .acc-body { padding: 0 4px 22px; color: #A4A89C; line-height: 1.65; }
+
+    /* Tabs (install section) */
+    .tabbar {
+      display: inline-flex; padding: 4px; gap: 4px;
+      background: #0B0D12; border: 1px solid rgba(255,255,255,.06);
+      border-radius: 10px;
+    }
+    .tab-btn {
+      padding: 8px 14px; border-radius: 7px; font-size: 13px; font-weight: 500;
+      color: #A4A89C; cursor: pointer; transition: all .15s;
+    }
+    .tab-btn:hover { color: #F8F8F4; }
+    .tab-btn[aria-selected="true"] {
+      background: rgba(61,232,160,.12); color: #7DF9C2;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Mobile menu */
+    .mobile-menu { display: none; }
+    .mobile-menu.open { display: block; }
+
+    /* Sticky in-page nav (paths) */
+    .pathnav { display: flex; gap: 2px; padding: 4px; overflow-x: auto; scrollbar-width: none; }
+    .pathnav::-webkit-scrollbar { display: none; }
+    .pathnav a {
+      flex: 0 0 auto; padding: 8px 14px; border-radius: 7px; font-size: 13px;
+      color: #A4A89C; transition: all .15s; white-space: nowrap;
+    }
+    .pathnav a:hover { color: #F8F8F4; background: rgba(255,255,255,.04); }
+
+    /* Bento card hover lift */
+    .bento { transition: all .2s ease; }
+    .bento:hover { background: rgba(11,13,18,.85); border-color: rgba(125,249,194,.2); }
+
+    /* Mobile typography tightening */
+    @media (max-width: 640px) {
+      h1 { font-size: 2.5rem !important; line-height: 1.1 !important; }
+      h2 { font-size: 1.875rem !important; line-height: 1.2 !important; }
+      .codeblock pre { font-size: 11.5px; }
+    }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <!-- ============== STICKY NAV (with mobile menu) ============== -->
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center">
+          <span class="text-accent-400 font-bold text-sm">S</span>
+        </div>
+        <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-6 text-sm text-chalk-300">
+        <a href="#paths" class="hover:text-chalk-50">Paths</a>
+        <a href="#hosts" class="hover:text-chalk-50">Hosts</a>
+        <a href="#tools" class="hover:text-chalk-50">Tools</a>
+        <a href="#install" class="hover:text-chalk-50">Install</a>
+        <a href="#x402" class="hover:text-chalk-50">x402</a>
+        <span class="h-4 w-px bg-white/10"></span>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/openclaw" target="_blank" rel="noopener" class="text-accent-400 hover:text-accent-500 font-medium" title="Sera in OpenClaw">OpenClaw</a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/hermes" target="_blank" rel="noopener" class="text-accent-400 hover:text-accent-500 font-medium" title="Sera in Hermes">Hermes</a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/nanoclaw" target="_blank" rel="noopener" class="text-accent-400 hover:text-accent-500 font-medium" title="Sera in NanoClaw">NanoClaw</a>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+        <button id="menu-btn" class="lg:hidden w-9 h-9 rounded-md ring-soft flex items-center justify-center text-chalk-300 hover:text-chalk-50" aria-label="Menu" aria-expanded="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="mobile-menu lg:hidden border-t border-white/5 bg-ink-950/95">
+      <nav class="px-5 py-4 grid gap-1 text-sm">
+        <a href="#paths" class="py-2.5 text-chalk-300 hover:text-chalk-50">Paths</a>
+        <a href="#hosts" class="py-2.5 text-chalk-300 hover:text-chalk-50">Hosts</a>
+        <a href="#tools" class="py-2.5 text-chalk-300 hover:text-chalk-50">Tools</a>
+        <a href="#install" class="py-2.5 text-chalk-300 hover:text-chalk-50">Install</a>
+        <a href="#x402" class="py-2.5 text-chalk-300 hover:text-chalk-50">x402</a>
+        <div class="my-2 border-t border-white/5"></div>
+        <div class="px-1 py-1.5 text-xs font-mono uppercase tracking-wider text-chalk-500">Featured integrations</div>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/openclaw" target="_blank" rel="noopener" class="py-2.5 text-accent-400 hover:text-accent-500 font-medium">OpenClaw →</a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/hermes" target="_blank" rel="noopener" class="py-2.5 text-accent-400 hover:text-accent-500 font-medium">Hermes →</a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/nanoclaw" target="_blank" rel="noopener" class="py-2.5 text-accent-400 hover:text-accent-500 font-medium">NanoClaw →</a>
+        <div class="my-2 border-t border-white/5"></div>
+        <a href="https://github.com/Josh-sera/sera-mcp" target="_blank" rel="noopener" class="py-2.5 text-chalk-300 hover:text-chalk-50">GitHub</a>
+        <a href="https://docs.sera.cx" target="_blank" rel="noopener" class="py-2.5 text-chalk-300 hover:text-chalk-50">Sera docs</a>
+        <a href="#install" class="mt-2 py-3 px-4 rounded-lg bg-accent-500 text-ink-950 font-semibold text-center">Get started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ============== HERO ============== -->
+  <section class="relative pt-32 sm:pt-40 pb-20 sm:pb-24 overflow-hidden">
+    <div class="grain"></div>
+    <div class="glow absolute inset-0 pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 relative">
+      <div class="max-w-4xl">
+        <div class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-accent-400 bg-accent-500/5 border border-accent-500/20 rounded-full px-3 py-1.5 mb-7">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent-500 animate-pulse"></span>
+          v0.4.0 · open MCP · 32 tools live
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] gradient-text">
+          Multi-currency settlement<br/>
+          for <span class="accent-text">AI agents.</span>
+        </h1>
+
+        <p class="mt-7 text-lg sm:text-xl text-chalk-300 max-w-2xl leading-relaxed">
+          Most agentic payment infrastructure today is single-currency. The world isn't. Sera gives any AI agent the ability to quote, convert, and settle across <span class="text-chalk-50 font-medium">40+ stablecoins</span> and <span class="text-chalk-50 font-medium">20+ fiat currencies</span> — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more.
+        </p>
+
+        <div class="mt-9 flex flex-wrap gap-3">
+          <a href="#paths" class="bg-accent-500 text-ink-950 font-semibold px-6 py-3 rounded-lg hover:bg-accent-400 transition">
+            Choose your path
+          </a>
+          <a href="#tools" class="border border-white/10 text-chalk-50 px-6 py-3 rounded-lg hover:border-white/30 transition">
+            See the 32 tools
+          </a>
+          <a href="https://github.com/Josh-sera/sera-mcp" target="_blank" rel="noopener" class="border border-white/10 text-chalk-300 hover:text-chalk-50 px-6 py-3 rounded-lg hover:border-white/30 transition flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            Source
+          </a>
+        </div>
+
+        <div class="mt-10 sm:mt-12 grid grid-cols-2 sm:flex sm:flex-wrap gap-x-7 gap-y-3 text-xs sm:text-sm text-chalk-500">
+          <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span> Open MCP, every host</div>
+          <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span> External signer by default</div>
+          <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span> Non-custodial settlement</div>
+          <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span> Policy gates built in</div>
+        </div>
+
+        <!-- Featured integrations callout -->
+        <div class="mt-10 sm:mt-12 p-5 sm:p-6 rounded-2xl ring-soft bg-ink-900/40 max-w-3xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-chalk-500 mb-4">Featured integrations</div>
+          <div class="flex flex-wrap items-center gap-3">
+            <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/openclaw" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/80 px-4 py-2.5 rounded-lg flex items-center gap-2.5 group">
+              <span class="w-2 h-2 rounded-full bg-accent-500"></span>
+              <span class="font-semibold text-chalk-50 group-hover:text-accent-400 transition">OpenClaw</span>
+              <span class="text-xs text-chalk-500">native MCP + plugin</span>
+            </a>
+            <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/hermes" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/80 px-4 py-2.5 rounded-lg flex items-center gap-2.5 group">
+              <span class="w-2 h-2 rounded-full bg-accent-500"></span>
+              <span class="font-semibold text-chalk-50 group-hover:text-accent-400 transition">Hermes</span>
+              <span class="text-xs text-chalk-500">native + skill</span>
+            </a>
+            <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/nanoclaw" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/80 px-4 py-2.5 rounded-lg flex items-center gap-2.5 group">
+              <span class="w-2 h-2 rounded-full bg-accent-500"></span>
+              <span class="font-semibold text-chalk-50 group-hover:text-accent-400 transition">NanoClaw</span>
+              <span class="text-xs text-chalk-500">.mcp.json</span>
+            </a>
+            <span class="text-sm text-chalk-500 ml-1">+ Claude · Cursor · ChatGPT · OpenAI Agents · 5 more</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== CURRENCIES MARQUEE ============== -->
+  <section class="border-y border-white/5 py-7 overflow-hidden bg-ink-900/50">
+    <div class="text-center text-xs font-mono uppercase tracking-widest text-chalk-500 mb-5">
+      Settle in any of these stablecoins
+    </div>
+    <div class="flex whitespace-nowrap marquee gap-10 text-xl sm:text-2xl font-mono text-chalk-300">
+      <div class="flex gap-10">
+        <span>USDC</span><span class="text-chalk-500">·</span>
+        <span>USDT</span><span class="text-chalk-500">·</span>
+        <span>EURC</span><span class="text-chalk-500">·</span>
+        <span>XSGD</span><span class="text-chalk-500">·</span>
+        <span>JPYC</span><span class="text-chalk-500">·</span>
+        <span>MYRT</span><span class="text-chalk-500">·</span>
+        <span>TGBP</span><span class="text-chalk-500">·</span>
+        <span>BRZ</span><span class="text-chalk-500">·</span>
+        <span>BRLV</span><span class="text-chalk-500">·</span>
+        <span>MXNT</span><span class="text-chalk-500">·</span>
+        <span>IDRT</span><span class="text-chalk-500">·</span>
+        <span>AUDD</span><span class="text-chalk-500">·</span>
+        <span>CADC</span><span class="text-chalk-500">·</span>
+        <span>NZDD</span><span class="text-chalk-500">·</span>
+        <span>ZARP</span><span class="text-chalk-500">·</span>
+        <span>CNGN</span><span class="text-chalk-500">·</span>
+        <span>WARS</span><span class="text-chalk-500">·</span>
+        <span>WCLP</span><span class="text-chalk-500">·</span>
+        <span>WCOP</span><span class="text-chalk-500">·</span>
+        <span>AEDZ</span><span class="text-chalk-500">·</span>
+      </div>
+      <div class="flex gap-10" aria-hidden="true">
+        <span>USDC</span><span class="text-chalk-500">·</span>
+        <span>USDT</span><span class="text-chalk-500">·</span>
+        <span>EURC</span><span class="text-chalk-500">·</span>
+        <span>XSGD</span><span class="text-chalk-500">·</span>
+        <span>JPYC</span><span class="text-chalk-500">·</span>
+        <span>MYRT</span><span class="text-chalk-500">·</span>
+        <span>TGBP</span><span class="text-chalk-500">·</span>
+        <span>BRZ</span><span class="text-chalk-500">·</span>
+        <span>BRLV</span><span class="text-chalk-500">·</span>
+        <span>MXNT</span><span class="text-chalk-500">·</span>
+        <span>IDRT</span><span class="text-chalk-500">·</span>
+        <span>AUDD</span><span class="text-chalk-500">·</span>
+        <span>CADC</span><span class="text-chalk-500">·</span>
+        <span>NZDD</span><span class="text-chalk-500">·</span>
+        <span>ZARP</span><span class="text-chalk-500">·</span>
+        <span>CNGN</span><span class="text-chalk-500">·</span>
+        <span>WARS</span><span class="text-chalk-500">·</span>
+        <span>WCLP</span><span class="text-chalk-500">·</span>
+        <span>WCOP</span><span class="text-chalk-500">·</span>
+        <span>AEDZ</span><span class="text-chalk-500">·</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== THE PROBLEM ============== -->
+  <section class="py-20 sm:py-24">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+        <div>
+          <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">The problem</div>
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+            Single-currency rails<br/>break at the border.
+          </h2>
+        </div>
+        <div class="space-y-5 text-base sm:text-lg text-chalk-300 leading-relaxed">
+          <p>An agent paying a Singapore vendor in a single dollar-denominated stablecoin pushes FX risk onto the recipient every cycle. An agent settling payroll in Manila that way means someone, somewhere, is converting and absorbing the spread.</p>
+          <p>The agentic payment stack today assumes one global currency. Real settlement doesn't work that way. <span class="text-chalk-50 font-medium">Sera is the multi-currency settlement infrastructure underneath agents — quote, convert, and settle in whatever currency the counterparty actually uses.</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== FOUR PATHS ============== -->
+  <section id="paths" class="py-20 sm:py-24 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="max-w-3xl mb-12">
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Choose your path</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+          Four ways to ship a<br/>Sera-powered agent.
+        </h2>
+        <p class="mt-5 text-base sm:text-lg text-chalk-300">
+          Already have an agent stack? Install the MCP. Building one from scratch? Start from a template. Want it ready out of the box? Run the bundled agent. Or skip MCP entirely and call the protocol-level x402 endpoint.
+        </p>
+      </div>
+
+      <!-- Sticky path picker -->
+      <div class="sticky top-16 z-30 -mx-5 lg:-mx-6 px-5 lg:px-6 py-3 mb-8 bg-ink-950/95 backdrop-blur-md border-y border-white/5">
+        <div class="pathnav">
+          <a href="#path-a">Path A · Install</a>
+          <a href="#path-b">Path B · Build</a>
+          <a href="#path-c">Path C · Run</a>
+          <a href="#path-d">Path D · Protocol</a>
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+        <!-- Path A -->
+        <div id="path-a" class="ring-soft ring-soft-hover bento bg-ink-900/60 p-6 rounded-2xl flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-xs font-mono uppercase tracking-wider text-accent-400">Path A · Install</div>
+            <div class="text-xs font-mono text-chalk-500">MCP + CLI</div>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Have an agent (or none)</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
+            Adds the Sera MCP to Claude, ChatGPT, Cursor, OpenAI Agents SDK, OpenClaw, Hermes, NanoClaw, or any host that speaks MCP. Same install also ships a <code class="font-mono text-accent-400 text-xs">sera</code> CLI for cron jobs, CI scripts, and ops debugging — no agent required.
+          </p>
+          <a href="#install" class="text-accent-400 text-sm font-medium hover:underline">Install instructions →</a>
+        </div>
+
+        <!-- Path B -->
+        <div id="path-b" class="ring-soft ring-soft-hover bento bg-ink-900/60 p-6 rounded-2xl flex flex-col border border-accent-500/30">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-xs font-mono uppercase tracking-wider text-accent-400">Path B · Build</div>
+            <div class="text-xs font-mono text-chalk-500">3 templates</div>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Build an agent</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
+            Copy a starter — terminal chat, browser chat UI, or webhook responder — wired to the MCP. TypeScript, OpenAI Agents SDK by default.
+          </p>
+          <a href="#install" class="text-accent-400 text-sm font-medium hover:underline">Use a template →</a>
+        </div>
+
+        <!-- Path C -->
+        <div id="path-c" class="ring-soft ring-soft-hover bento bg-ink-900/60 p-6 rounded-2xl flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-xs font-mono uppercase tracking-wider text-accent-400">Path C · Run</div>
+            <div class="text-xs font-mono text-chalk-500">One command</div>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Use ours</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
+            The Sera Agent: a complete interactive multi-currency settlement assistant. MCP and LLM pre-wired. One npm install, one command.
+          </p>
+          <a href="#install" class="text-accent-400 text-sm font-medium hover:underline">Run the bundle →</a>
+        </div>
+
+        <!-- Path D -->
+        <div id="path-d" class="ring-soft ring-soft-hover bento bg-ink-900/60 p-6 rounded-2xl flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-xs font-mono uppercase tracking-wider text-accent-400">Path D · Protocol</div>
+            <div class="text-xs font-mono text-chalk-500">x402 HTTP</div>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Skip MCP entirely</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
+            x402 endpoint. Pay USDC, deliver any of 40+ stablecoins. Standard <code class="font-mono text-accent-400 text-xs">402 → pay → 200</code> flow. Drops Sera into any agent that already speaks x402.
+          </p>
+          <a href="#x402" class="text-accent-400 text-sm font-medium hover:underline">See the endpoint →</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== HOSTS GRID ============== -->
+  <section id="hosts" class="py-20 sm:py-24 border-t border-white/5 bg-ink-900/30">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="max-w-3xl mb-10">
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Compatible hosts</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+          Works with every<br/>serious agent stack.
+        </h2>
+        <p class="mt-5 text-base text-chalk-300">
+          MCP is an open protocol. Anyone who builds with it gets Sera by adding three lines to their config. Three integrations have their own write-up below; the rest follow the standard MCP stdio pattern.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/standard-mcp-hosts" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center">
+          <div class="text-base font-semibold">Claude Code</div>
+          <div class="text-xs text-chalk-500 mt-1">CLI · stdio · native</div>
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/standard-mcp-hosts" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center">
+          <div class="text-base font-semibold">Claude Desktop</div>
+          <div class="text-xs text-chalk-500 mt-1">Mac · Windows</div>
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/standard-mcp-hosts" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center">
+          <div class="text-base font-semibold">ChatGPT</div>
+          <div class="text-xs text-chalk-500 mt-1">Settings → Connectors</div>
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/standard-mcp-hosts" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center">
+          <div class="text-base font-semibold">OpenAI Agents SDK</div>
+          <div class="text-xs text-chalk-500 mt-1">first-class MCP</div>
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/standard-mcp-hosts" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center">
+          <div class="text-base font-semibold">Cursor</div>
+          <div class="text-xs text-chalk-500 mt-1">Settings → MCP</div>
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/standard-mcp-hosts" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center">
+          <div class="text-base font-semibold">Cline / Continue</div>
+          <div class="text-xs text-chalk-500 mt-1">VS Code</div>
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/standard-mcp-hosts" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center">
+          <div class="text-base font-semibold">Windsurf · Zed</div>
+          <div class="text-xs text-chalk-500 mt-1">native MCP</div>
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/standard-mcp-hosts" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center">
+          <div class="text-base font-semibold">Goose</div>
+          <div class="text-xs text-chalk-500 mt-1">Block · open</div>
+        </a>
+
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/openclaw" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center border border-accent-500/20">
+          <div class="text-base font-semibold">OpenClaw</div>
+          <div class="text-xs text-accent-400 mt-1">native + plugin</div>
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/hermes" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center border border-accent-500/20">
+          <div class="text-base font-semibold">Hermes</div>
+          <div class="text-xs text-accent-400 mt-1">native + skill</div>
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/nanoclaw" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-4 rounded-xl text-center border border-accent-500/20">
+          <div class="text-base font-semibold">NanoClaw</div>
+          <div class="text-xs text-accent-400 mt-1">.mcp.json</div>
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/40 p-4 rounded-xl text-center">
+          <div class="text-base font-semibold text-chalk-300">+ Your host</div>
+          <div class="text-xs text-chalk-500 mt-1">PR welcome</div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== USE CASES ============== -->
+  <section id="use-cases" class="py-20 sm:py-24 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="max-w-3xl mb-10">
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">What's possible</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+          Agent flows that need<br/>more than one currency.
+        </h2>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <div class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">Cross-border invoice</div>
+          <h3 class="text-lg font-semibold mb-2">Settle 5,000 MYR from a USD treasury</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">Agent identifies the cheapest source asset, generates a quote, signs the Intent, recipient receives exact MYR. Single tool call: <code class="text-accent-400 font-mono text-xs">sera.pay_invoice</code>.</p>
+        </div>
+
+        <div class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">Treasury rebalance</div>
+          <h3 class="text-lg font-semibold mb-2">Maintain a target multi-currency allocation</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">Agent values balances across wallets in any reporting currency, computes drift, emits suggested swaps. <code class="text-accent-400 font-mono text-xs">sera.rebalance_plan</code>.</p>
+        </div>
+
+        <div class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">FX deal scanner</div>
+          <h3 class="text-lg font-semibold mb-2">Surface corridors quoting better than reference</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">Agent probes corridors in parallel, diffs against multi-source external mid, ranks executable deals. <code class="text-accent-400 font-mono text-xs">sera.find_deals</code>.</p>
+        </div>
+
+        <div class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">Maker spread calculator</div>
+          <h3 class="text-lg font-semibold mb-2">Project earnings at any spread + notional</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">Returns the full spread ladder for a pair — quote price, delta, earnings — across institutional bps levels. <code class="text-accent-400 font-mono text-xs">sera.maker_quote_ladder</code>.</p>
+        </div>
+
+        <div class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">Conditional execution</div>
+          <h3 class="text-lg font-semibold mb-2">Execute only when target rate is met</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">Polls quotes within a budget and surfaces the executable swap when threshold crosses. <code class="text-accent-400 font-mono text-xs">sera.limit_watcher</code>.</p>
+        </div>
+
+        <div class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">FX integrity monitor</div>
+          <h3 class="text-lg font-semibold mb-2">Detect pricing-source drift across triangles</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">Round-trip product across any three currencies should equal 1.0. Deviation surfaces inconsistencies or arbitrage. <code class="text-accent-400 font-mono text-xs">sera.spread_radar</code>.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== INSTALL — TABBED ============== -->
+  <section id="install" class="py-20 sm:py-24 border-t border-white/5 bg-ink-900/30">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="max-w-3xl mb-8">
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Install</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+          Each path, end-to-end.
+        </h2>
+      </div>
+
+      <div class="mb-7 overflow-x-auto">
+        <div class="tabbar" role="tablist" aria-label="Install path">
+          <button class="tab-btn" role="tab" aria-selected="true" data-tab="a">A · MCP + CLI</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-tab="b">B · Template</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-tab="c">C · Bundled</button>
+          <button class="tab-btn" role="tab" aria-selected="false" data-tab="d">D · x402 service</button>
+        </div>
+      </div>
+
+      <!-- Path A panel -->
+      <div class="tab-panel active" data-panel="a">
+        <div class="codeblock p-5 sm:p-6 mb-3">
+          <div class="text-xs text-chalk-500 mb-3 font-mono">CLONE, BUILD, REGISTER (Claude Code example)</div>
+          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-accent-400">git clone</span> https://github.com/Josh-sera/sera-mcp
+<span class="text-accent-400">cd</span> sera-mcp &amp;&amp; <span class="text-accent-400">npm install &amp;&amp; npm run build</span>
+
+<span class="text-accent-400">claude mcp add</span> sera --scope user \
+  --env SERA_NETWORK=mainnet \
+  --env POLICY_PRESET=standard \
+  -- node $(pwd)/dist/index.js</code></pre>
+        </div>
+        <div class="codeblock p-5 sm:p-6 mb-3">
+          <div class="text-xs text-chalk-500 mb-3 font-mono">VERIFY (in any agent session)</div>
+          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-chalk-300">Call sera.doctor</span>
+
+<span class="text-chalk-500"># Returns overall_ok: true with green checks for sera_health,</span>
+<span class="text-chalk-500"># network_sanity, tokens_registry, signer_mode, policy.</span></code></pre>
+        </div>
+        <div class="codeblock p-5 sm:p-6">
+          <div class="text-xs text-chalk-500 mb-3 font-mono">SAME INSTALL ALSO SHIPS A CLI (for cron / CI / ops, no agent required)</div>
+          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-chalk-500"># From the sera-mcp directory:</span>
+<span class="text-accent-400">node dist/cli.js</span> doctor
+<span class="text-accent-400">node dist/cli.js</span> fx USD SGD
+<span class="text-accent-400">node dist/cli.js</span> deals --min-bps 25 --json | jq
+
+<span class="text-chalk-500"># Or after npm link / npm install -g:</span>
+<span class="text-accent-400">sera</span> doctor
+<span class="text-accent-400">sera</span> ladder USDT JPYC 30000
+<span class="text-accent-400">sera</span> spread-radar USD,SGD,MYR,EUR,GBP,JPY</code></pre>
+        </div>
+        <p class="mt-4 text-sm text-chalk-500">For other hosts (Cursor, ChatGPT, OpenClaw, Hermes, NanoClaw, etc.) see the <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations" target="_blank" rel="noopener" class="text-accent-400 hover:underline">integrations folder</a>. Run <code class="font-mono text-accent-400">sera --help</code> for the full CLI reference.</p>
+      </div>
+
+      <!-- Path B panel -->
+      <div class="tab-panel" data-panel="b">
+        <div class="codeblock p-5 sm:p-6">
+          <div class="text-xs text-chalk-500 mb-3 font-mono">PICK A TEMPLATE, COPY, RUN</div>
+          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-chalk-500"># Pick chat-cli, web-chat, or webhook-agent</span>
+<span class="text-accent-400">git clone</span> https://github.com/Josh-sera/sera-agents
+<span class="text-accent-400">cp -r</span> sera-agents/templates/web-chat ~/my-sera-agent
+<span class="text-accent-400">cd</span> ~/my-sera-agent &amp;&amp; <span class="text-accent-400">npm install</span>
+<span class="text-accent-400">export</span> OPENAI_API_KEY=sk-...
+<span class="text-accent-400">npm start</span>
+
+<span class="text-chalk-500"># Then customize SYSTEM_PROMPT in agent.ts / server.ts</span>
+<span class="text-chalk-500"># Add your own MCPs alongside sera in the mcpServers array</span></code></pre>
+        </div>
+      </div>
+
+      <!-- Path C panel -->
+      <div class="tab-panel" data-panel="c">
+        <div class="codeblock p-5 sm:p-6">
+          <div class="text-xs text-chalk-500 mb-3 font-mono">ONE COMMAND</div>
+          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-accent-400">git clone</span> https://github.com/Josh-sera/sera-agents
+<span class="text-accent-400">cd</span> sera-agents/sera-agent &amp;&amp; <span class="text-accent-400">npm install</span>
+<span class="text-accent-400">export</span> OPENAI_API_KEY=sk-...
+<span class="text-accent-400">npm start</span>
+
+<span class="text-chalk-500"># Interactive terminal chat. Try:</span>
+<span class="text-chalk-300">> What stablecoins do you support for SGD?</span>
+<span class="text-chalk-300">> How much USDC to deliver exactly 5,000 MYR?</span>
+<span class="text-chalk-300">> Run sera.doctor</span></code></pre>
+        </div>
+      </div>
+
+      <!-- Path D panel -->
+      <div class="tab-panel" data-panel="d">
+        <div class="codeblock p-5 sm:p-6">
+          <div class="text-xs text-chalk-500 mb-3 font-mono">DEMO MODE — NO WALLET REQUIRED</div>
+          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-accent-400">cd</span> sera-agents/x402-service
+<span class="text-accent-400">npm install</span>
+<span class="text-accent-400">npm run demo</span>     <span class="text-chalk-500"># X402_MODE=demo, listens on :8402</span>
+
+<span class="text-chalk-500"># From another terminal:</span>
+<span class="text-accent-400">curl</span> -X POST localhost:8402/x402/swap \
+  -H 'Content-Type: application/json' \
+  -d '{"from_currency":"USD","to_currency":"MYR",
+       "amount":100,"recipient":"0xVendor"}'
+
+<span class="text-chalk-500"># 402 with payment_required + payment_id</span>
+<span class="text-chalk-500"># Retry with X-PAYMENT: &lt;id&gt;:demo-auth header → 200</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== TOOLS — ACCORDION BY CATEGORY ============== -->
+  <section id="tools" class="py-20 sm:py-24 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="max-w-3xl mb-10">
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">32 tools, organized</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+          Every primitive an<br/>FX-native agent needs.
+        </h2>
+      </div>
+
+      <div class="max-w-4xl">
+        <details class="acc" open>
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Discovery</span>
+              <span class="acc-title font-medium text-chalk-300">2 tools — list_currencies · get_markets</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            Live token registry from Sera's <code class="font-mono text-accent-400">/tokens</code> (40+ stablecoins) and the active trading-pair catalog (780+ pairs). Pair existence ≠ tradeable now — use <code class="font-mono text-accent-400">scan_markets</code> to find what's actually quotable.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Pricing & analytics</span>
+              <span class="acc-title font-medium text-chalk-300">4 tools — get_fx_rate · compare_to_external_fx · multi_source_mid · spread_radar</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            Reference FX rates with bias detection. <code class="font-mono text-accent-400">compare_to_external_fx</code> diffs Sera against Frankfurter (ECB). <code class="font-mono text-accent-400">multi_source_mid</code> takes the median across three free providers. <code class="font-mono text-accent-400">spread_radar</code> flags pair asymmetry and triangular drift across a basket — runs without any liquidity.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Liquidity probing</span>
+              <span class="acc-title font-medium text-chalk-300">5 tools — scan_markets · find_deals · probe_depth · round_trip_cost · infer_book</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            <code class="font-mono text-accent-400">find_deals</code> is the headline: scans markets in parallel, diffs each against external mid, ranks the deals. <code class="font-mono text-accent-400">probe_depth</code> characterizes price impact at a size ladder. <code class="font-mono text-accent-400">round_trip_cost</code> reveals the maker hedge floor. <code class="font-mono text-accent-400">infer_book</code> reconstructs a synthetic order book Sera doesn't publish.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Quote &amp; execute</span>
+              <span class="acc-title font-medium text-chalk-300">7 tools — get_quote · prepare_swap · execute_swap · convert_and_send · quote_recipient_amount · find_cheapest_settlement_path · limit_watcher</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            Single-use quote + EIP-712 Intent. Pass <code class="font-mono text-accent-400">simulate:true</code> on <code class="font-mono text-accent-400">get_quote</code> to probe with no wallet. <code class="font-mono text-accent-400">execute_swap</code> enforces uuid binding + server-derived USD notional caps. <code class="font-mono text-accent-400">limit_watcher</code> polls until target rate hits — patient quote pattern.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Maker</span>
+              <span class="acc-title font-medium text-chalk-300">1 tool — maker_quote_ladder</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            Spread-ladder calculator. Given a pair + notional + (optional) mid, returns earnings at 5/10/15/25/50/100/200 bps with notes on each tier. Mid auto-fetched from multi-source median by default.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Treasury</span>
+              <span class="acc-title font-medium text-chalk-300">5 tools — get_balances · treasury_value · exposure_report · rebalance_plan · pay_invoice</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            Multi-wallet aggregation, currency exposure breakdown, target-weight rebalance planner, and <code class="font-mono text-accent-400">pay_invoice</code> — "I owe X in currency Y, what's the cheapest source asset?" Requires <code class="font-mono text-accent-400">SERA_API_KEY</code>.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Settlement</span>
+              <span class="acc-title font-medium text-chalk-300">1 tool — settlement_status</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            Query Sera's <code class="font-mono text-accent-400">/orders</code> for trade history or a specific trade. Filter by <code class="font-mono text-accent-400">trade_id</code>, <code class="font-mono text-accent-400">uuid</code>, <code class="font-mono text-accent-400">owner_address</code>. Requires <code class="font-mono text-accent-400">SERA_API_KEY</code>.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">History</span>
+              <span class="acc-title font-medium text-chalk-300">3 tools — fx_history · fx_volatility · corridor_pnl</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            Sera doesn't publish OHLC. Set <code class="font-mono text-accent-400">SERA_HISTORY_DB</code> to a SQLite path and the MCP logs every <code class="font-mono text-accent-400">fx_rate</code> + <code class="font-mono text-accent-400">quote</code> call it serves. Over time, your install becomes its own price feed — series, volatility, mark-to-market PnL queryable.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Admin</span>
+              <span class="acc-title font-medium text-chalk-300">1 tool — doctor</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            One-call self-check. API health, network sanity, signer mode, policy summary, persistence state. Run this first whenever something looks off.
+          </div>
+        </details>
+      </div>
+
+      <div class="mt-8 text-sm text-chalk-500 max-w-2xl">
+        Plus 5 MCP resources (browseable catalogs + help) and 4 slash-prompt templates (deal_scan, treasury_brief, invoice_optimizer, fx_integrity_check) hosts surface as commands.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== X402 — FULL SECTION ============== -->
+  <section id="x402" class="py-20 sm:py-24 border-t border-white/5 bg-ink-900/30">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="max-w-3xl mb-10">
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">x402 endpoint — Path D</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+          Sera as an<br/>x402 endpoint.
+        </h2>
+        <p class="mt-5 text-base sm:text-lg text-chalk-300 leading-relaxed">
+          A thin HTTP wrapper that exposes <span class="text-chalk-50 font-medium">the full Sera multi-currency settlement engine</span> as a standard <span class="font-mono text-accent-400">x402</span> endpoint. The calling agent doesn't need an MCP host, doesn't import a Sera SDK, doesn't sign EIP-712 Intents — it just speaks HTTP <span class="font-mono text-accent-400">402 → pay → 200</span>. Underneath, every swap routes through Sera Protocol and settles on-chain.
+        </p>
+        <div class="mt-5 grid sm:grid-cols-3 gap-3 text-sm">
+          <div class="ring-soft bg-ink-900/40 p-3.5 rounded-lg">
+            <div class="text-chalk-50 font-medium mb-1">Agent pays USDC</div>
+            <div class="text-chalk-500 text-xs">Standard x402 payment authorization, no Sera knowledge required.</div>
+          </div>
+          <div class="ring-soft bg-ink-900/40 p-3.5 rounded-lg">
+            <div class="text-chalk-50 font-medium mb-1">Service swaps via Sera</div>
+            <div class="text-chalk-500 text-xs">Vault wallet executes the FX swap on Sera Protocol — non-custodial, on-chain.</div>
+          </div>
+          <div class="ring-soft bg-ink-900/40 p-3.5 rounded-lg">
+            <div class="text-chalk-50 font-medium mb-1">Recipient gets target currency</div>
+            <div class="text-chalk-500 text-xs">MYR, SGD, JPY, EUR — any of 40+ stablecoins delivered to recipient address.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4 mb-8">
+        <div class="ring-soft bg-ink-900/60 p-6 rounded-2xl">
+          <h3 class="text-base font-semibold mb-4">Endpoints</h3>
+          <ul class="space-y-2.5 text-sm font-mono">
+            <li><span class="text-accent-400">POST /x402/swap</span> <span class="text-chalk-500">— main flow (402 → pay → 200)</span></li>
+            <li><span class="text-accent-400">POST /x402/quote</span> <span class="text-chalk-500">— quote-only, no payment</span></li>
+            <li><span class="text-accent-400">GET /</span> <span class="text-chalk-500">— service-discovery JSON</span></li>
+            <li><span class="text-accent-400">GET /health</span> <span class="text-chalk-500">— ops probe</span></li>
+          </ul>
+        </div>
+        <div class="ring-soft bg-ink-900/60 p-6 rounded-2xl">
+          <h3 class="text-base font-semibold mb-4">Run modes</h3>
+          <ul class="space-y-3 text-sm">
+            <li>
+              <span class="font-mono text-accent-400">demo</span> <span class="text-chalk-500">— developer mode</span><br/>
+              <span class="text-chalk-300">Mocks the payment verification AND the swap leg. Lets you test the protocol round-trip locally without a wallet or any real Sera transaction. Useful for first integration. <span class="text-chalk-500">Does not actually use Sera.</span></span>
+            </li>
+            <li>
+              <span class="font-mono text-accent-400">live</span> <span class="text-chalk-500">— production</span><br/>
+              <span class="text-chalk-300">Real EIP-3009 USDC payment verification, real Sera Protocol swap from a vault wallet, real on-chain settlement to recipient. Needs <code class="font-mono text-accent-400 text-xs">SIGNER_PRIVATE_KEY</code> + <code class="font-mono text-accent-400 text-xs">RPC_URL</code>. <span class="text-chalk-50">Every swap routes through Sera.</span></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="codeblock p-5 sm:p-6">
+        <div class="text-xs text-chalk-500 mb-3 font-mono">FULL FLOW — DEMO MODE</div>
+        <pre class="leading-relaxed overflow-x-auto"><code><span class="text-chalk-500"># 1. Run the service</span>
+<span class="text-accent-400">cd</span> sera-agents/x402-service &amp;&amp; <span class="text-accent-400">npm install &amp;&amp; npm run demo</span>
+
+<span class="text-chalk-500"># 2. Initial request — get 402 with payment_required</span>
+<span class="text-accent-400">curl</span> -i -X POST localhost:8402/x402/swap \
+  -H 'Content-Type: application/json' \
+  -d '{"from_currency":"USD","to_currency":"MYR",
+       "amount":100,"recipient":"0xVendor"}'
+
+<span class="text-chalk-500"># 3. Retry with X-PAYMENT header</span>
+<span class="text-accent-400">curl</span> -X POST localhost:8402/x402/swap \
+  -H 'Content-Type: application/json' \
+  -H 'X-PAYMENT: &lt;PAYMENT_ID&gt;:demo-authorization' \
+  -d '{"from_currency":"USD","to_currency":"MYR",
+       "amount":100,"recipient":"0xVendor"}'
+
+<span class="text-chalk-500"># Response: 200 with delivered + paid + trade_id</span></code></pre>
+      </div>
+
+      <div class="mt-5 text-sm text-chalk-500">
+        Source at <a href="https://github.com/Josh-sera/sera-agents/tree/main/x402-service" target="_blank" rel="noopener" class="underline hover:text-accent-400 font-mono">x402-service/</a>. Production needs a vault wallet + RPC URL + facilitator integration.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== COMPARISON ============== -->
+  <section class="py-20 sm:py-24 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="max-w-3xl mb-10">
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Why Sera</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+          Single-currency rails<br/>vs. <span class="accent-text">a true FX layer.</span>
+        </h2>
+      </div>
+
+      <div class="overflow-x-auto -mx-5 lg:-mx-6 px-5 lg:px-6">
+        <table class="w-full text-left min-w-[640px]">
+          <thead>
+            <tr class="border-b border-white/10">
+              <th class="py-4 pr-6 text-chalk-500 font-medium text-xs uppercase tracking-wider"></th>
+              <th class="py-4 pr-6 text-chalk-500 font-medium text-xs uppercase tracking-wider">Single-currency rails</th>
+              <th class="py-4 pr-6 font-semibold text-accent-400 text-xs uppercase tracking-wider">Sera for Agents</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5 text-sm">
+            <tr><td class="py-4 pr-6 text-chalk-500">Stablecoins</td><td class="py-4 pr-6 text-chalk-300">Typically one</td><td class="py-4 pr-6 text-chalk-50">40+ across 20+ fiats</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">FX between currencies</td><td class="py-4 pr-6 text-chalk-300">Not supported</td><td class="py-4 pr-6 text-chalk-50">Atomic, smart-routed</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Recipient settles in</td><td class="py-4 pr-6 text-chalk-300">Issuer's currency only</td><td class="py-4 pr-6 text-chalk-50">Any supported currency</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Agent host coverage</td><td class="py-4 pr-6 text-chalk-300">Hosted SDK</td><td class="py-4 pr-6 text-chalk-50">Open MCP, every host</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Custody</td><td class="py-4 pr-6 text-chalk-300">Centralized issuer</td><td class="py-4 pr-6 text-chalk-50">Non-custodial, on-chain</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Treasury awareness</td><td class="py-4 pr-6 text-chalk-300">None</td><td class="py-4 pr-6 text-chalk-50">Multi-wallet, exposure, rebalance</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Lock-in</td><td class="py-4 pr-6 text-chalk-300">Vendor rails</td><td class="py-4 pr-6 text-chalk-50">Open protocol, open MCP</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-8 text-sm text-chalk-500 max-w-2xl">
+        Sera complements single-currency rails rather than replacing them. Use any stablecoin for inflows. Use Sera for FX. Settle in whichever currency the counterparty actually requires.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== CTA ============== -->
+  <section class="py-24 sm:py-32 relative overflow-hidden">
+    <div class="glow absolute inset-0 pointer-events-none"></div>
+    <div class="max-w-4xl mx-auto px-5 lg:px-6 text-center relative">
+      <h2 class="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight gradient-text leading-tight">
+        Multi-currency settlement,<br/><span class="accent-text">made native.</span>
+      </h2>
+      <p class="mt-5 text-base sm:text-lg text-chalk-300 max-w-2xl mx-auto">
+        32 tools. Every major agent host. The MCP is open source. Sera Protocol charges only on actual swap settlement, on-chain.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-3 justify-center">
+        <a href="#paths" class="bg-accent-500 text-ink-950 font-semibold px-7 py-3 rounded-lg hover:bg-accent-400 transition">
+          Get started
+        </a>
+        <a href="https://github.com/Josh-sera/sera-mcp" target="_blank" rel="noopener" class="border border-white/10 text-chalk-50 px-7 py-3 rounded-lg hover:border-white/30 transition">
+          MCP source
+        </a>
+        <a href="https://github.com/Josh-sera/sera-agents" target="_blank" rel="noopener" class="border border-white/10 text-chalk-50 px-7 py-3 rounded-lg hover:border-white/30 transition">
+          Suite source
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== FOOTER ============== -->
+  <footer class="border-t border-white/5 py-12">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="grid md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center">
+              <span class="text-accent-400 font-bold text-sm">S</span>
+            </div>
+            <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+          </div>
+          <p class="text-sm text-chalk-500 leading-relaxed">Multi-currency settlement infrastructure for AI agents. Built on Sera Protocol.</p>
+        </div>
+
+        <div>
+          <div class="text-xs font-mono uppercase tracking-wider text-chalk-500 mb-3">Repos</div>
+          <ul class="space-y-2 text-sm">
+            <li><a href="https://github.com/Josh-sera/sera-mcp" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">sera-mcp</a></li>
+            <li><a href="https://github.com/Josh-sera/sera-agents" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">sera-agents</a></li>
+            <li><a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Integrations</a></li>
+            <li><a href="https://github.com/Josh-sera/sera-agents/tree/main/x402-service" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">x402 service</a></li>
+            <li><a href="https://github.com/Josh-sera/sera-agents/tree/main/templates" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Templates</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="text-xs font-mono uppercase tracking-wider text-chalk-500 mb-3">Hosts</div>
+          <ul class="space-y-2 text-sm">
+            <li><a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/openclaw" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">OpenClaw</a></li>
+            <li><a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/hermes" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Hermes</a></li>
+            <li><a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/nanoclaw" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">NanoClaw</a></li>
+            <li><a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations/standard-mcp-hosts" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Standard MCP hosts</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="text-xs font-mono uppercase tracking-wider text-chalk-500 mb-3">Resources</div>
+          <ul class="space-y-2 text-sm">
+            <li><a href="https://docs.sera.cx" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Sera Protocol docs</a></li>
+            <li><a href="https://github.com/Josh-sera/sera-agents/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Contributing</a></li>
+            <li><a href="https://github.com/Josh-sera/sera-mcp/issues" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Report a bug</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-chalk-500">
+        <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+        <div>Built on <a href="https://docs.sera.cx" target="_blank" rel="noopener" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============== SCRIPTS ============== -->
+  <script>
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuBtn.addEventListener('click', () => {
+      const open = mobileMenu.classList.toggle('open');
+      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    // Close mobile menu on nav click
+    mobileMenu.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        mobileMenu.classList.remove('open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    // Tabs (install section)
+    document.querySelectorAll('[role="tablist"]').forEach(bar => {
+      const buttons = bar.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.setAttribute('aria-selected', 'false'));
+          btn.setAttribute('aria-selected', 'true');
+          const target = btn.dataset.tab;
+          document.querySelectorAll('.tab-panel').forEach(p => {
+            p.classList.toggle('active', p.dataset.panel === target);
+          });
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

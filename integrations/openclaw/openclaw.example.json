@@ -1,0 +1,14 @@
+{
+  "_comment": "Drop the mcpServers block into your existing openclaw.json. Adjust the absolute path to where you cloned Josh-sera/sera-mcp.",
+  "mcpServers": {
+    "sera": {
+      "command": "node",
+      "args": ["/absolute/path/to/sera-mcp/dist/index.js"],
+      "env": {
+        "SERA_NETWORK": "mainnet",
+        "POLICY_PRESET": "standard",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}

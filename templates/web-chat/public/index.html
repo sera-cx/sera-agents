@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sera Agent</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      background: #06070A; color: #F8F8F4;
+      font-family: ui-sans-serif, -apple-system, system-ui, sans-serif;
+      font-size: 15px; line-height: 1.55;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+    header {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: rgba(61,232,160,.1);
+      border: 1px solid rgba(61,232,160,.4);
+      display: flex; align-items: center; justify-content: center;
+      color: #7DF9C2; font-weight: 700; font-size: 14px;
+    }
+    h1 { margin: 0; font-size: 16px; font-weight: 600; }
+    .subtitle { color: #6B7180; font-size: 13px; margin-left: auto; }
+    main {
+      flex: 1; overflow-y: auto; padding: 24px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .msg { display: flex; gap: 12px; }
+    .msg .role {
+      width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600;
+    }
+    .msg.user .role { background: #181C26; color: #A4A89C; }
+    .msg.assistant .role { background: rgba(61,232,160,.1); color: #7DF9C2; }
+    .msg .body {
+      flex: 1; white-space: pre-wrap; padding-top: 4px;
+    }
+    .msg .body code {
+      background: #11141B; padding: 1px 5px; border-radius: 4px;
+      font-family: ui-monospace, monospace; font-size: 13px;
+    }
+    .empty {
+      color: #6B7180; padding: 60px 0; text-align: center;
+    }
+    .empty .examples { margin-top: 18px; font-size: 13px; }
+    .empty .examples div { margin: 6px 0; cursor: pointer; }
+    .empty .examples div:hover { color: #7DF9C2; }
+    footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+    form { display: flex; gap: 10px; }
+    input[type=text] {
+      flex: 1; background: #0B0D12;
+      border: 1px solid rgba(255,255,255,.1);
+      color: #F8F8F4; padding: 12px 14px;
+      border-radius: 8px; font: inherit;
+      outline: none;
+    }
+    input[type=text]:focus { border-color: rgba(61,232,160,.5); }
+    button {
+      background: #3DE8A0; color: #06070A;
+      border: 0; padding: 0 18px; border-radius: 8px;
+      font: inherit; font-weight: 600; cursor: pointer;
+    }
+    button:hover { background: #7DF9C2; }
+    button:disabled { opacity: .4; cursor: wait; }
+    .thinking { color: #6B7180; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">S</div>
+      <h1>Sera Agent</h1>
+      <span class="subtitle">multi-currency settlement assistant</span>
+    </header>
+    <main id="messages">
+      <div class="empty">
+        <div>Multi-currency settlement assistant. Ask about FX, quotes, swaps, or treasury.</div>
+        <div class="examples">
+          <div data-prompt="What stablecoins do you support for SGD?">"What stablecoins do you support for SGD?"</div>
+          <div data-prompt="How much USDC to deliver exactly 5,000 MYR?">"How much USDC to deliver exactly 5,000 MYR?"</div>
+          <div data-prompt="Run sera.doctor and tell me if everything is healthy">"Run sera.doctor"</div>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <form id="chat-form">
+        <input id="input" type="text" autocomplete="off" placeholder="Ask anything…" autofocus />
+        <button id="send" type="submit">Send</button>
+      </form>
+    </footer>
+  </div>
+  <script>
+    const sessionId = crypto.randomUUID();
+    const messagesEl = document.getElementById('messages');
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
+
+    document.querySelectorAll('.examples div').forEach(el => {
+      el.addEventListener('click', () => { input.value = el.dataset.prompt; input.focus(); });
+    });
+
+    function clearEmpty() {
+      const empty = messagesEl.querySelector('.empty');
+      if (empty) empty.remove();
+    }
+    function addMessage(role, text, klass) {
+      clearEmpty();
+      const m = document.createElement('div');
+      m.className = 'msg ' + role + (klass ? ' ' + klass : '');
+      m.innerHTML = '<div class="role">' + (role === 'user' ? 'You' : 'AI') + '</div><div class="body"></div>';
+      m.querySelector('.body').textContent = text;
+      messagesEl.appendChild(m);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return m;
+    }
+
+    // Auth: backend may require a bearer token.
+    // Default: in-memory only — token is forgotten on refresh (XSS-safe).
+    // Opt into persistence by setting window.SERA_WEB_CHAT_PERSIST_TOKEN = true
+    // before this script runs, OR via the localStorage sera_web_chat_persist=1 flag.
+    let authToken = '';
+    const persistFlag =
+      (typeof window.SERA_WEB_CHAT_PERSIST_TOKEN === 'boolean' && window.SERA_WEB_CHAT_PERSIST_TOKEN) ||
+      localStorage.getItem('sera_web_chat_persist') === '1';
+    if (persistFlag) {
+      authToken = localStorage.getItem('sera_web_chat_token') ?? '';
+    }
+
+    async function checkAuthRequired() {
+      try {
+        const r = await fetch('/api/health', {
+          headers: authToken ? { 'Authorization': 'Bearer ' + authToken } : {},
+        });
+        if (r.status === 401) return 'required';
+        const d = await r.json();
+        return d.auth_required ? 'required' : 'open';
+      } catch { return 'unknown'; }
+    }
+
+    async function ensureToken() {
+      const state = await checkAuthRequired();
+      if (state === 'required' && !authToken) {
+        const t = prompt('This server requires an auth token. Paste your WEB_CHAT_AUTH_TOKEN:');
+        if (!t) return false;
+        authToken = t.trim();
+        if (persistFlag) localStorage.setItem('sera_web_chat_token', authToken);
+      }
+      return true;
+    }
+
+    function authHeaders() {
+      const h = { 'Content-Type': 'application/json' };
+      if (authToken) h['Authorization'] = 'Bearer ' + authToken;
+      return h;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = input.value.trim();
+      if (!message) return;
+      if (!(await ensureToken())) return;
+      addMessage('user', message);
+      input.value = '';
+      sendBtn.disabled = true;
+      const thinking = addMessage('assistant', 'thinking…', 'thinking');
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ session_id: sessionId, message }),
+        });
+        if (res.status === 401) {
+          if (persistFlag) localStorage.removeItem('sera_web_chat_token');
+          authToken = '';
+          thinking.querySelector('.body').textContent = 'auth failed — refresh and re-enter the token';
+        } else if (res.status === 429) {
+          thinking.querySelector('.body').textContent = 'rate limited — slow down';
+        } else {
+          const data = await res.json();
+          thinking.querySelector('.body').textContent = data.reply ?? ('error: ' + (data.error ?? 'unknown'));
+        }
+        thinking.classList.remove('thinking');
+      } catch (err) {
+        thinking.querySelector('.body').textContent = 'error: ' + err.message;
+      } finally {
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    });
+  </script>
+</body>
+</html>

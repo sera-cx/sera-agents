@@ -1,0 +1,17 @@
+{
+  "name": "sera-template-chat-cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Template: terminal chat agent over the Sera MCP.",
+  "scripts": {
+    "start": "tsx agent.ts"
+  },
+  "dependencies": {
+    "@openai/agents": "^0.3.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.DS_Store
+dist/
+.tsbuildinfo

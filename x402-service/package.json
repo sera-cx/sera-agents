@@ -1,0 +1,22 @@
+{
+  "name": "sera-x402-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "x402 protocol endpoint that exposes Sera's multi-currency settlement to USDC-paying agents.",
+  "scripts": {
+    "start": "tsx server.ts",
+    "demo": "X402_MODE=demo tsx server.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "better-sqlite3": "^12.10.0",
+    "hono": "^4.6.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}
