@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tutorials — Sera for Agents</title>
+  <meta name="theme-color" content="#06070A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: { ink:{950:'#06070A',900:'#0B0D12',800:'#11141B',700:'#181C26'}, chalk:{50:'#F8F8F4',100:'#EDEDE6',300:'#A4A89C',500:'#6B7180'}, accent:{400:'#7DF9C2',500:'#3DE8A0',600:'#10C77F'} }
+    }}};
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { background:#06070A; color:#F8F8F4; }
+    body { overflow-x: hidden; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+    .gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    .ring-soft-hover:hover { box-shadow: inset 0 0 0 1px rgba(125,249,194,.4), 0 0 60px -10px rgba(61,232,160,.2); transform: translateY(-2px); }
+    .ring-soft-hover { transition: transform .18s ease, box-shadow .18s ease; }
+    .bento { transition: all .2s ease; }
+    .bento:hover { background: rgba(11,13,18,.85); border-color: rgba(125,249,194,.2); }
+    a { color: inherit; }
+    .num-badge { width:32px; height:32px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.2); }
+    .cost-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-family:'JetBrains Mono',monospace; font-size:11px; background:rgba(61,232,160,.08); color:#7DF9C2; border:1px solid rgba(61,232,160,.18); }
+    .sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+    .sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+    .sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+    .sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <a href="../../" class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center"><span class="text-accent-400 font-bold text-sm">S</span></div>
+          <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+        </a>
+        <span class="text-chalk-500">/</span>
+        <a href="../" class="text-sm text-chalk-300 hover:text-chalk-50">Docs</a>
+        <span class="text-chalk-500">/</span>
+        <span class="text-sm text-chalk-300">Tutorials</span>
+      </div>
+      <nav class="hidden lg:flex items-center gap-6 text-sm text-chalk-300">
+        <a href="../../#paths" class="hover:text-chalk-50">Paths</a>
+        <a href="../../#build" class="hover:text-chalk-50">Build</a>
+        <a href="../" class="text-chalk-50 font-medium">Docs</a>
+        <a href="https://github.com/Josh-sera/sera-agents" target="_blank" class="hover:text-chalk-50">GitHub</a>
+      </nav>
+      <a href="../../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-6 grid lg:grid-cols-[240px_minmax(0,1fr)] gap-10 pt-28 pb-24">
+
+    <aside class="sidebar lg:sticky lg:top-20 self-start">
+      <div class="group-label">Get started</div>
+      <a href="../index.html">Overview</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../concepts.html">Concepts</a>
+      <div class="group-label">Build</div>
+      <a href="index.html" class="active">Tutorials</a>
+      <a href="cross-border-payment-widget.html" class="pl-5 text-[12.5px]">→ Payment widget</a>
+      <a href="fx-trading-dashboard.html" class="pl-5 text-[12.5px]">→ Trading dashboard</a>
+      <a href="prediction-market.html" class="pl-5 text-[12.5px]">→ Prediction market</a>
+      <a href="treasury-rebalancer.html" class="pl-5 text-[12.5px]">→ Treasury rebalancer</a>
+      <a href="x402-paid-api.html" class="pl-5 text-[12.5px]">→ x402-paid API</a>
+      <a href="ai-agent.html" class="pl-5 text-[12.5px]">→ AI agent</a>
+      <a href="../recipes.html">Recipes</a>
+      <div class="group-label">Reference</div>
+      <a href="../api/">API reference (32)</a>
+      <div class="group-label">Resources</div>
+      <a href="https://github.com/Josh-sera/sera-mcp" target="_blank">sera-mcp on GitHub</a>
+      <a href="https://github.com/Josh-sera/sera-agents" target="_blank">sera-agents on GitHub</a>
+      <a href="https://docs.sera.cx" target="_blank">Sera Protocol docs</a>
+    </aside>
+
+    <main class="max-w-3xl">
+      <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorials</div>
+      <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Six builds you can ship.</h1>
+      <p class="text-lg mb-10" style="color:#A4A89C">Each tutorial is a complete walkthrough with prereqs, step-by-step instructions, runnable code, and a reference repo. Pick by what you're building, not by what's flashiest.</p>
+
+      <div class="grid sm:grid-cols-2 gap-4">
+
+        <a href="cross-border-payment-widget.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
+          <div class="flex items-center justify-between mb-4"><span class="num-badge">01</span><span class="cost-pill"><span style="text-decoration:line-through;color:#6B7180">$87</span> $2.50</span></div>
+          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Cross-border payment widget</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">Drop-in React component. User picks recipient + amount in their currency, widget quotes + executes the cheapest source asset. Replaces $80+ SWIFT wires with $2 swaps.</p>
+          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+            <span class="font-mono">React · sera.pay_invoice</span><span>25 min</span>
+          </div>
+        </a>
+
+        <a href="fx-trading-dashboard.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
+          <div class="flex items-center justify-between mb-4"><span class="num-badge">02</span><span class="cost-pill">read-only</span></div>
+          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">FX trading dashboard</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">Live FX dashboard reading Sera's reference rates + multi-source mid + executable depth. Spot deviations across 60+ stablecoin FX pairs. No wallet required.</p>
+          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+            <span class="font-mono">Next.js · find_deals</span><span>30 min</span>
+          </div>
+        </a>
+
+        <a href="prediction-market.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
+          <div class="flex items-center justify-between mb-4"><span class="num-badge">03</span><span class="cost-pill">on-chain</span></div>
+          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Prediction market on FX</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">Binary markets like "USD/JPY &gt; 158 by Friday" using Sera's reference rate as the settlement oracle. Payouts route through Sera FX so winners get paid in any currency.</p>
+          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+            <span class="font-mono">Solidity · get_fx_rate</span><span>60 min</span>
+          </div>
+        </a>
+
+        <a href="treasury-rebalancer.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
+          <div class="flex items-center justify-between mb-4"><span class="num-badge">04</span><span class="cost-pill">cron</span></div>
+          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Treasury rebalancer</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">Cron job that reads multi-currency wallet balances, computes drift, emits Sera swap intents. Runs daily, signs nothing.</p>
+          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+            <span class="font-mono">Node · rebalance_plan</span><span>20 min</span>
+          </div>
+        </a>
+
+        <a href="x402-paid-api.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
+          <div class="flex items-center justify-between mb-4"><span class="num-badge">05</span><span class="cost-pill">$0.001/call</span></div>
+          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">x402-paid API</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">Charge AI agents per call in USDC over plain HTTP. Standard 402 → pay → 200. No paywall pages, no Stripe.</p>
+          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+            <span class="font-mono">Express · x402</span><span>25 min</span>
+          </div>
+        </a>
+
+        <a href="ai-agent.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
+          <div class="flex items-center justify-between mb-4"><span class="num-badge">06</span><span class="cost-pill">15 min</span></div>
+          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">AI agent (any host)</h3>
+          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">The classic — an MCP-powered agent with the full 32-tool surface. Use the bundled Sera Agent or wire the MCP into Claude Code, Cursor, Hermes, OpenClaw.</p>
+          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+            <span class="font-mono">MCP · Claude / GPT</span><span>15 min</span>
+          </div>
+        </a>
+
+      </div>
+
+      <div class="mt-10 p-5 rounded-2xl ring-soft bg-ink-900/40">
+        <div class="font-semibold mb-1" style="color:#F8F8F4">Don't see your use case?</div>
+        <p class="text-sm" style="color:#A4A89C">These six are the most common — but Sera is general infrastructure. If you've shipped a non-obvious build (an FX-aware AMM router, a stablecoin payroll service, an OTC desk, a DeFi structured product), <a href="https://github.com/Josh-sera/sera-agents/issues" target="_blank" class="text-accent-400 hover:underline">open an issue</a> and we'll write it up.</p>
+      </div>
+
+    </main>
+  </div>
+
+  <footer class="border-t border-white/5 py-10">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
+      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+    </div>
+  </footer>
+</body>
+</html>

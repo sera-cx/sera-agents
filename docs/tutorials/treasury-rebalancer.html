@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Treasury rebalancer — Sera tutorial</title>
+  <meta name="theme-color" content="#06070A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: { ink:{950:'#06070A',900:'#0B0D12',800:'#11141B',700:'#181C26'}, chalk:{50:'#F8F8F4',100:'#EDEDE6',300:'#A4A89C',500:'#6B7180'}, accent:{400:'#7DF9C2',500:'#3DE8A0',600:'#10C77F'} }
+    }}};
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    html, body { background:#06070A; color:#F8F8F4; }
+    body { overflow-x: hidden; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+    .gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    a { color: inherit; }
+    .codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding: 16px 20px; }
+    .codeblock pre { font-size: 12.5px; line-height: 1.55; overflow-x: auto; }
+    .codeblock .filename { font-size: 11px; color:#6B7180; text-transform:uppercase; letter-spacing:.05em; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.05); margin-bottom: 12px; }
+    .prose h2 { font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; }
+    .prose h3 { font-size: 1.15rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: .5rem; color:#F8F8F4; }
+    .prose p { color:#A4A89C; line-height:1.7; margin-bottom: 1rem; }
+    .prose ul, .prose ol { color:#A4A89C; margin-bottom: 1rem; padding-left: 1.4rem; }
+    .prose li { margin-bottom: .35rem; line-height: 1.6; }
+    .prose code { font-family:'JetBrains Mono',monospace; font-size: .85em; color:#7DF9C2; background: rgba(125,249,194,.08); padding: 2px 6px; border-radius: 4px; }
+    .prose strong { color:#F8F8F4; font-weight: 600; }
+    .prose a { color:#7DF9C2; text-decoration: underline; text-underline-offset: 2px; }
+    .step-num { display:inline-flex; width:30px; height:30px; align-items:center; justify-content:center; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.2); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; margin-right: 10px; }
+    .meta-pill { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; padding:3px 10px; border-radius:999px; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.18); margin-right:6px; }
+    .sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+    .sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+    .sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+    .sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+    .callout { padding: 16px 20px; border-radius: 12px; background: rgba(125,249,194,.04); border: 1px solid rgba(125,249,194,.18); margin: 18px 0; }
+    .callout .callout-label { font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:#7DF9C2; margin-bottom: 6px; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <a href="../../" class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center"><span class="text-accent-400 font-bold text-sm">S</span></div>
+          <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+        </a>
+        <span class="text-chalk-500">/</span>
+        <a href="../" class="text-sm text-chalk-300 hover:text-chalk-50">Docs</a>
+        <span class="text-chalk-500">/</span>
+        <a href="index.html" class="text-sm text-chalk-300 hover:text-chalk-50">Tutorials</a>
+        <span class="text-chalk-500">/</span>
+        <span class="text-sm text-chalk-300">Treasury rebalancer</span>
+      </div>
+      <a href="../../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-6 grid lg:grid-cols-[240px_minmax(0,1fr)] gap-10 pt-28 pb-24">
+
+    <aside class="sidebar lg:sticky lg:top-20 self-start">
+      <div class="group-label">Get started</div>
+      <a href="../index.html">Overview</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../concepts.html">Concepts</a>
+      <div class="group-label">Build</div>
+      <a href="index.html">Tutorials</a>
+      <a href="cross-border-payment-widget.html" class="pl-5 text-[12.5px]">→ Payment widget</a>
+      <a href="fx-trading-dashboard.html" class="pl-5 text-[12.5px]">→ Trading dashboard</a>
+      <a href="prediction-market.html" class="pl-5 text-[12.5px]">→ Prediction market</a>
+      <a href="treasury-rebalancer.html" class="active pl-5 text-[12.5px]">→ Treasury rebalancer</a>
+      <a href="x402-paid-api.html" class="pl-5 text-[12.5px]">→ x402-paid API</a>
+      <a href="ai-agent.html" class="pl-5 text-[12.5px]">→ AI agent</a>
+      <a href="../recipes.html">Recipes</a>
+      <div class="group-label">Reference</div>
+      <a href="../api/">API reference (32)</a>
+    </aside>
+
+    <main class="prose max-w-3xl">
+      <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 04</div>
+      <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Treasury rebalancer.</h1>
+      <p class="text-lg" style="color:#A4A89C">A cron job that reads multi-currency wallet balances, computes drift from target weights, and emits Sera swap intents. Runs daily, signs nothing — emits a plan you (or a multi-sig flow) execute.</p>
+
+      <div class="my-6">
+        <span class="meta-pill">20 min</span>
+        <span class="meta-pill">Node CLI</span>
+        <span class="meta-pill">cron / GitHub Actions</span>
+        <span class="meta-pill">rebalance_plan</span>
+      </div>
+
+      <div class="callout">
+        <div class="callout-label">What you'll have at the end</div>
+        <p style="color:#A4A89C; margin: 0;">A script that runs daily, compares your treasury composition to a target (e.g. 50% USDC / 30% EURC / 20% XSGD), and drops a swap plan into Slack/Telegram for approval. Optional auto-execution behind a multi-sig.</p>
+      </div>
+
+      <h2 class="gradient-text">Steps</h2>
+
+      <h3><span class="step-num">1</span>Define your targets</h3>
+      <div class="codeblock">
+        <div class="filename">config/targets.json</div>
+<pre><code>{
+  <span style="color:#7DF9C2">"wallets"</span>: [
+    <span style="color:#7DF9C2">"0xAa…operating"</span>,
+    <span style="color:#7DF9C2">"0xBb…reserve"</span>
+  ],
+  <span style="color:#7DF9C2">"targets"</span>: { <span style="color:#7DF9C2">"USDC"</span>: <span style="color:#7DF9C2">0.5</span>, <span style="color:#7DF9C2">"EURC"</span>: <span style="color:#7DF9C2">0.3</span>, <span style="color:#7DF9C2">"XSGD"</span>: <span style="color:#7DF9C2">0.2</span> },
+  <span style="color:#7DF9C2">"reporting_currency"</span>: <span style="color:#7DF9C2">"USD"</span>,
+  <span style="color:#7DF9C2">"drift_threshold_pct"</span>: <span style="color:#7DF9C2">5</span>,
+  <span style="color:#7DF9C2">"alert_webhook"</span>: <span style="color:#7DF9C2">"https://hooks.slack.com/…"</span>
+}</code></pre>
+      </div>
+
+      <h3><span class="step-num">2</span>The rebalancer script</h3>
+      <div class="codeblock">
+        <div class="filename">rebalance.ts</div>
+<pre><code><span style="color:#A78BFA">import</span> { spawnSeraMcp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./mcpClient'</span>;
+<span style="color:#A78BFA">import</span> targets <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./config/targets.json'</span>;
+
+<span style="color:#A78BFA">const</span> sera = spawnSeraMcp({ env: { SERA_NETWORK: <span style="color:#7DF9C2">'mainnet'</span> } });
+
+<span style="color:#A78BFA">async function</span> main() {
+  <span style="color:#6B7180">// 1. Snapshot exposure</span>
+  <span style="color:#A78BFA">const</span> exposure = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'exposure_report'</span>, {
+    wallets: targets.wallets, reporting_currency: targets.reporting_currency
+  });
+
+  <span style="color:#6B7180">// 2. Compute drift vs targets</span>
+  <span style="color:#A78BFA">const</span> drift = Object.entries(targets.targets).map(([sym, t]) =&gt; ({
+    symbol: sym,
+    target: t,
+    actual: exposure.weights[sym] ?? <span style="color:#7DF9C2">0</span>,
+    drift_pp: ((exposure.weights[sym] ?? <span style="color:#7DF9C2">0</span>) - t) * <span style="color:#7DF9C2">100</span>
+  }));
+
+  <span style="color:#A78BFA">const</span> maxDrift = Math.max(...drift.map(d =&gt; Math.abs(d.drift_pp)));
+  <span style="color:#A78BFA">if</span> (maxDrift &lt; targets.drift_threshold_pct) {
+    console.log(<span style="color:#7DF9C2">`No action — max drift ${maxDrift.toFixed(1)}pp under threshold`</span>);
+    <span style="color:#A78BFA">return</span>;
+  }
+
+  <span style="color:#6B7180">// 3. Get the swap plan</span>
+  <span style="color:#A78BFA">const</span> plan = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'rebalance_plan'</span>, {
+    wallets: targets.wallets,
+    targets: targets.targets,
+    reporting_currency: targets.reporting_currency
+  });
+
+  <span style="color:#6B7180">// 4. Post to Slack/Telegram for approval</span>
+  <span style="color:#A78BFA">await</span> postPlan(plan, drift);
+}
+
+<span style="color:#A78BFA">async function</span> postPlan(plan, drift) {
+  <span style="color:#A78BFA">const</span> lines = [
+    <span style="color:#7DF9C2">`*Treasury drift*`</span>,
+    ...drift.map(d =&gt; <span style="color:#7DF9C2">`• ${d.symbol}: actual ${(d.actual*100).toFixed(1)}% vs target ${(d.target*100)}% (${d.drift_pp&gt;0?'+':''}${d.drift_pp.toFixed(1)}pp)`</span>),
+    <span style="color:#7DF9C2">`*Suggested swaps*`</span>,
+    ...plan.swaps.map(s =&gt; <span style="color:#7DF9C2">`• ${s.amount} ${s.from} → ${s.to}`</span>)
+  ];
+  <span style="color:#A78BFA">await</span> fetch(targets.alert_webhook, {
+    method: <span style="color:#7DF9C2">'POST'</span>,
+    body: JSON.stringify({ text: lines.join(<span style="color:#7DF9C2">'\n'</span>) })
+  });
+}
+
+main().catch(console.error);</code></pre>
+      </div>
+
+      <h3><span class="step-num">3</span>Schedule it</h3>
+      <p>Three good options:</p>
+      <ul>
+        <li><strong>System cron</strong> on a tiny VPS: <code>0 9 * * * /usr/bin/node /opt/sera-rebalance/rebalance.js</code></li>
+        <li><strong>GitHub Actions</strong> with a scheduled workflow — clean, free for low-frequency, audit-trail in PRs</li>
+        <li><strong>A serverless cron</strong> (Vercel cron, Cloudflare Workers cron) — only viable if your sera-mcp is hosted as a service, not spawned per call</li>
+      </ul>
+
+      <div class="codeblock">
+        <div class="filename">.github/workflows/rebalance.yml</div>
+<pre><code>name: rebalance
+on:
+  schedule:
+    - cron: <span style="color:#7DF9C2">'0 9 * * *'</span>     <span style="color:#6B7180"># 09:00 UTC daily</span>
+  workflow_dispatch: {}    <span style="color:#6B7180"># manual trigger button</span>
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: <span style="color:#7DF9C2">'20'</span> }
+      - run: npm ci
+      - run: node rebalance.js
+        env:
+          SERA_NETWORK: mainnet
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}</code></pre>
+      </div>
+
+      <h3><span class="step-num">4</span>(Optional) Auto-execute behind a multi-sig</h3>
+      <p>If your treasury is held in a Safe (Gnosis), the rebalancer can stage transactions instead of just posting plans. Use Safe's <a href="https://docs.safe.global" target="_blank">Transaction Service API</a> to submit each swap from the plan as a pending Safe tx, awaiting signer approvals.</p>
+      <p>For each swap in <code>plan.swaps</code>: call <code>sera.get_quote</code>, build a multicall (approve + execute), submit to Safe.</p>
+
+      <h2 class="gradient-text">Common gotchas</h2>
+      <ul>
+        <li><strong>"No action" is the right action most days.</strong> Set a meaningful drift threshold (e.g. 5 percentage points) — daily rebalances on tiny drift just burn gas.</li>
+        <li><strong>Reporting currency matters.</strong> If you report in USD but your business is JPY-denominated, the drift signals will mislead. Use the operational reporting currency.</li>
+        <li><strong>Sera finds the plan; it doesn't choose <em>when</em>.</strong> You might want to delay execution until you see a favorable rate via <code>limit_watcher</code>.</li>
+      </ul>
+
+      <p class="mt-10"><strong>Next:</strong> <a href="x402-paid-api.html">x402-paid API tutorial</a> — monetize your rebalancer's output as a paid signal feed.</p>
+
+    </main>
+  </div>
+
+  <footer class="border-t border-white/5 py-10">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
+      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+    </div>
+  </footer>
+</body>
+</html>

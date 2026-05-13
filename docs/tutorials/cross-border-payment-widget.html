@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cross-border payment widget — Sera tutorial</title>
+  <meta name="theme-color" content="#06070A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: { ink:{950:'#06070A',900:'#0B0D12',800:'#11141B',700:'#181C26'}, chalk:{50:'#F8F8F4',100:'#EDEDE6',300:'#A4A89C',500:'#6B7180'}, accent:{400:'#7DF9C2',500:'#3DE8A0',600:'#10C77F'} }
+    }}};
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    html, body { background:#06070A; color:#F8F8F4; }
+    body { overflow-x: hidden; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+    .gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    a { color: inherit; }
+    .codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding: 16px 20px; }
+    .codeblock pre { font-size: 12.5px; line-height: 1.55; overflow-x: auto; }
+    .codeblock .filename { font-size: 11px; color:#6B7180; text-transform:uppercase; letter-spacing:.05em; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.05); margin-bottom: 12px; }
+    .prose h2 { font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; }
+    .prose h3 { font-size: 1.15rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: .5rem; color:#F8F8F4; }
+    .prose p { color:#A4A89C; line-height:1.7; margin-bottom: 1rem; }
+    .prose ul, .prose ol { color:#A4A89C; margin-bottom: 1rem; padding-left: 1.4rem; }
+    .prose li { margin-bottom: .35rem; line-height: 1.6; }
+    .prose code { font-family:'JetBrains Mono',monospace; font-size: .85em; color:#7DF9C2; background: rgba(125,249,194,.08); padding: 2px 6px; border-radius: 4px; }
+    .prose strong { color:#F8F8F4; font-weight: 600; }
+    .prose a { color:#7DF9C2; text-decoration: underline; text-underline-offset: 2px; }
+    .step-num { display:inline-flex; width:30px; height:30px; align-items:center; justify-content:center; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.2); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; margin-right: 10px; }
+    .meta-pill { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; padding:3px 10px; border-radius:999px; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.18); margin-right:6px; }
+    .sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+    .sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+    .sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+    .sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+    .callout { padding: 16px 20px; border-radius: 12px; background: rgba(125,249,194,.04); border: 1px solid rgba(125,249,194,.18); margin: 18px 0; }
+    .callout .callout-label { font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:#7DF9C2; margin-bottom: 6px; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <a href="../../" class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center"><span class="text-accent-400 font-bold text-sm">S</span></div>
+          <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+        </a>
+        <span class="text-chalk-500">/</span>
+        <a href="../" class="text-sm text-chalk-300 hover:text-chalk-50">Docs</a>
+        <span class="text-chalk-500">/</span>
+        <a href="index.html" class="text-sm text-chalk-300 hover:text-chalk-50">Tutorials</a>
+        <span class="text-chalk-500">/</span>
+        <span class="text-sm text-chalk-300">Payment widget</span>
+      </div>
+      <a href="../../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-6 grid lg:grid-cols-[240px_minmax(0,1fr)] gap-10 pt-28 pb-24">
+
+    <aside class="sidebar lg:sticky lg:top-20 self-start">
+      <div class="group-label">Get started</div>
+      <a href="../index.html">Overview</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../concepts.html">Concepts</a>
+      <div class="group-label">Build</div>
+      <a href="index.html">Tutorials</a>
+      <a href="cross-border-payment-widget.html" class="active pl-5 text-[12.5px]">→ Payment widget</a>
+      <a href="fx-trading-dashboard.html" class="pl-5 text-[12.5px]">→ Trading dashboard</a>
+      <a href="prediction-market.html" class="pl-5 text-[12.5px]">→ Prediction market</a>
+      <a href="treasury-rebalancer.html" class="pl-5 text-[12.5px]">→ Treasury rebalancer</a>
+      <a href="x402-paid-api.html" class="pl-5 text-[12.5px]">→ x402-paid API</a>
+      <a href="ai-agent.html" class="pl-5 text-[12.5px]">→ AI agent</a>
+      <a href="../recipes.html">Recipes</a>
+      <div class="group-label">Reference</div>
+      <a href="../api/">API reference (32)</a>
+    </aside>
+
+    <main class="prose max-w-3xl">
+      <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 01</div>
+      <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Cross-border payment widget.</h1>
+      <p class="text-lg" style="color:#A4A89C">A drop-in React component. User picks recipient + amount in their currency, widget fetches the cheapest source asset, generates a quote, and triggers wallet signing. Settles on Sera in one transaction.</p>
+
+      <div class="my-6">
+        <span class="meta-pill">25 min</span>
+        <span class="meta-pill">React 18+</span>
+        <span class="meta-pill">wagmi</span>
+        <span class="meta-pill">sera.pay_invoice</span>
+      </div>
+
+      <div class="callout">
+        <div class="callout-label">What you'll have at the end</div>
+        <p style="color:#A4A89C; margin: 0;">A working <code>&lt;SeraPayWidget /&gt;</code> React component. Drop it on a page, pass <code>recipient</code> + <code>amount</code> + <code>currency</code> as props, and your users can settle international payments at on-chain cost (~$2 instead of $80+ via SWIFT).</p>
+      </div>
+
+      <h2 class="gradient-text">Prerequisites</h2>
+      <ul>
+        <li>Node 18+, npm or pnpm</li>
+        <li>A React project (Next.js, Vite, CRA — anything)</li>
+        <li>A wallet provider in your app: <a href="https://wagmi.sh" target="_blank">wagmi</a> + <a href="https://www.rainbowkit.com" target="_blank">RainbowKit</a> recommended</li>
+        <li><code>sera-mcp</code> running somewhere your backend can talk to (typically as a subprocess of your Node API server, or as a hosted endpoint)</li>
+      </ul>
+
+      <h2 class="gradient-text">Architecture</h2>
+      <div class="codeblock">
+<pre><code>Browser (React)              Your Node API              sera-mcp           Sera Protocol
+     │                            │                         │                    │
+     ├── POST /api/quote ─────────▶│                         │                    │
+     │                            ├── sera.pay_invoice ─────▶│                    │
+     │                            │                         ├── /quote ─────────▶│
+     │                            │                         │◀── typed_data ─────┤
+     │                            │◀── quote {uuid, ...} ────│                    │
+     │◀── { quote, typed_data } ──┤                         │                    │
+     │                            │                         │                    │
+     ├── wallet.signTypedData ────▶│  (browser-only, key never leaves the wallet) │
+     │                            │                         │                    │
+     ├── POST /api/execute ───────▶│                         │                    │
+     │   (uuid + signature)       ├── sera.execute_swap ────▶│                    │
+     │                            │                         ├── /execute ───────▶│
+     │                            │                         │◀── trade_id ───────┤
+     │◀── { trade_id, tx_hash } ───┤                         │                    │</code></pre>
+      </div>
+
+      <p>The browser never talks to <code>sera-mcp</code> directly — your backend brokers the calls. The wallet signs in the browser. The MCP never sees the key.</p>
+
+      <h2 class="gradient-text">Steps</h2>
+
+      <h3><span class="step-num">1</span>Set up the backend route</h3>
+      <p>Spawn <code>sera-mcp</code> as a subprocess of your Node server (or import its tool functions directly if you're embedding). Expose two routes: <code>/api/quote</code> and <code>/api/execute</code>.</p>
+      <div class="codeblock">
+        <div class="filename">api/sera.ts</div>
+<pre><code><span style="color:#6B7180">// Pseudocode — wire to your framework's router (Next.js, Express, etc.)</span>
+<span style="color:#A78BFA">import</span> { spawnSeraMcp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./mcpClient'</span>;
+<span style="color:#A78BFA">const</span> sera = spawnSeraMcp({ env: { SERA_NETWORK: <span style="color:#7DF9C2">'mainnet'</span>, POLICY_PRESET: <span style="color:#7DF9C2">'standard'</span> } });
+
+<span style="color:#A78BFA">export async function</span> POST_quote(req) {
+  <span style="color:#A78BFA">const</span> { recipient, target_amount, target_currency } = req.body;
+  <span style="color:#A78BFA">return</span> <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'pay_invoice'</span>, {
+    recipient, target_amount, target_currency
+  });
+}
+
+<span style="color:#A78BFA">export async function</span> POST_execute(req) {
+  <span style="color:#A78BFA">const</span> { quote_id, signature } = req.body;
+  <span style="color:#A78BFA">return</span> <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'execute_swap'</span>, { quote_id, signature });
+}</code></pre>
+      </div>
+
+      <h3><span class="step-num">2</span>Create the widget component</h3>
+      <p>A single React component that handles the four states: <em>idle</em>, <em>quoting</em>, <em>signing</em>, <em>executing</em>.</p>
+      <div class="codeblock">
+        <div class="filename">components/SeraPayWidget.tsx</div>
+<pre><code><span style="color:#A78BFA">import</span> { useState } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'react'</span>;
+<span style="color:#A78BFA">import</span> { useSignTypedData } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'wagmi'</span>;
+
+<span style="color:#A78BFA">type</span> Props = { recipient: string; amount: number; currency: string };
+
+<span style="color:#A78BFA">export function</span> SeraPayWidget({ recipient, amount, currency }: Props) {
+  <span style="color:#A78BFA">const</span> [state, setState] = useState&lt;<span style="color:#7DF9C2">'idle'|'quoting'|'signing'|'executing'|'done'</span>&gt;(<span style="color:#7DF9C2">'idle'</span>);
+  <span style="color:#A78BFA">const</span> [quote, setQuote] = useState&lt;any&gt;(<span style="color:#A78BFA">null</span>);
+  <span style="color:#A78BFA">const</span> [tradeId, setTradeId] = useState&lt;string|<span style="color:#A78BFA">null</span>&gt;(<span style="color:#A78BFA">null</span>);
+  <span style="color:#A78BFA">const</span> { signTypedDataAsync } = useSignTypedData();
+
+  <span style="color:#A78BFA">async function</span> pay() {
+    setState(<span style="color:#7DF9C2">'quoting'</span>);
+    <span style="color:#A78BFA">const</span> q = <span style="color:#A78BFA">await</span> fetch(<span style="color:#7DF9C2">'/api/quote'</span>, {
+      method: <span style="color:#7DF9C2">'POST'</span>,
+      body: JSON.stringify({ recipient, target_amount: amount, target_currency: currency })
+    }).then(r =&gt; r.json());
+    setQuote(q);
+
+    setState(<span style="color:#7DF9C2">'signing'</span>);
+    <span style="color:#A78BFA">const</span> sig = <span style="color:#A78BFA">await</span> signTypedDataAsync(q.typed_data);
+
+    setState(<span style="color:#7DF9C2">'executing'</span>);
+    <span style="color:#A78BFA">const</span> r = <span style="color:#A78BFA">await</span> fetch(<span style="color:#7DF9C2">'/api/execute'</span>, {
+      method: <span style="color:#7DF9C2">'POST'</span>,
+      body: JSON.stringify({ quote_id: q.uuid, signature: sig })
+    }).then(r =&gt; r.json());
+    setTradeId(r.trade_id);
+    setState(<span style="color:#7DF9C2">'done'</span>);
+  }
+
+  <span style="color:#A78BFA">return</span> (
+    &lt;div className=<span style="color:#7DF9C2">"sera-widget"</span>&gt;
+      {state === <span style="color:#7DF9C2">'idle'</span> &amp;&amp; (
+        &lt;button onClick={pay}&gt;
+          Send {amount} {currency} to {recipient.slice(0,6)}…
+        &lt;/button&gt;
+      )}
+      {state === <span style="color:#7DF9C2">'quoting'</span> &amp;&amp; <span style="color:#7DF9C2">'Fetching cheapest source…'</span>}
+      {state === <span style="color:#7DF9C2">'signing'</span> &amp;&amp; <span style="color:#7DF9C2">'Sign in your wallet'</span>}
+      {state === <span style="color:#7DF9C2">'executing'</span> &amp;&amp; <span style="color:#7DF9C2">'Settling on Sera…'</span>}
+      {state === <span style="color:#7DF9C2">'done'</span> &amp;&amp; (
+        &lt;span&gt;Done. trade_id: &lt;code&gt;{tradeId}&lt;/code&gt;&lt;/span&gt;
+      )}
+    &lt;/div&gt;
+  );
+}</code></pre>
+      </div>
+
+      <h3><span class="step-num">3</span>Use it in a page</h3>
+      <div class="codeblock">
+        <div class="filename">pages/checkout.tsx</div>
+<pre><code><span style="color:#A78BFA">import</span> { SeraPayWidget } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'@/components/SeraPayWidget'</span>;
+
+<span style="color:#A78BFA">export default function</span> Checkout() {
+  <span style="color:#A78BFA">return</span> (
+    &lt;div&gt;
+      &lt;h1&gt;Pay vendor in Malaysia&lt;/h1&gt;
+      &lt;SeraPayWidget
+        recipient=<span style="color:#7DF9C2">"0xAa…vendor"</span>
+        amount={<span style="color:#7DF9C2">5000</span>}
+        currency=<span style="color:#7DF9C2">"MYR"</span>
+      /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+      </div>
+
+      <h3><span class="step-num">4</span>Test in dry-run mode first</h3>
+      <p>Set <code>SERA_DRY_RUN=true</code> in your backend env. Every <code>execute_swap</code> call returns a dry-run trace instead of an on-chain transaction. Run the full flow end-to-end without spending anything.</p>
+      <p>Once green, flip <code>SERA_DRY_RUN=false</code> and run a real low-notional ($10) settlement to verify on-chain.</p>
+
+      <h3><span class="step-num">5</span>Show the user the cost saving (the marketing piece)</h3>
+      <p>The widget should display the cost. Use <code>sera.compare_to_external_fx</code> to fetch a comparable TradFi rate and show a "$87 → $2.50" callout. This is what makes users understand they're getting a genuinely better deal.</p>
+      <div class="codeblock">
+<pre><code><span style="color:#A78BFA">const</span> ext = <span style="color:#A78BFA">await</span> fetch(<span style="color:#7DF9C2">'/api/compare?base=USD&amp;quote=MYR'</span>).then(r =&gt; r.json());
+<span style="color:#6B7180">// ext.swift_estimate_usd vs quote.cost_usd</span></code></pre>
+      </div>
+
+      <h2 class="gradient-text">Reference repo</h2>
+      <p><a href="https://github.com/Josh-sera/sera-agents/tree/main/templates/web-chat" target="_blank">templates/web-chat</a> in the sera-agents repo is a working starter that includes a wallet connector, a simple form, and the same backend ↔ MCP wiring. Fork it for the fastest path.</p>
+
+      <h2 class="gradient-text">Common gotchas</h2>
+      <ul>
+        <li><strong>"Quote expired"</strong> — quotes from <code>get_quote</code> have a short expiry (typically 30s). If your user takes longer to sign, fetch a fresh quote.</li>
+        <li><strong>Signed by wrong account</strong> — the wallet's connected address must equal the <code>maker</code> field in the typed data. Check both before signing.</li>
+        <li><strong>Insufficient source token</strong> — <code>pay_invoice</code> assumes the user holds enough of the cheapest source asset. If they don't, fall back to <code>find_cheapest_settlement_path</code> which considers what they actually hold.</li>
+      </ul>
+
+      <p class="mt-10"><strong>Next:</strong> Try the <a href="fx-trading-dashboard.html">FX trading dashboard tutorial</a> for read-only Sera consumption, or the <a href="x402-paid-api.html">x402-paid API tutorial</a> if you'd rather skip MCP entirely.</p>
+
+    </main>
+  </div>
+
+  <footer class="border-t border-white/5 py-10">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
+      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+    </div>
+  </footer>
+</body>
+</html>

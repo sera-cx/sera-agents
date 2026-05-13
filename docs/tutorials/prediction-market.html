@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prediction market on FX — Sera tutorial</title>
+  <meta name="theme-color" content="#06070A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: { ink:{950:'#06070A',900:'#0B0D12',800:'#11141B',700:'#181C26'}, chalk:{50:'#F8F8F4',100:'#EDEDE6',300:'#A4A89C',500:'#6B7180'}, accent:{400:'#7DF9C2',500:'#3DE8A0',600:'#10C77F'} }
+    }}};
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    html, body { background:#06070A; color:#F8F8F4; }
+    body { overflow-x: hidden; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+    .gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    a { color: inherit; }
+    .codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding: 16px 20px; }
+    .codeblock pre { font-size: 12.5px; line-height: 1.55; overflow-x: auto; }
+    .codeblock .filename { font-size: 11px; color:#6B7180; text-transform:uppercase; letter-spacing:.05em; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.05); margin-bottom: 12px; }
+    .prose h2 { font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; }
+    .prose h3 { font-size: 1.15rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: .5rem; color:#F8F8F4; }
+    .prose p { color:#A4A89C; line-height:1.7; margin-bottom: 1rem; }
+    .prose ul, .prose ol { color:#A4A89C; margin-bottom: 1rem; padding-left: 1.4rem; }
+    .prose li { margin-bottom: .35rem; line-height: 1.6; }
+    .prose code { font-family:'JetBrains Mono',monospace; font-size: .85em; color:#7DF9C2; background: rgba(125,249,194,.08); padding: 2px 6px; border-radius: 4px; }
+    .prose strong { color:#F8F8F4; font-weight: 600; }
+    .prose a { color:#7DF9C2; text-decoration: underline; text-underline-offset: 2px; }
+    .step-num { display:inline-flex; width:30px; height:30px; align-items:center; justify-content:center; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.2); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; margin-right: 10px; }
+    .meta-pill { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; padding:3px 10px; border-radius:999px; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.18); margin-right:6px; }
+    .sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+    .sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+    .sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+    .sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+    .callout { padding: 16px 20px; border-radius: 12px; background: rgba(125,249,194,.04); border: 1px solid rgba(125,249,194,.18); margin: 18px 0; }
+    .callout .callout-label { font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:#7DF9C2; margin-bottom: 6px; }
+    .warn { padding: 16px 20px; border-radius: 12px; background: rgba(255,180,80,.04); border: 1px solid rgba(255,180,80,.2); margin: 18px 0; }
+    .warn .callout-label { font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:#FFB450; margin-bottom: 6px; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <a href="../../" class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center"><span class="text-accent-400 font-bold text-sm">S</span></div>
+          <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+        </a>
+        <span class="text-chalk-500">/</span>
+        <a href="../" class="text-sm text-chalk-300 hover:text-chalk-50">Docs</a>
+        <span class="text-chalk-500">/</span>
+        <a href="index.html" class="text-sm text-chalk-300 hover:text-chalk-50">Tutorials</a>
+        <span class="text-chalk-500">/</span>
+        <span class="text-sm text-chalk-300">Prediction market</span>
+      </div>
+      <a href="../../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-6 grid lg:grid-cols-[240px_minmax(0,1fr)] gap-10 pt-28 pb-24">
+
+    <aside class="sidebar lg:sticky lg:top-20 self-start">
+      <div class="group-label">Get started</div>
+      <a href="../index.html">Overview</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../concepts.html">Concepts</a>
+      <div class="group-label">Build</div>
+      <a href="index.html">Tutorials</a>
+      <a href="cross-border-payment-widget.html" class="pl-5 text-[12.5px]">→ Payment widget</a>
+      <a href="fx-trading-dashboard.html" class="pl-5 text-[12.5px]">→ Trading dashboard</a>
+      <a href="prediction-market.html" class="active pl-5 text-[12.5px]">→ Prediction market</a>
+      <a href="treasury-rebalancer.html" class="pl-5 text-[12.5px]">→ Treasury rebalancer</a>
+      <a href="x402-paid-api.html" class="pl-5 text-[12.5px]">→ x402-paid API</a>
+      <a href="ai-agent.html" class="pl-5 text-[12.5px]">→ AI agent</a>
+      <a href="../recipes.html">Recipes</a>
+      <div class="group-label">Reference</div>
+      <a href="../api/">API reference (32)</a>
+    </aside>
+
+    <main class="prose max-w-3xl">
+      <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 03</div>
+      <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Prediction market on FX.</h1>
+      <p class="text-lg" style="color:#A4A89C">Binary markets like <em>"USD/JPY &gt; 158 by Friday close"</em> using Sera's reference rate as the settlement oracle. Markets settle in stablecoins; payouts route through Sera FX so winners can withdraw in whatever currency they want.</p>
+
+      <div class="my-6">
+        <span class="meta-pill">60 min</span>
+        <span class="meta-pill">Solidity</span>
+        <span class="meta-pill">Foundry / Hardhat</span>
+        <span class="meta-pill">sera.get_fx_rate</span>
+      </div>
+
+      <div class="callout">
+        <div class="callout-label">What you'll have at the end</div>
+        <p style="color:#A4A89C; margin: 0;">A deployed binary-market contract on Ethereum that resolves against Sera's reference FX rate, plus an off-chain "resolver" service that posts the final rate at expiry.</p>
+      </div>
+
+      <div class="warn">
+        <div class="callout-label">Honest framing</div>
+        <p style="color:#A4A89C; margin: 0;">Prediction markets are regulated in most jurisdictions. This tutorial shows the <em>technical</em> pattern. Treat it as infrastructure for a permitted product (internal employee market, on-chain airdrop game, sanctioned jurisdiction), not a public consumer offering without legal review.</p>
+      </div>
+
+      <h2 class="gradient-text">Architecture</h2>
+      <div class="codeblock">
+<pre><code>┌──────────────┐    ┌────────────────┐    ┌─────────────────┐
+│  User funds  │───▶│  Market contract│   │  Resolver svc   │
+│  YES or NO   │    │  (escrows USDC)│    │  (off-chain)    │
+└──────────────┘    └────────┬───────┘    └────────┬────────┘
+                             │                     │
+                             │   At expiry:        │
+                             │   ┌─────────────────┘
+                             │   │
+                             │   ▼
+                             │  sera.get_fx_rate({USD,JPY})
+                             │   │
+                             │   ▼
+                             │  resolver.postRate(rate, sig)
+                             ▼
+                    ┌─────────────────┐
+                    │  Market resolves│
+                    │  Winners claim  │
+                    │  USDC → Sera    │
+                    │  → any currency │
+                    └─────────────────┘</code></pre>
+      </div>
+
+      <h2 class="gradient-text">Steps</h2>
+
+      <h3><span class="step-num">1</span>The market contract (minimal)</h3>
+      <div class="codeblock">
+        <div class="filename">contracts/FxBinaryMarket.sol</div>
+<pre><code><span style="color:#A78BFA">// SPDX-License-Identifier: MIT</span>
+pragma solidity ^<span style="color:#7DF9C2">0.8.20</span>;
+
+<span style="color:#A78BFA">import</span> <span style="color:#7DF9C2">"@openzeppelin/contracts/token/ERC20/IERC20.sol"</span>;
+
+<span style="color:#A78BFA">contract</span> FxBinaryMarket {
+    IERC20 <span style="color:#A78BFA">public immutable</span> usdc;
+    <span style="color:#A78BFA">address</span> <span style="color:#A78BFA">public immutable</span> resolver;
+    <span style="color:#A78BFA">string</span> <span style="color:#A78BFA">public</span> question;       <span style="color:#6B7180">// "USD/JPY > 158 at 2026-05-20T16:00Z"</span>
+    <span style="color:#A78BFA">uint256</span> <span style="color:#A78BFA">public immutable</span> threshold;
+    <span style="color:#A78BFA">uint256</span> <span style="color:#A78BFA">public immutable</span> expiry;
+    <span style="color:#A78BFA">enum</span> Outcome { Pending, Yes, No }
+    Outcome <span style="color:#A78BFA">public</span> outcome;
+
+    <span style="color:#A78BFA">mapping</span>(<span style="color:#A78BFA">address</span> =&gt; <span style="color:#A78BFA">uint256</span>) <span style="color:#A78BFA">public</span> yesShares;
+    <span style="color:#A78BFA">mapping</span>(<span style="color:#A78BFA">address</span> =&gt; <span style="color:#A78BFA">uint256</span>) <span style="color:#A78BFA">public</span> noShares;
+    <span style="color:#A78BFA">uint256</span> <span style="color:#A78BFA">public</span> totalYes;
+    <span style="color:#A78BFA">uint256</span> <span style="color:#A78BFA">public</span> totalNo;
+
+    <span style="color:#A78BFA">function</span> bet(<span style="color:#A78BFA">bool</span> yes, <span style="color:#A78BFA">uint256</span> amount) <span style="color:#A78BFA">external</span> {
+        <span style="color:#A78BFA">require</span>(block.timestamp &lt; expiry, <span style="color:#7DF9C2">"closed"</span>);
+        usdc.transferFrom(msg.sender, address(<span style="color:#A78BFA">this</span>), amount);
+        <span style="color:#A78BFA">if</span> (yes) { yesShares[msg.sender] += amount; totalYes += amount; }
+        <span style="color:#A78BFA">else</span>     { noShares[msg.sender]  += amount; totalNo  += amount; }
+    }
+
+    <span style="color:#A78BFA">function</span> resolve(<span style="color:#A78BFA">uint256</span> finalRate) <span style="color:#A78BFA">external</span> {
+        <span style="color:#A78BFA">require</span>(msg.sender == resolver, <span style="color:#7DF9C2">"!resolver"</span>);
+        <span style="color:#A78BFA">require</span>(block.timestamp &gt;= expiry, <span style="color:#7DF9C2">"early"</span>);
+        <span style="color:#A78BFA">require</span>(outcome == Outcome.Pending, <span style="color:#7DF9C2">"resolved"</span>);
+        outcome = finalRate &gt; threshold ? Outcome.Yes : Outcome.No;
+    }
+
+    <span style="color:#A78BFA">function</span> claim() <span style="color:#A78BFA">external</span> {
+        <span style="color:#A78BFA">require</span>(outcome != Outcome.Pending, <span style="color:#7DF9C2">"pending"</span>);
+        <span style="color:#A78BFA">uint256</span> total = totalYes + totalNo;
+        <span style="color:#A78BFA">uint256</span> winning = outcome == Outcome.Yes ? yesShares[msg.sender] : noShares[msg.sender];
+        <span style="color:#A78BFA">uint256</span> pool = outcome == Outcome.Yes ? totalYes : totalNo;
+        <span style="color:#A78BFA">uint256</span> payout = (winning * total) / pool;
+        <span style="color:#A78BFA">if</span> (outcome == Outcome.Yes) yesShares[msg.sender] = <span style="color:#7DF9C2">0</span>;
+        <span style="color:#A78BFA">else</span> noShares[msg.sender] = <span style="color:#7DF9C2">0</span>;
+        usdc.transfer(msg.sender, payout);
+    }
+}</code></pre>
+      </div>
+
+      <h3><span class="step-num">2</span>The off-chain resolver</h3>
+      <p>A small Node service that wakes at expiry, calls <code>sera.get_fx_rate</code>, and posts the result.</p>
+      <div class="codeblock">
+        <div class="filename">resolver/index.ts</div>
+<pre><code><span style="color:#A78BFA">import</span> { spawnSeraMcp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./mcpClient'</span>;
+<span style="color:#A78BFA">import</span> { ethers } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'ethers'</span>;
+
+<span style="color:#A78BFA">const</span> sera   = spawnSeraMcp({ env: { SERA_NETWORK: <span style="color:#7DF9C2">'mainnet'</span> } });
+<span style="color:#A78BFA">const</span> wallet = <span style="color:#A78BFA">new</span> ethers.Wallet(process.env.RESOLVER_KEY!, provider);
+<span style="color:#A78BFA">const</span> market = <span style="color:#A78BFA">new</span> ethers.Contract(MARKET_ADDR, ABI, wallet);
+
+<span style="color:#A78BFA">async function</span> resolveAtExpiry() {
+  <span style="color:#A78BFA">const</span> expiry = <span style="color:#A78BFA">await</span> market.expiry();
+  <span style="color:#A78BFA">const</span> now    = Math.floor(Date.now() / <span style="color:#7DF9C2">1000</span>);
+  <span style="color:#A78BFA">if</span> (now &lt; expiry) <span style="color:#A78BFA">return</span>;
+
+  <span style="color:#A78BFA">const</span> r = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'get_fx_rate'</span>, { base: <span style="color:#7DF9C2">'USD'</span>, quote: <span style="color:#7DF9C2">'JPY'</span> });
+  <span style="color:#A78BFA">const</span> finalRate = ethers.parseUnits(r.rate.toString(), <span style="color:#7DF9C2">8</span>);
+  <span style="color:#A78BFA">await</span> market.resolve(finalRate);
+}</code></pre>
+      </div>
+
+      <h3><span class="step-num">3</span>(Better) Median over a resolution window</h3>
+      <p>A single rate read at expiry is manipulable. In production, average over a resolution window (e.g. last 30 min before expiry) using <code>sera.fx_history</code> + <code>multi_source_mid</code> as a sanity check.</p>
+      <div class="codeblock">
+<pre><code><span style="color:#A78BFA">const</span> series = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'fx_history'</span>, {
+  pair: <span style="color:#7DF9C2">'USD/JPY'</span>, hours: <span style="color:#7DF9C2">0.5</span>
+});
+<span style="color:#A78BFA">const</span> median = series.map(s =&gt; s.rate).sort()[Math.floor(series.length / <span style="color:#7DF9C2">2</span>)];
+
+<span style="color:#A78BFA">const</span> ext = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'multi_source_mid'</span>, { base: <span style="color:#7DF9C2">'USD'</span>, quote: <span style="color:#7DF9C2">'JPY'</span> });
+<span style="color:#A78BFA">if</span> (Math.abs(median - ext.median) / ext.median &gt; <span style="color:#7DF9C2">0.005</span>) {
+  <span style="color:#6B7180">// More than 50bps disagreement — pause resolution, alert humans.</span>
+  <span style="color:#A78BFA">throw new</span> Error(<span style="color:#7DF9C2">'Sera vs external mid disagree'</span>);
+}</code></pre>
+      </div>
+
+      <h3><span class="step-num">4</span>Multi-currency payouts</h3>
+      <p>Winners claim USDC from the contract. To let them withdraw in MYR, JPYC, or whatever, point them to a Sera-powered swap UI right after they claim. Use the <a href="cross-border-payment-widget.html">payment widget</a> pattern with <code>recipient = winner_address</code>.</p>
+
+      <h2 class="gradient-text">Common gotchas</h2>
+      <ul>
+        <li><strong>Single-source oracles get gamed.</strong> Always cross-check Sera's reference against <code>multi_source_mid</code> at resolution time.</li>
+        <li><strong>Resolver key custody.</strong> If the resolver wallet is compromised, attacker resolves favorably. Multi-sig, time-locks, or commit-reveal are common defenses.</li>
+        <li><strong>Decimal scale.</strong> Sera returns rates as floats. On-chain math needs fixed-point. Pick a scale (8 or 18 decimals) and stick with it.</li>
+        <li><strong>Expiry timezone.</strong> "Friday close" is meaningless without a timezone. Resolve to UTC timestamps.</li>
+      </ul>
+
+      <p class="mt-10"><strong>Next:</strong> <a href="treasury-rebalancer.html">Treasury rebalancer</a> uses Sera as state-mutation infra rather than oracle, or <a href="x402-paid-api.html">x402-paid API</a> shows how to monetize the resolver itself.</p>
+
+    </main>
+  </div>
+
+  <footer class="border-t border-white/5 py-10">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
+      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+    </div>
+  </footer>
+</body>
+</html>

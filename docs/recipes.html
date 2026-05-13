@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recipes — Sera for Agents</title>
+  <meta name="theme-color" content="#06070A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: { ink:{950:'#06070A',900:'#0B0D12',800:'#11141B',700:'#181C26'}, chalk:{50:'#F8F8F4',100:'#EDEDE6',300:'#A4A89C',500:'#6B7180'}, accent:{400:'#7DF9C2',500:'#3DE8A0',600:'#10C77F'} }
+    }}};
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    html, body { background:#06070A; color:#F8F8F4; }
+    body { overflow-x: hidden; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+    .gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    a { color: inherit; }
+    .codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding: 16px 20px; }
+    .codeblock pre { font-size: 12.5px; line-height: 1.55; overflow-x: auto; }
+    .recipe { background: rgba(11,13,18,.6); border: 1px solid rgba(255,255,255,.06); border-radius: 16px; padding: 22px; margin-bottom: 20px; }
+    .recipe h3 { font-size: 1.05rem; font-weight: 600; color:#F8F8F4; margin-bottom: 6px; }
+    .recipe .blurb { color:#A4A89C; font-size: 14px; margin-bottom: 14px; line-height: 1.55; }
+    .recipe .badge { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10.5px; padding:3px 8px; border-radius:6px; background:rgba(125,249,194,.08); color:#7DF9C2; margin-right: 6px; }
+    .sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+    .sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+    .sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+    .sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <a href="../" class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center"><span class="text-accent-400 font-bold text-sm">S</span></div>
+          <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+        </a>
+        <span class="text-chalk-500">/</span>
+        <a href="index.html" class="text-sm text-chalk-300 hover:text-chalk-50">Docs</a>
+        <span class="text-chalk-500">/</span>
+        <span class="text-sm text-chalk-300">Recipes</span>
+      </div>
+      <nav class="hidden lg:flex items-center gap-6 text-sm text-chalk-300">
+        <a href="../#paths" class="hover:text-chalk-50">Paths</a>
+        <a href="../#build" class="hover:text-chalk-50">Build</a>
+        <a href="index.html" class="text-chalk-50 font-medium">Docs</a>
+        <a href="https://github.com/Josh-sera/sera-agents" target="_blank" class="hover:text-chalk-50">GitHub</a>
+      </nav>
+      <a href="../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-6 grid lg:grid-cols-[240px_minmax(0,1fr)] gap-10 pt-28 pb-24">
+
+    <aside class="sidebar lg:sticky lg:top-20 self-start">
+      <div class="group-label">Get started</div>
+      <a href="index.html">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="concepts.html">Concepts</a>
+      <div class="group-label">Build</div>
+      <a href="tutorials/">Tutorials</a>
+      <a href="recipes.html" class="active">Recipes</a>
+      <div class="group-label">Reference</div>
+      <a href="api/">API reference (32)</a>
+      <div class="group-label">Resources</div>
+      <a href="https://github.com/Josh-sera/sera-mcp" target="_blank">sera-mcp on GitHub</a>
+      <a href="https://github.com/Josh-sera/sera-agents" target="_blank">sera-agents on GitHub</a>
+      <a href="https://docs.sera.cx" target="_blank">Sera Protocol docs</a>
+    </aside>
+
+    <main class="max-w-3xl">
+      <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Recipes</div>
+      <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Copy. Paste. Ship.</h1>
+      <p class="text-lg mb-10" style="color:#A4A89C">Ten short snippets for things you'll do constantly. All assume <code class="font-mono text-accent-400 text-sm">sera-mcp</code> is registered with the host (or imported as a Node module).</p>
+
+      <!-- 1 -->
+      <div class="recipe">
+        <span class="badge">CLI</span><span class="badge">5 lines</span>
+        <h3>1. Quote a swap and execute it</h3>
+        <p class="blurb">The canonical pattern: get a quote, sign it, execute. The MCP never sees the key.</p>
+        <div class="codeblock"><pre><code><span style="color:#6B7180">// In an MCP host (Claude Code / Cursor / your agent loop)</span>
+const q = await sera.get_quote({ from: <span style="color:#7DF9C2">'USDC'</span>, to: <span style="color:#7DF9C2">'XSGD'</span>, amount: <span style="color:#7DF9C2">1000</span> });
+const sig = await wallet.signTypedData(q.typed_data);
+const r = await sera.execute_swap({ quote_id: q.uuid, signature: sig });
+console.log(<span style="color:#7DF9C2">'trade_id:'</span>, r.trade_id);</code></pre></div>
+      </div>
+
+      <!-- 2 -->
+      <div class="recipe">
+        <span class="badge">read-only</span><span class="badge">no key</span>
+        <h3>2. Find FX deals across all 60+ pairs</h3>
+        <p class="blurb">Probes Sera, diffs against multi-source external mid, ranks by edge. Use as a cron job.</p>
+        <div class="codeblock"><pre><code>const deals = await sera.find_deals({ min_bps: <span style="color:#7DF9C2">25</span> });
+deals.forEach(d =&gt;
+  console.log(`${d.pair}: <span style="color:#7DF9C2">${d.edge_bps}bps</span> @ ${d.notional}`)
+);</code></pre></div>
+      </div>
+
+      <!-- 3 -->
+      <div class="recipe">
+        <span class="badge">CLI</span><span class="badge">cron</span>
+        <h3>3. Spread radar from a shell cron</h3>
+        <p class="blurb">Runs the triangular-arbitrage scanner across a fiat basket. Logs anything &gt; 50 bps.</p>
+        <div class="codeblock"><pre><code><span style="color:#6B7180"># crontab: every 15 min</span>
+*/15 * * * * sera spread-radar USD,SGD,MYR,EUR,GBP,JPY \
+  --min-bps 50 --json &gt;&gt; /var/log/sera-arb.log</code></pre></div>
+      </div>
+
+      <!-- 4 -->
+      <div class="recipe">
+        <span class="badge">treasury</span>
+        <h3>4. Compute multi-currency drift from target weights</h3>
+        <p class="blurb">Reads balances across all your wallets, values in USD, and emits the swaps that bring drift to zero.</p>
+        <div class="codeblock"><pre><code>const plan = await sera.rebalance_plan({
+  wallets: [<span style="color:#7DF9C2">'0xAaa...'</span>, <span style="color:#7DF9C2">'0xBbb...'</span>],
+  targets: { USDC: <span style="color:#7DF9C2">0.5</span>, EURC: <span style="color:#7DF9C2">0.3</span>, XSGD: <span style="color:#7DF9C2">0.2</span> },
+  reporting_currency: <span style="color:#7DF9C2">'USD'</span>
+});
+plan.swaps.forEach(s =&gt; console.log(s.from, <span style="color:#7DF9C2">'→'</span>, s.to, s.amount));</code></pre></div>
+      </div>
+
+      <!-- 5 -->
+      <div class="recipe">
+        <span class="badge">x402</span><span class="badge">curl</span>
+        <h3>5. Hit the x402 endpoint from curl (demo mode)</h3>
+        <p class="blurb">No wallet, no MCP — just HTTP. The 402-then-pay-then-200 dance.</p>
+        <div class="codeblock"><pre><code><span style="color:#6B7180"># 1. Get a 402 + payment_id</span>
+curl -i -X POST localhost:8402/x402/swap \
+  -H <span style="color:#7DF9C2">'Content-Type: application/json'</span> \
+  -d <span style="color:#7DF9C2">'{"from_currency":"USD","to_currency":"MYR","amount":100,"recipient":"0xVendor"}'</span>
+
+<span style="color:#6B7180"># 2. Retry with X-PAYMENT (demo mode accepts demo-auth)</span>
+curl -X POST localhost:8402/x402/swap \
+  -H <span style="color:#7DF9C2">'X-PAYMENT: &lt;PAYMENT_ID&gt;:demo-authorization'</span> \
+  -H <span style="color:#7DF9C2">'Content-Type: application/json'</span> \
+  -d <span style="color:#7DF9C2">'{"from_currency":"USD","to_currency":"MYR","amount":100,"recipient":"0xVendor"}'</span></code></pre></div>
+      </div>
+
+      <!-- 6 -->
+      <div class="recipe">
+        <span class="badge">read-only</span>
+        <h3>6. Mid-of-mids for any pair (no Sera liquidity required)</h3>
+        <p class="blurb">Median across three free FX providers. Useful as a reference for your own pricing.</p>
+        <div class="codeblock"><pre><code>const m = await sera.multi_source_mid({ base: <span style="color:#7DF9C2">'USD'</span>, quote: <span style="color:#7DF9C2">'JPY'</span> });
+console.log(<span style="color:#7DF9C2">'median:'</span>, m.median, <span style="color:#7DF9C2">'sources:'</span>, m.sources);</code></pre></div>
+      </div>
+
+      <!-- 7 -->
+      <div class="recipe">
+        <span class="badge">maker</span>
+        <h3>7. Project market-making earnings at any spread</h3>
+        <p class="blurb">Returns the full ladder — what you earn at 5/10/25/50/100/200 bps for a given pair + size.</p>
+        <div class="codeblock"><pre><code>const ladder = await sera.maker_quote_ladder({
+  pair: <span style="color:#7DF9C2">'USDT/JPYC'</span>, notional_usd: <span style="color:#7DF9C2">30000</span>
+});
+ladder.forEach(r =&gt; console.log(`${r.bps}bps → $${r.expected_earnings}/day`));</code></pre></div>
+      </div>
+
+      <!-- 8 -->
+      <div class="recipe">
+        <span class="badge">conditional</span>
+        <h3>8. Patient-quote pattern (limit watcher)</h3>
+        <p class="blurb">Sera's <code>limit_watcher</code> polls quotes within a budget; surfaces the executable swap when threshold hits.</p>
+        <div class="codeblock"><pre><code>const w = await sera.limit_watcher({
+  from: <span style="color:#7DF9C2">'USDC'</span>, to: <span style="color:#7DF9C2">'EURC'</span>, amount: <span style="color:#7DF9C2">10000</span>,
+  trigger_rate: <span style="color:#7DF9C2">0.93</span>, max_polls: <span style="color:#7DF9C2">200</span>, interval_s: <span style="color:#7DF9C2">15</span>
+});
+<span style="color:#A78BFA">if</span> (w.triggered) await sera.execute_swap({ quote_id: w.quote.uuid, signature: ... });</code></pre></div>
+      </div>
+
+      <!-- 9 -->
+      <div class="recipe">
+        <span class="badge">history</span><span class="badge">SQLite</span>
+        <h3>9. Build your own price feed by enabling history</h3>
+        <p class="blurb">Set <code>SERA_HISTORY_DB</code> and every fx_rate / quote call gets logged. Query series later.</p>
+        <div class="codeblock"><pre><code><span style="color:#6B7180"># Enable persistence (set once)</span>
+export SERA_HISTORY_DB=$HOME/.sera/history.db
+
+<span style="color:#6B7180"># After a few hours of normal use:</span>
+const series = await sera.fx_history({ pair: <span style="color:#7DF9C2">'USD/SGD'</span>, hours: <span style="color:#7DF9C2">24</span> });
+const vol    = await sera.fx_volatility({ pair: <span style="color:#7DF9C2">'USD/SGD'</span>, window_h: <span style="color:#7DF9C2">24</span> });</code></pre></div>
+      </div>
+
+      <!-- 10 -->
+      <div class="recipe">
+        <span class="badge">ops</span><span class="badge">first call</span>
+        <h3>10. Health check + policy summary</h3>
+        <p class="blurb">Always run this first if anything looks off. Returns API health, network, signer mode, persistence state.</p>
+        <div class="codeblock"><pre><code>const d = await sera.doctor();
+console.log(<span style="color:#7DF9C2">'overall_ok:'</span>, d.overall_ok);
+console.log(<span style="color:#7DF9C2">'policy:'</span>, d.policy);
+console.log(<span style="color:#7DF9C2">'history_db:'</span>, d.persistence.history_db_present);</code></pre></div>
+      </div>
+
+      <p class="mt-8 text-sm text-chalk-500">Need a recipe that's not here? <a href="https://github.com/Josh-sera/sera-agents/issues" target="_blank" class="text-accent-400 hover:underline">Open an issue.</a></p>
+    </main>
+  </div>
+
+  <footer class="border-t border-white/5 py-10">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
+      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+    </div>
+  </footer>
+</body>
+</html>

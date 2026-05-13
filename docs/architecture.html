@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Architecture — Sera for Agents</title>
+  <meta name="theme-color" content="#06070A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: { ink:{950:'#06070A',900:'#0B0D12',800:'#11141B',700:'#181C26'}, chalk:{50:'#F8F8F4',100:'#EDEDE6',300:'#A4A89C',500:'#6B7180'}, accent:{400:'#7DF9C2',500:'#3DE8A0',600:'#10C77F'} }
+    }}};
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    html, body { background:#06070A; color:#F8F8F4; }
+    body { overflow-x: hidden; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+    .gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    a { color: inherit; }
+    .codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding: 18px 22px; }
+    .codeblock pre { font-size: 12.5px; line-height: 1.55; }
+    .prose h2 { font-size: 1.75rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; }
+    .prose h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: .65rem; color:#F8F8F4; }
+    .prose p { color:#A4A89C; line-height:1.7; margin-bottom: 1rem; }
+    .prose ul { color:#A4A89C; margin-bottom: 1rem; padding-left: 1.25rem; }
+    .prose li { margin-bottom: .35rem; line-height: 1.6; }
+    .prose code { font-family:'JetBrains Mono',monospace; font-size: .85em; color:#7DF9C2; background: rgba(125,249,194,.08); padding: 2px 6px; border-radius: 4px; }
+    .prose strong { color:#F8F8F4; font-weight: 600; }
+    .prose a { color:#7DF9C2; text-decoration: underline; text-underline-offset: 2px; }
+    .sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+    .sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+    .sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+    .sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <a href="../" class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center"><span class="text-accent-400 font-bold text-sm">S</span></div>
+          <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+        </a>
+        <span class="text-chalk-500">/</span>
+        <a href="index.html" class="text-sm text-chalk-300 hover:text-chalk-50">Docs</a>
+        <span class="text-chalk-500">/</span>
+        <span class="text-sm text-chalk-300">Architecture</span>
+      </div>
+      <nav class="hidden lg:flex items-center gap-6 text-sm text-chalk-300">
+        <a href="../#paths" class="hover:text-chalk-50">Paths</a>
+        <a href="../#build" class="hover:text-chalk-50">Build</a>
+        <a href="index.html" class="text-chalk-50 font-medium">Docs</a>
+        <a href="https://github.com/Josh-sera/sera-agents" target="_blank" class="hover:text-chalk-50">GitHub</a>
+      </nav>
+      <a href="../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-6 grid lg:grid-cols-[240px_minmax(0,1fr)] gap-10 pt-28 pb-24">
+
+    <aside class="sidebar lg:sticky lg:top-20 self-start">
+      <div class="group-label">Get started</div>
+      <a href="index.html">Overview</a>
+      <a href="architecture.html" class="active">Architecture</a>
+      <a href="concepts.html">Concepts</a>
+      <div class="group-label">Build</div>
+      <a href="tutorials/">Tutorials</a>
+      <a href="recipes.html">Recipes</a>
+      <div class="group-label">Reference</div>
+      <a href="api/">API reference (32)</a>
+      <div class="group-label">Resources</div>
+      <a href="https://github.com/Josh-sera/sera-mcp" target="_blank">sera-mcp on GitHub</a>
+      <a href="https://github.com/Josh-sera/sera-agents" target="_blank">sera-agents on GitHub</a>
+      <a href="https://docs.sera.cx" target="_blank">Sera Protocol docs</a>
+    </aside>
+
+    <main class="prose max-w-3xl">
+      <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Architecture</div>
+      <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-6">How the layers compose.</h1>
+      <p class="text-lg" style="color:#A4A89C">Sera for Agents is a stack of independent layers. Pick the highest one that solves your problem; everything below it is implementation detail.</p>
+
+      <h2 class="gradient-text">The stack, top-down</h2>
+
+      <div class="codeblock my-6">
+<pre><code style="color:#A4A89C">┌─────────────────────────────────────────────────────────┐
+│  Your app / agent / dashboard / widget / cron job       │
+└─────────────────┬───────────────────────────┬───────────┘
+                  │                           │
+       ┌──────────▼──────────┐    ┌───────────▼──────────┐
+       │  MCP host           │    │  HTTP (x402)          │
+       │  Claude / Cursor /  │    │  Plain fetch / curl   │
+       │  ChatGPT / Hermes   │    │                       │
+       │  / OpenClaw / your  │    │                       │
+       │  own.               │    │                       │
+       └──────────┬──────────┘    └───────────┬──────────┘
+                  │                           │
+       ┌──────────▼──────────┐    ┌───────────▼──────────┐
+       │  sera-mcp           │    │  x402-service         │
+       │  32 tools, stdio    │    │  Express, /x402/swap  │
+       │  JSON-RPC.          │    │  402 → pay → 200      │
+       │  Policy + caps +    │    │  Wraps sera-mcp.      │
+       │  signer + dry-run.  │    │                       │
+       └──────────┬──────────┘    └───────────┬──────────┘
+                  │                           │
+                  └─────────────┬─────────────┘
+                                │
+                  ┌─────────────▼─────────────┐
+                  │  Sera REST API             │
+                  │  api.sera.cx/api/v1        │
+                  │  /tokens · /markets · /fx  │
+                  │  /quote · /execute · /...  │
+                  └─────────────┬─────────────┘
+                                │
+                  ┌─────────────▼─────────────┐
+                  │  Sera Protocol             │
+                  │  CLOB on Ethereum mainnet  │
+                  │  Maker / taker / settle    │
+                  └────────────────────────────┘
+</code></pre>
+      </div>
+
+      <h2 class="gradient-text">Layers explained</h2>
+
+      <h3>1. Sera Protocol (on-chain)</h3>
+      <p>An on-chain central limit order book for stablecoin FX, deployed on Ethereum mainnet. Makers post quotes, takers cross them, settlement is atomic. Not a DEX. Not an AMM. Think Visa, not Uniswap.</p>
+
+      <h3>2. Sera REST API (<code>api.sera.cx/api/v1</code>)</h3>
+      <p>The canonical interface to Sera Protocol state. Token registry, market catalog, FX rates, quote generation, execute. Every higher layer routes through this.</p>
+
+      <h3>3. <code>sera-mcp</code> (the MCP)</h3>
+      <p>32 tools exposed over the Model Context Protocol — stdio JSON-RPC. Wraps the REST API with policy gates, daily volume caps, dry-run kill switch, EIP-712 quote→sign→execute flow, server-derived USD notional, uuid-route_params binding. Self-contained: no SDK, no signer, no key handling.</p>
+      <p><strong>Why an MCP?</strong> Because every modern agent host (Claude, Cursor, ChatGPT, OpenClaw, Hermes, NanoClaw) speaks MCP natively. Three lines of config and your agent has 32 FX tools.</p>
+
+      <h3>4. <code>x402-service</code> (HTTP wrapper)</h3>
+      <p>A thin Express server that wraps <code>sera-mcp</code> behind the <code>x402</code> payment protocol. The calling agent pays USDC over plain HTTP, the service performs the FX swap on Sera, the recipient gets the target currency. No MCP host required, no SDK to import.</p>
+
+      <h3>5. Templates &amp; bundled agent</h3>
+      <p>Pre-wired starter projects (terminal chat, web chat, webhook responder) and a complete bundled <em>Sera Agent</em> — useful when you want one-command-to-run rather than configure-from-scratch.</p>
+
+      <h2 class="gradient-text">Two execution paths</h2>
+
+      <p>Every interaction with Sera goes through one of two paths, depending on whether the caller speaks MCP or HTTP:</p>
+
+      <h3>Path 1 — MCP (the default)</h3>
+      <ul>
+        <li>Agent host (Claude, Cursor, etc.) loads <code>sera-mcp</code> at startup.</li>
+        <li>Agent calls <code>sera.get_quote</code> — gets back a quote object with EIP-712 typed-data.</li>
+        <li>Agent's wallet client signs the typed-data (the MCP never sees the key).</li>
+        <li>Agent calls <code>sera.execute_swap</code> with the signature; sera-mcp submits to Sera REST.</li>
+        <li>On-chain settlement; agent polls <code>sera.settlement_status</code> for confirmation.</li>
+      </ul>
+
+      <h3>Path 2 — x402 (skip MCP)</h3>
+      <ul>
+        <li>Caller hits <code>POST /x402/swap</code> on the x402-service.</li>
+        <li>Server returns <code>402 Payment Required</code> + a payment_id.</li>
+        <li>Caller pays USDC (EIP-3009 transferWithAuthorization) and retries with <code>X-PAYMENT</code> header.</li>
+        <li>Server verifies the payment, then performs the FX swap on Sera using a vault wallet, then transfers the target currency to the recipient.</li>
+        <li>Returns <code>200 OK</code> with delivered amount + trade_id.</li>
+      </ul>
+
+      <h2 class="gradient-text">Trust boundaries</h2>
+
+      <h3>What the MCP <em>can</em> do</h3>
+      <ul>
+        <li>Read everything from Sera REST (rates, markets, history, deals).</li>
+        <li>Generate signed-typed-data quote objects for the agent's wallet to sign.</li>
+        <li>Submit pre-signed quotes for execution.</li>
+        <li>Apply policy gates: notional caps, recipient whitelists, dry-run-only mode.</li>
+      </ul>
+
+      <h3>What the MCP <em>cannot</em> do</h3>
+      <ul>
+        <li>Hold or read a private key (signer is always the agent's wallet client).</li>
+        <li>Move funds without an externally-signed quote.</li>
+        <li>Bypass its own policy gates from inside a tool call.</li>
+      </ul>
+
+      <h3>x402 trust model</h3>
+      <p>The x402-service runs a vault wallet that holds USDC inflows and executes the FX swap. That's a centralized custodian for the duration of the swap. Use the MCP path if you want the user's own wallet to sign every leg.</p>
+
+      <h2 class="gradient-text">Where to put your code</h2>
+
+      <ul>
+        <li><strong>An MCP plugin / agent skill</strong> — call <code>sera.*</code> tools, no extra infra needed. Cheapest, most flexible. See <a href="tutorials/ai-agent.html">AI agent tutorial</a>.</li>
+        <li><strong>A web app</strong> — call sera-mcp from your backend (spawn it as a subprocess, talk JSON-RPC over stdio) OR call <code>sera-agents/x402-service</code> over plain HTTP. See <a href="tutorials/cross-border-payment-widget.html">payment widget</a> + <a href="tutorials/fx-trading-dashboard.html">trading dashboard</a> tutorials.</li>
+        <li><strong>A smart contract</strong> — read Sera's reference rate from your contract via an oracle wrapper or call <code>get_fx_rate</code> off-chain and post it on-chain. See <a href="tutorials/prediction-market.html">prediction market tutorial</a>.</li>
+        <li><strong>A cron job</strong> — call the bundled <code>sera</code> CLI from your scheduler. See <a href="tutorials/treasury-rebalancer.html">treasury rebalancer tutorial</a>.</li>
+        <li><strong>An x402-paid API</strong> — wrap your own service in the same x402 pattern Sera uses. See <a href="tutorials/x402-paid-api.html">x402-paid API tutorial</a>.</li>
+      </ul>
+
+      <h2 class="gradient-text">Repository layout</h2>
+
+      <div class="codeblock my-6">
+<pre><code><span style="color:#7DF9C2">sera-mcp/</span>            <span style="color:#6B7180">— the MCP server itself (32 tools, CLI)</span>
+<span style="color:#7DF9C2">sera-agents/</span>
+├── <span style="color:#A4A89C">integrations/</span>     <span style="color:#6B7180">— per-host install snippets (11 hosts)</span>
+├── <span style="color:#A4A89C">templates/</span>        <span style="color:#6B7180">— chat-cli · web-chat · webhook starters</span>
+├── <span style="color:#A4A89C">sera-agent/</span>       <span style="color:#6B7180">— the bundled interactive agent</span>
+├── <span style="color:#A4A89C">x402-service/</span>     <span style="color:#6B7180">— x402 HTTP wrapper around sera-mcp</span>
+├── <span style="color:#A4A89C">x402/</span>             <span style="color:#6B7180">— EIP-3009 payment helpers</span>
+├── <span style="color:#A4A89C">examples/</span>         <span style="color:#6B7180">— minimal one-file references</span>
+└── <span style="color:#A4A89C">docs/</span>             <span style="color:#6B7180">— this site</span>
+</code></pre>
+      </div>
+
+      <p class="mt-12">Next up: <a href="concepts.html">Concepts (CLOB, MCP, x402, EIP-712)</a> · <a href="tutorials/">Pick a tutorial</a> · <a href="api/">Full API reference</a>.</p>
+
+    </main>
+  </div>
+
+  <footer class="border-t border-white/5 py-10">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
+      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+    </div>
+  </footer>
+</body>
+</html>

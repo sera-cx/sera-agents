@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FX trading dashboard — Sera tutorial</title>
+  <meta name="theme-color" content="#06070A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: { ink:{950:'#06070A',900:'#0B0D12',800:'#11141B',700:'#181C26'}, chalk:{50:'#F8F8F4',100:'#EDEDE6',300:'#A4A89C',500:'#6B7180'}, accent:{400:'#7DF9C2',500:'#3DE8A0',600:'#10C77F'} }
+    }}};
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    html, body { background:#06070A; color:#F8F8F4; }
+    body { overflow-x: hidden; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+    .gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    a { color: inherit; }
+    .codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding: 16px 20px; }
+    .codeblock pre { font-size: 12.5px; line-height: 1.55; overflow-x: auto; }
+    .codeblock .filename { font-size: 11px; color:#6B7180; text-transform:uppercase; letter-spacing:.05em; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.05); margin-bottom: 12px; }
+    .prose h2 { font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; }
+    .prose h3 { font-size: 1.15rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: .5rem; color:#F8F8F4; }
+    .prose p { color:#A4A89C; line-height:1.7; margin-bottom: 1rem; }
+    .prose ul, .prose ol { color:#A4A89C; margin-bottom: 1rem; padding-left: 1.4rem; }
+    .prose li { margin-bottom: .35rem; line-height: 1.6; }
+    .prose code { font-family:'JetBrains Mono',monospace; font-size: .85em; color:#7DF9C2; background: rgba(125,249,194,.08); padding: 2px 6px; border-radius: 4px; }
+    .prose strong { color:#F8F8F4; font-weight: 600; }
+    .prose a { color:#7DF9C2; text-decoration: underline; text-underline-offset: 2px; }
+    .step-num { display:inline-flex; width:30px; height:30px; align-items:center; justify-content:center; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.2); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; margin-right: 10px; }
+    .meta-pill { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; padding:3px 10px; border-radius:999px; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.18); margin-right:6px; }
+    .sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+    .sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+    .sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+    .sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+    .callout { padding: 16px 20px; border-radius: 12px; background: rgba(125,249,194,.04); border: 1px solid rgba(125,249,194,.18); margin: 18px 0; }
+    .callout .callout-label { font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:#7DF9C2; margin-bottom: 6px; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <a href="../../" class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center"><span class="text-accent-400 font-bold text-sm">S</span></div>
+          <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+        </a>
+        <span class="text-chalk-500">/</span>
+        <a href="../" class="text-sm text-chalk-300 hover:text-chalk-50">Docs</a>
+        <span class="text-chalk-500">/</span>
+        <a href="index.html" class="text-sm text-chalk-300 hover:text-chalk-50">Tutorials</a>
+        <span class="text-chalk-500">/</span>
+        <span class="text-sm text-chalk-300">Trading dashboard</span>
+      </div>
+      <a href="../../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-6 grid lg:grid-cols-[240px_minmax(0,1fr)] gap-10 pt-28 pb-24">
+
+    <aside class="sidebar lg:sticky lg:top-20 self-start">
+      <div class="group-label">Get started</div>
+      <a href="../index.html">Overview</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../concepts.html">Concepts</a>
+      <div class="group-label">Build</div>
+      <a href="index.html">Tutorials</a>
+      <a href="cross-border-payment-widget.html" class="pl-5 text-[12.5px]">→ Payment widget</a>
+      <a href="fx-trading-dashboard.html" class="active pl-5 text-[12.5px]">→ Trading dashboard</a>
+      <a href="prediction-market.html" class="pl-5 text-[12.5px]">→ Prediction market</a>
+      <a href="treasury-rebalancer.html" class="pl-5 text-[12.5px]">→ Treasury rebalancer</a>
+      <a href="x402-paid-api.html" class="pl-5 text-[12.5px]">→ x402-paid API</a>
+      <a href="ai-agent.html" class="pl-5 text-[12.5px]">→ AI agent</a>
+      <a href="../recipes.html">Recipes</a>
+      <div class="group-label">Reference</div>
+      <a href="../api/">API reference (32)</a>
+    </aside>
+
+    <main class="prose max-w-3xl">
+      <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 02</div>
+      <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">FX trading dashboard.</h1>
+      <p class="text-lg" style="color:#A4A89C">A live FX dashboard reading Sera's reference rates + multi-source mid + executable depth across 60+ stablecoin pairs. Read-only — no wallet, no signer, no notional commitment. Useful as an internal tool for traders, an external "data product," or a public marketing surface.</p>
+
+      <div class="my-6">
+        <span class="meta-pill">30 min</span>
+        <span class="meta-pill">Next.js / Vite</span>
+        <span class="meta-pill">no wallet</span>
+        <span class="meta-pill">find_deals · spread_radar</span>
+      </div>
+
+      <div class="callout">
+        <div class="callout-label">What you'll have at the end</div>
+        <p style="color:#A4A89C; margin: 0;">A web page showing live FX rates for any subset of Sera's pairs, with deviation-from-external-mid in basis points, sortable, refreshing every 60s. Pair this with charting (Lightweight Charts, Recharts) for a full trading dashboard.</p>
+      </div>
+
+      <h2 class="gradient-text">Prerequisites</h2>
+      <ul>
+        <li>Node 18+, any React framework</li>
+        <li><code>sera-mcp</code> running somewhere reachable from your Node backend</li>
+        <li>(Optional) <code>SERA_HISTORY_DB</code> set to enable time-series — needed for the chart panel</li>
+      </ul>
+
+      <h2 class="gradient-text">What the dashboard shows</h2>
+      <ul>
+        <li><strong>Live grid</strong> of all 60+ pairs with: Sera reference rate, multi-source external mid, deviation in bps, last update.</li>
+        <li><strong>Deals tab</strong> showing only pairs where <code>find_deals</code> returns positive edge ≥ 25 bps.</li>
+        <li><strong>Spread radar</strong> for triangular arb across a fiat basket of your choice.</li>
+        <li><strong>(Optional) Chart panel</strong> showing rolling rate history per pair when <code>SERA_HISTORY_DB</code> is enabled.</li>
+      </ul>
+
+      <h2 class="gradient-text">Steps</h2>
+
+      <h3><span class="step-num">1</span>Backend route — proxy MCP calls</h3>
+      <p>Browser fetches read-only data from your Node backend. Your backend calls the MCP. Cache responses for 60s to avoid hammering Sera.</p>
+      <div class="codeblock">
+        <div class="filename">api/sera-data.ts</div>
+<pre><code><span style="color:#A78BFA">import</span> { spawnSeraMcp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./mcpClient'</span>;
+<span style="color:#A78BFA">const</span> sera = spawnSeraMcp({ env: { SERA_NETWORK: <span style="color:#7DF9C2">'mainnet'</span> } });
+
+<span style="color:#A78BFA">const</span> cache = <span style="color:#A78BFA">new</span> Map();
+<span style="color:#A78BFA">async function</span> cached(key: string, ttlMs: number, fn: () =&gt; <span style="color:#A78BFA">Promise</span>&lt;any&gt;) {
+  <span style="color:#A78BFA">const</span> hit = cache.get(key);
+  <span style="color:#A78BFA">if</span> (hit &amp;&amp; hit.exp &gt; Date.now()) <span style="color:#A78BFA">return</span> hit.val;
+  <span style="color:#A78BFA">const</span> val = <span style="color:#A78BFA">await</span> fn();
+  cache.set(key, { val, exp: Date.now() + ttlMs });
+  <span style="color:#A78BFA">return</span> val;
+}
+
+<span style="color:#A78BFA">export async function</span> GET_grid() {
+  <span style="color:#A78BFA">return</span> cached(<span style="color:#7DF9C2">'grid'</span>, <span style="color:#7DF9C2">60_000</span>, () =&gt; sera.call(<span style="color:#7DF9C2">'find_deals'</span>, { min_bps: <span style="color:#7DF9C2">0</span> }));
+}
+<span style="color:#A78BFA">export async function</span> GET_deals() {
+  <span style="color:#A78BFA">return</span> cached(<span style="color:#7DF9C2">'deals'</span>, <span style="color:#7DF9C2">60_000</span>, () =&gt; sera.call(<span style="color:#7DF9C2">'find_deals'</span>, { min_bps: <span style="color:#7DF9C2">25</span> }));
+}
+<span style="color:#A78BFA">export async function</span> GET_radar(req) {
+  <span style="color:#A78BFA">const</span> currencies = req.query.basket.split(<span style="color:#7DF9C2">','</span>);
+  <span style="color:#A78BFA">return</span> cached(<span style="color:#7DF9C2">`r:${currencies.join(',')}`</span>, <span style="color:#7DF9C2">60_000</span>,
+    () =&gt; sera.call(<span style="color:#7DF9C2">'spread_radar'</span>, { currencies, min_bps: <span style="color:#7DF9C2">25</span> }));
+}</code></pre>
+      </div>
+
+      <h3><span class="step-num">2</span>Frontend grid component</h3>
+      <p>Sortable table. Color the deviation column by sign + magnitude. Refresh every 60s.</p>
+      <div class="codeblock">
+        <div class="filename">components/RateGrid.tsx</div>
+<pre><code><span style="color:#A78BFA">import</span> { useEffect, useState } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'react'</span>;
+
+<span style="color:#A78BFA">export function</span> RateGrid() {
+  <span style="color:#A78BFA">const</span> [rows, setRows] = useState&lt;any[]&gt;([]);
+  useEffect(() =&gt; {
+    <span style="color:#A78BFA">const</span> tick = <span style="color:#A78BFA">async</span> () =&gt; {
+      <span style="color:#A78BFA">const</span> r = <span style="color:#A78BFA">await</span> fetch(<span style="color:#7DF9C2">'/api/grid'</span>).then(r =&gt; r.json());
+      setRows(r.deals.sort((a, b) =&gt; b.edge_bps - a.edge_bps));
+    };
+    tick();
+    <span style="color:#A78BFA">const</span> id = setInterval(tick, <span style="color:#7DF9C2">60_000</span>);
+    <span style="color:#A78BFA">return</span> () =&gt; clearInterval(id);
+  }, []);
+
+  <span style="color:#A78BFA">return</span> (
+    &lt;table&gt;
+      &lt;thead&gt;&lt;tr&gt;
+        &lt;th&gt;Pair&lt;/th&gt;&lt;th&gt;Sera&lt;/th&gt;&lt;th&gt;External mid&lt;/th&gt;&lt;th&gt;Δ bps&lt;/th&gt;
+      &lt;/tr&gt;&lt;/thead&gt;
+      &lt;tbody&gt;
+        {rows.map(r =&gt; (
+          &lt;tr key={r.pair}&gt;
+            &lt;td&gt;{r.pair}&lt;/td&gt;
+            &lt;td&gt;{r.sera_rate}&lt;/td&gt;
+            &lt;td&gt;{r.external_mid}&lt;/td&gt;
+            &lt;td style={{color: r.edge_bps &gt; 0 ? <span style="color:#7DF9C2">'#3DE8A0'</span> : <span style="color:#7DF9C2">'#FF6B6B'</span>}}&gt;
+              {r.edge_bps.toFixed(<span style="color:#7DF9C2">1</span>)}
+            &lt;/td&gt;
+          &lt;/tr&gt;
+        ))}
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  );
+}</code></pre>
+      </div>
+
+      <h3><span class="step-num">3</span>Spread radar tab — triangular arb scanner</h3>
+      <div class="codeblock">
+<pre><code><span style="color:#A78BFA">async function</span> loadRadar(basket: string[]) {
+  <span style="color:#A78BFA">const</span> r = <span style="color:#A78BFA">await</span> fetch(<span style="color:#7DF9C2">`/api/radar?basket=${basket.join(',')}`</span>).then(r =&gt; r.json());
+  <span style="color:#A78BFA">return</span> r.triangles;  <span style="color:#6B7180">// [{ a, b, c, edge_bps, direction }, ...]</span>
+}</code></pre>
+      </div>
+      <p>Visualize triangles as arrows on a 2D layout, or just list them sorted by <code>edge_bps</code>. Anything &gt;100 bps is suspicious — verify with a fresh probe.</p>
+
+      <h3><span class="step-num">4</span>(Optional) Add a chart panel</h3>
+      <p>If you set <code>SERA_HISTORY_DB</code> on the MCP, every <code>fx_rate</code> call gets logged. After a few hours of dashboard runtime, you can plot <code>sera.fx_history({ pair, hours })</code> series with any chart library.</p>
+      <div class="codeblock">
+<pre><code><span style="color:#A78BFA">const</span> series = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'fx_history'</span>, { pair: <span style="color:#7DF9C2">'USD/JPY'</span>, hours: <span style="color:#7DF9C2">24</span> });
+<span style="color:#6B7180">// [{ ts, rate }, ...]</span></code></pre>
+      </div>
+
+      <h3><span class="step-num">5</span>Deploy</h3>
+      <p>This runs anywhere — Vercel, Cloudflare Pages, Railway. The only gotcha is your backend needs to spawn <code>sera-mcp</code> as a long-lived process. On serverless platforms, run sera-mcp as a separate service (Fly.io, Render, or a tiny VPS) and have your serverless functions call it over a private RPC.</p>
+
+      <h2 class="gradient-text">Common gotchas</h2>
+      <ul>
+        <li><strong>Cache properly.</strong> Calling <code>find_deals</code> on every page load will make Sera unhappy. 60s cache is cheap.</li>
+        <li><strong>External-mid sources are rate-limited.</strong> Frankfurter and friends throttle. The <code>multi_source_mid</code> tool already deals with this; don't bypass it.</li>
+        <li><strong>Pairs change.</strong> Sera adds and removes pairs. Don't hardcode the universe — read it fresh from <code>get_markets</code> or <code>list_currencies</code>.</li>
+      </ul>
+
+      <p class="mt-10"><strong>Next:</strong> <a href="prediction-market.html">Prediction market on FX</a> uses Sera's reference rate as an oracle, or <a href="treasury-rebalancer.html">treasury rebalancer</a> for the same data feeding a real action.</p>
+
+    </main>
+  </div>
+
+  <footer class="border-t border-white/5 py-10">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
+      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+    </div>
+  </footer>
+</body>
+</html>

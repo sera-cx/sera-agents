@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Docs — Sera for Agents</title>
+  <meta name="description" content="Complete docs for Sera for Agents: tutorials, API reference, recipes, architecture, and concepts." />
+  <meta name="theme-color" content="#06070A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: {
+        ink:   { 950:'#06070A', 900:'#0B0D12', 800:'#11141B', 700:'#181C26' },
+        chalk: { 50:'#F8F8F4', 100:'#EDEDE6', 300:'#A4A89C', 500:'#6B7180' },
+        accent:{ 400:'#7DF9C2', 500:'#3DE8A0', 600:'#10C77F' }
+      }
+    }}};
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    html, body { background:#06070A; color:#F8F8F4; }
+    body { overflow-x: hidden; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+    .gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    .ring-soft-hover:hover { box-shadow: inset 0 0 0 1px rgba(125,249,194,.4), 0 0 60px -10px rgba(61,232,160,.2); transform: translateY(-2px); }
+    .ring-soft-hover { transition: transform .18s ease, box-shadow .18s ease; }
+    .bento { transition: all .2s ease; }
+    .bento:hover { background: rgba(11,13,18,.85); border-color: rgba(125,249,194,.2); }
+    a { color: inherit; }
+    .codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:12px; }
+    .codeblock pre { font-size: 13px; }
+
+    .sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+    .sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+    .sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+    .sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+
+    .num-badge { width:28px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.2); }
+    .cost-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-family:'JetBrains Mono',monospace; font-size:11px; background:rgba(61,232,160,.08); color:#7DF9C2; border:1px solid rgba(61,232,160,.18); }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <!-- ============== TOP NAV ============== -->
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <a href="../" class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center">
+            <span class="text-accent-400 font-bold text-sm">S</span>
+          </div>
+          <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+        </a>
+        <span class="text-chalk-500">/</span>
+        <span class="text-sm text-chalk-300">Docs</span>
+      </div>
+
+      <nav class="hidden lg:flex items-center gap-6 text-sm text-chalk-300">
+        <a href="../#paths" class="hover:text-chalk-50">Paths</a>
+        <a href="../#build" class="hover:text-chalk-50">Build</a>
+        <a href="../#tools" class="hover:text-chalk-50">Tools</a>
+        <a href="tutorials/" class="text-chalk-50 font-medium">Docs</a>
+        <a href="https://github.com/Josh-sera/sera-agents" target="_blank" rel="noopener" class="hover:text-chalk-50">GitHub</a>
+      </nav>
+
+      <a href="../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+    </div>
+  </header>
+
+  <!-- ============== HERO ============== -->
+  <section class="pt-32 pb-12 max-w-7xl mx-auto px-5 lg:px-6">
+    <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Documentation</div>
+    <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight gradient-text leading-tight max-w-3xl">
+      Build anything that needs<br/><span class="accent-text">FX or settlement.</span>
+    </h1>
+    <p class="mt-5 text-lg text-chalk-300 max-w-2xl">
+      Tutorials, API reference, copy-paste recipes, architectural notes, and core concepts. Sera as infrastructure — for agents, payment widgets, trading dashboards, prediction markets, treasury tools, and x402-paid services.
+    </p>
+  </section>
+
+  <!-- ============== TWO-COLUMN: SIDEBAR + MAIN ============== -->
+  <div class="max-w-7xl mx-auto px-5 lg:px-6 grid lg:grid-cols-[240px_minmax(0,1fr)] gap-10 pb-24">
+
+    <!-- Sidebar (sticky on desktop) -->
+    <aside class="sidebar lg:sticky lg:top-20 self-start">
+      <div class="group-label">Get started</div>
+      <a href="index.html" class="active">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="concepts.html">Concepts</a>
+
+      <div class="group-label">Build</div>
+      <a href="tutorials/">Tutorials</a>
+      <a href="tutorials/cross-border-payment-widget.html" class="pl-5 text-[12.5px]">→ Payment widget</a>
+      <a href="tutorials/fx-trading-dashboard.html" class="pl-5 text-[12.5px]">→ Trading dashboard</a>
+      <a href="tutorials/prediction-market.html" class="pl-5 text-[12.5px]">→ Prediction market</a>
+      <a href="tutorials/treasury-rebalancer.html" class="pl-5 text-[12.5px]">→ Treasury rebalancer</a>
+      <a href="tutorials/x402-paid-api.html" class="pl-5 text-[12.5px]">→ x402-paid API</a>
+      <a href="tutorials/ai-agent.html" class="pl-5 text-[12.5px]">→ AI agent</a>
+      <a href="recipes.html">Recipes</a>
+
+      <div class="group-label">Reference</div>
+      <a href="api/">API reference (32)</a>
+
+      <div class="group-label">Resources</div>
+      <a href="https://github.com/Josh-sera/sera-mcp" target="_blank">sera-mcp on GitHub</a>
+      <a href="https://github.com/Josh-sera/sera-agents" target="_blank">sera-agents on GitHub</a>
+      <a href="https://docs.sera.cx" target="_blank">Sera Protocol docs</a>
+    </aside>
+
+    <!-- Main -->
+    <main class="space-y-12">
+
+      <!-- Quickstart row -->
+      <section>
+        <h2 class="text-2xl font-bold gradient-text mb-5">Quickstart</h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <a href="tutorials/" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-2xl block group">
+            <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-2">15 min</div>
+            <h3 class="text-lg font-semibold mb-1 group-hover:text-accent-400 transition">Pick a tutorial</h3>
+            <p class="text-sm text-chalk-300">Six step-by-step builds. Each ships a working repo + reference deployment.</p>
+          </a>
+          <a href="api/" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-2xl block group">
+            <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-2">32 tools</div>
+            <h3 class="text-lg font-semibold mb-1 group-hover:text-accent-400 transition">Browse the API reference</h3>
+            <p class="text-sm text-chalk-300">Every MCP tool with method signature, params, and response shape.</p>
+          </a>
+        </div>
+      </section>
+
+      <!-- Tutorials grid -->
+      <section>
+        <div class="flex items-end justify-between mb-5">
+          <h2 class="text-2xl font-bold gradient-text">Tutorials</h2>
+          <a href="tutorials/" class="text-sm text-accent-400 hover:underline">All tutorials →</a>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <a href="tutorials/cross-border-payment-widget.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="flex items-center justify-between mb-3"><span class="num-badge">01</span><span class="cost-pill"><span style="text-decoration:line-through;color:#6B7180">$87</span> $2.50</span></div>
+            <div class="font-semibold group-hover:text-accent-400 transition">Cross-border payment widget</div>
+            <div class="text-xs text-chalk-500 mt-1">React · sera.pay_invoice · 25 min</div>
+          </a>
+          <a href="tutorials/fx-trading-dashboard.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="flex items-center justify-between mb-3"><span class="num-badge">02</span><span class="cost-pill">read-only</span></div>
+            <div class="font-semibold group-hover:text-accent-400 transition">FX trading dashboard</div>
+            <div class="text-xs text-chalk-500 mt-1">Next.js · find_deals · 30 min</div>
+          </a>
+          <a href="tutorials/prediction-market.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="flex items-center justify-between mb-3"><span class="num-badge">03</span><span class="cost-pill">on-chain</span></div>
+            <div class="font-semibold group-hover:text-accent-400 transition">Prediction market on FX</div>
+            <div class="text-xs text-chalk-500 mt-1">Solidity · get_fx_rate · 60 min</div>
+          </a>
+          <a href="tutorials/treasury-rebalancer.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="flex items-center justify-between mb-3"><span class="num-badge">04</span><span class="cost-pill">cron</span></div>
+            <div class="font-semibold group-hover:text-accent-400 transition">Treasury rebalancer</div>
+            <div class="text-xs text-chalk-500 mt-1">Node · rebalance_plan · 20 min</div>
+          </a>
+          <a href="tutorials/x402-paid-api.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="flex items-center justify-between mb-3"><span class="num-badge">05</span><span class="cost-pill">$0.001/call</span></div>
+            <div class="font-semibold group-hover:text-accent-400 transition">x402-paid API</div>
+            <div class="text-xs text-chalk-500 mt-1">Express · x402 · 25 min</div>
+          </a>
+          <a href="tutorials/ai-agent.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="flex items-center justify-between mb-3"><span class="num-badge">06</span><span class="cost-pill">15-min install</span></div>
+            <div class="font-semibold group-hover:text-accent-400 transition">AI agent (any host)</div>
+            <div class="text-xs text-chalk-500 mt-1">MCP · Claude/GPT · 15 min</div>
+          </a>
+        </div>
+      </section>
+
+      <!-- Other docs -->
+      <section>
+        <h2 class="text-2xl font-bold gradient-text mb-5">Reference</h2>
+        <div class="grid sm:grid-cols-3 gap-3">
+          <a href="api/" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="font-semibold group-hover:text-accent-400 transition">API reference</div>
+            <div class="text-xs text-chalk-500 mt-1">All 32 tools · params · responses</div>
+          </a>
+          <a href="recipes.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="font-semibold group-hover:text-accent-400 transition">Recipes</div>
+            <div class="text-xs text-chalk-500 mt-1">10-line copy-paste snippets</div>
+          </a>
+          <a href="concepts.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="font-semibold group-hover:text-accent-400 transition">Concepts</div>
+            <div class="text-xs text-chalk-500 mt-1">CLOB · MCP · x402 · EIP-712</div>
+          </a>
+          <a href="architecture.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="font-semibold group-hover:text-accent-400 transition">Architecture</div>
+            <div class="text-xs text-chalk-500 mt-1">How the layers compose</div>
+          </a>
+          <a href="../#hosts" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="font-semibold group-hover:text-accent-400 transition">Compatible hosts</div>
+            <div class="text-xs text-chalk-500 mt-1">11 agent stacks · MCP-compatible</div>
+          </a>
+          <a href="../#x402" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
+            <div class="font-semibold group-hover:text-accent-400 transition">x402 endpoint</div>
+            <div class="text-xs text-chalk-500 mt-1">HTTP-only path, no MCP</div>
+          </a>
+        </div>
+      </section>
+
+      <!-- 5-line install -->
+      <section>
+        <h2 class="text-2xl font-bold gradient-text mb-5">Install in five lines</h2>
+        <div class="codeblock p-5">
+          <pre class="leading-relaxed overflow-x-auto"><code><span style="color:#6B7180"># Get the MCP, build, register with Claude Code</span>
+<span style="color:#7DF9C2">git clone</span> https://github.com/Josh-sera/sera-mcp
+<span style="color:#7DF9C2">cd</span> sera-mcp &amp;&amp; <span style="color:#7DF9C2">npm install &amp;&amp; npm run build</span>
+<span style="color:#7DF9C2">claude mcp add</span> sera --scope user --env SERA_NETWORK=mainnet -- node $(pwd)/dist/index.js
+<span style="color:#A4A89C">Call sera.doctor</span>   <span style="color:#6B7180"># expect overall_ok: true</span></code></pre>
+        </div>
+        <p class="mt-3 text-sm text-chalk-500">Other hosts (Cursor, ChatGPT, OpenClaw, Hermes, NanoClaw): see <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations" target="_blank" class="text-accent-400 hover:underline">integrations/</a>.</p>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-white/5 py-10">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
+      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+    </div>
+  </footer>
+</body>
+</html>

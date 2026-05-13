@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>API reference — Sera for Agents</title>
+  <meta name="theme-color" content="#06070A" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: { ink:{950:'#06070A',900:'#0B0D12',800:'#11141B',700:'#181C26'}, chalk:{50:'#F8F8F4',100:'#EDEDE6',300:'#A4A89C',500:'#6B7180'}, accent:{400:'#7DF9C2',500:'#3DE8A0',600:'#10C77F'} }
+    }}};
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+    html, body { background:#06070A; color:#F8F8F4; }
+    body { overflow-x: hidden; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+    .gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    a { color: inherit; }
+    .codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:10px; padding: 14px 18px; }
+    .codeblock pre { font-size: 12.5px; line-height: 1.55; overflow-x: auto; }
+    .tool { background: rgba(11,13,18,.6); border: 1px solid rgba(255,255,255,.06); border-radius: 14px; padding: 22px; margin-bottom: 14px; }
+    .tool h3 { font-family:'JetBrains Mono',monospace; font-size: 1.05rem; color:#7DF9C2; font-weight:600; margin-bottom: 8px; }
+    .tool p.summary { color:#A4A89C; font-size: 14px; margin-bottom: 14px; line-height: 1.55; }
+    .tool .label { font-family:'JetBrains Mono',monospace; font-size: 10.5px; text-transform:uppercase; letter-spacing:.06em; color:#6B7180; margin: 12px 0 6px; }
+    .params { font-size: 13px; color:#A4A89C; }
+    .params li { padding: 3px 0; line-height: 1.55; }
+    .params code { font-family:'JetBrains Mono',monospace; color:#7DF9C2; background: rgba(125,249,194,.06); padding: 1px 6px; border-radius: 4px; }
+    .badge-req { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; color:#3DE8A0; background:rgba(61,232,160,.1); padding:1px 6px; border-radius:4px; margin-left:6px; }
+    .badge-opt { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; color:#6B7180; background:rgba(255,255,255,.04); padding:1px 6px; border-radius:4px; margin-left:6px; }
+    .group-header { display: flex; align-items:center; gap: 12px; margin: 36px 0 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .group-header .num { font-family:'JetBrains Mono',monospace; font-size: 11px; color:#6B7180; text-transform: uppercase; letter-spacing: .08em; }
+    .group-header h2 { font-size: 1.5rem; font-weight: 700; color:#F8F8F4; }
+    .sidebar a { display:block; padding:5px 10px; border-radius:5px; font-size:13px; color:#A4A89C; transition: all .12s; }
+    .sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+    .sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+    .sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+    .sidebar a.tool-link { padding-left: 18px; font-family:'JetBrains Mono',monospace; font-size:11.5px; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <a href="../../" class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-md bg-accent-500/10 border border-accent-500/40 flex items-center justify-center"><span class="text-accent-400 font-bold text-sm">S</span></div>
+          <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+        </a>
+        <span class="text-chalk-500">/</span>
+        <a href="../" class="text-sm text-chalk-300 hover:text-chalk-50">Docs</a>
+        <span class="text-chalk-500">/</span>
+        <span class="text-sm text-chalk-300">API reference</span>
+      </div>
+      <nav class="hidden lg:flex items-center gap-6 text-sm text-chalk-300">
+        <a href="../../#paths" class="hover:text-chalk-50">Paths</a>
+        <a href="../../#build" class="hover:text-chalk-50">Build</a>
+        <a href="../" class="text-chalk-50 font-medium">Docs</a>
+        <a href="https://github.com/Josh-sera/sera-mcp" target="_blank" class="hover:text-chalk-50">GitHub</a>
+      </nav>
+      <a href="../../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-6 grid lg:grid-cols-[260px_minmax(0,1fr)] gap-10 pt-28 pb-24">
+
+    <aside class="sidebar lg:sticky lg:top-20 self-start max-h-[calc(100vh-110px)] overflow-y-auto pr-2">
+      <div class="group-label">Get started</div>
+      <a href="../index.html">Overview</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../concepts.html">Concepts</a>
+      <div class="group-label">Build</div>
+      <a href="../tutorials/">Tutorials</a>
+      <a href="../recipes.html">Recipes</a>
+      <div class="group-label">Reference</div>
+      <a href="index.html" class="active">API reference</a>
+      <a href="#discovery" class="tool-link">Discovery (2)</a>
+      <a href="#pricing" class="tool-link">Pricing &amp; analytics (4)</a>
+      <a href="#liquidity" class="tool-link">Liquidity probing (5)</a>
+      <a href="#quote-execute" class="tool-link">Quote &amp; execute (7)</a>
+      <a href="#maker" class="tool-link">Maker (1)</a>
+      <a href="#treasury" class="tool-link">Treasury (5)</a>
+      <a href="#settlement" class="tool-link">Settlement (1)</a>
+      <a href="#history" class="tool-link">History (3)</a>
+      <a href="#admin" class="tool-link">Admin (1)</a>
+      <a href="#resources" class="tool-link">Resources &amp; prompts</a>
+    </aside>
+
+    <main class="max-w-3xl">
+      <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Reference</div>
+      <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">API reference.</h1>
+      <p class="text-lg mb-2" style="color:#A4A89C">All 32 tools exposed by <code class="font-mono text-accent-400 text-base">sera-mcp</code>, organized by category. Every tool is callable from any MCP host (Claude, Cursor, ChatGPT, OpenAI Agents SDK, etc.) and from the bundled <code class="font-mono text-accent-400 text-base">sera</code> CLI.</p>
+      <p class="text-sm" style="color:#6B7180">Schema source-of-truth: <code class="font-mono text-accent-400 text-xs">sera-mcp/dist/index.js</code> — these signatures are kept in sync with the running MCP. For Sera Protocol's underlying REST endpoints, see <a href="https://docs.sera.cx" target="_blank" class="text-accent-400 hover:underline">docs.sera.cx</a>.</p>
+
+      <!-- ============ DISCOVERY ============ -->
+      <div id="discovery" class="group-header">
+        <span class="num">01</span><h2>Discovery</h2>
+      </div>
+
+      <div class="tool" id="list_currencies">
+        <h3>sera.list_currencies</h3>
+        <p class="summary">Live registry of supported stablecoins. Pulled from Sera's <code>/tokens</code> endpoint, cached 5 min.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>chain_id</code> <span class="badge-opt">opt</span> — filter to one chain (default: all)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ tokens: [{ symbol, address, decimals, chain_id, fiat_code }] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="get_markets">
+        <h3>sera.get_markets</h3>
+        <p class="summary">Catalog of trading pairs (780+ active). Existence ≠ tradeable now — pair with <code>scan_markets</code> for live quotability.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>base</code> <span class="badge-opt">opt</span> — filter to pairs starting with this token</li>
+          <li><code>quote</code> <span class="badge-opt">opt</span> — filter to pairs ending with this token</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ markets: [{ pair, base, quote, market_id, status }] }</code></pre></div>
+      </div>
+
+      <!-- ============ PRICING ============ -->
+      <div id="pricing" class="group-header">
+        <span class="num">02</span><h2>Pricing &amp; analytics</h2>
+      </div>
+
+      <div class="tool" id="get_fx_rate">
+        <h3>sera.get_fx_rate</h3>
+        <p class="summary">Sera's reference FX rate for a fiat pair. Cheap, cached, no liquidity required.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>base</code> <span class="badge-req">req</span> — base fiat (e.g. <code>'USD'</code>)</li>
+          <li><code>quote</code> <span class="badge-req">req</span> — quote fiat (e.g. <code>'JPY'</code>)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ pair, rate, source, fetched_at, change_24h_pct }</code></pre></div>
+      </div>
+
+      <div class="tool" id="compare_to_external_fx">
+        <h3>sera.compare_to_external_fx</h3>
+        <p class="summary">Diffs Sera's reference rate against Frankfurter (ECB) — surfaces bias.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>base</code> <span class="badge-req">req</span> · <code>quote</code> <span class="badge-req">req</span></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ sera_rate, external_rate, deviation_bps, external_source }</code></pre></div>
+      </div>
+
+      <div class="tool" id="multi_source_mid">
+        <h3>sera.multi_source_mid</h3>
+        <p class="summary">Median across 3 free FX providers. Use as your truth-source for "what's mid really."</p>
+        <div class="label">Params</div>
+        <ul class="params"><li><code>base</code> <span class="badge-req">req</span> · <code>quote</code> <span class="badge-req">req</span></li></ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ median, sources: [{ name, rate }], spread_bps }</code></pre></div>
+      </div>
+
+      <div class="tool" id="spread_radar">
+        <h3>sera.spread_radar</h3>
+        <p class="summary">Triangular-arbitrage scan across a fiat basket. Round-trip product across (A,B,C) should equal 1.0; deviation in bps is implied edge. Runs without any liquidity.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>currencies</code> <span class="badge-req">req</span> — array of 3+ fiat codes</li>
+          <li><code>min_bps</code> <span class="badge-opt">opt</span> — surface only deviations &gt; this (default 50)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ triangles: [{ a, b, c, edge_bps, direction }] }</code></pre></div>
+      </div>
+
+      <!-- ============ LIQUIDITY ============ -->
+      <div id="liquidity" class="group-header">
+        <span class="num">03</span><h2>Liquidity probing</h2>
+      </div>
+
+      <div class="tool" id="scan_markets">
+        <h3>sera.scan_markets</h3>
+        <p class="summary">Probes every market in parallel for executable quotes at a probe size. Surfaces what's actually quotable now.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>probe_notional</code> <span class="badge-opt">opt</span> — default $1,000</li>
+          <li><code>limit</code> <span class="badge-opt">opt</span> — max markets to probe (default 100)</li>
+        </ul>
+      </div>
+
+      <div class="tool" id="find_deals">
+        <h3>sera.find_deals</h3>
+        <p class="summary">The headline analytical tool. Probes markets, diffs each against external mid, ranks the deals.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>min_bps</code> <span class="badge-opt">opt</span> — minimum edge (default 25)</li>
+          <li><code>notional_usd</code> <span class="badge-opt">opt</span> — probe size (default $1k)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ deals: [{ pair, edge_bps, sera_rate, external_mid, notional }] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="probe_depth">
+        <h3>sera.probe_depth</h3>
+        <p class="summary">Characterizes price impact at a size ladder for a single pair.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>pair</code> <span class="badge-req">req</span></li>
+          <li><code>sizes</code> <span class="badge-opt">opt</span> — default <code>[1k, 10k, 50k, 100k]</code></li>
+        </ul>
+      </div>
+
+      <div class="tool" id="round_trip_cost">
+        <h3>sera.round_trip_cost</h3>
+        <p class="summary">Cost of going A→B→A at a given size. Reveals the maker hedge floor for a pair.</p>
+      </div>
+
+      <div class="tool" id="infer_book">
+        <h3>sera.infer_book</h3>
+        <p class="summary">Reconstructs a synthetic order book Sera doesn't publish, by binary-searching executable sizes.</p>
+      </div>
+
+      <!-- ============ QUOTE & EXECUTE ============ -->
+      <div id="quote-execute" class="group-header">
+        <span class="num">04</span><h2>Quote &amp; execute</h2>
+      </div>
+
+      <div class="tool" id="get_quote">
+        <h3>sera.get_quote</h3>
+        <p class="summary">Single-use quote + EIP-712 typed data ready for the wallet to sign. Pass <code>simulate:true</code> to probe with no wallet.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> — source token symbol</li>
+          <li><code>to</code> <span class="badge-req">req</span> — target token symbol</li>
+          <li><code>amount</code> <span class="badge-req">req</span> — in <code>from</code>-token units</li>
+          <li><code>simulate</code> <span class="badge-opt">opt</span> — read-only probe (default false)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ uuid, typed_data, expected_out, expiry, route_params }</code></pre></div>
+      </div>
+
+      <div class="tool" id="prepare_swap">
+        <h3>sera.prepare_swap</h3>
+        <p class="summary">Returns the unsigned route_params + signing payload — for advanced flows that want to inspect before signing.</p>
+      </div>
+
+      <div class="tool" id="execute_swap">
+        <h3>sera.execute_swap</h3>
+        <p class="summary">Submits a signed quote. Enforces uuid binding + server-derived USD notional caps.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>quote_id</code> <span class="badge-req">req</span> — uuid from <code>get_quote</code></li>
+          <li><code>signature</code> <span class="badge-req">req</span> — EIP-712 signature</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ trade_id, tx_hash, delivered, status }</code></pre></div>
+      </div>
+
+      <div class="tool" id="convert_and_send">
+        <h3>sera.convert_and_send</h3>
+        <p class="summary">Quote-sign-execute-transfer in one tool call. Recipient gets the target asset directly.</p>
+      </div>
+
+      <div class="tool" id="quote_recipient_amount">
+        <h3>sera.quote_recipient_amount</h3>
+        <p class="summary">"How much source to deliver exactly N of target?" — solves the recipient-amount problem.</p>
+      </div>
+
+      <div class="tool" id="find_cheapest_settlement_path">
+        <h3>sera.find_cheapest_settlement_path</h3>
+        <p class="summary">If multiple source assets could fund a target payout, returns the cheapest by all-in cost.</p>
+      </div>
+
+      <div class="tool" id="limit_watcher">
+        <h3>sera.limit_watcher</h3>
+        <p class="summary">Patient-quote pattern: polls until target rate hits or budget runs out. Returns a ready-to-execute quote.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> · <code>to</code> · <code>amount</code> <span class="badge-req">req</span></li>
+          <li><code>trigger_rate</code> <span class="badge-req">req</span> — execute when rate ≥ (or ≤) this</li>
+          <li><code>max_polls</code> <span class="badge-opt">opt</span> · <code>interval_s</code> <span class="badge-opt">opt</span></li>
+        </ul>
+      </div>
+
+      <!-- ============ MAKER ============ -->
+      <div id="maker" class="group-header">
+        <span class="num">05</span><h2>Maker</h2>
+      </div>
+
+      <div class="tool" id="maker_quote_ladder">
+        <h3>sera.maker_quote_ladder</h3>
+        <p class="summary">Spread-ladder calculator. Returns earnings at 5/10/15/25/50/100/200 bps for a pair + size. Mid auto-fetched from multi-source median by default.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>pair</code> <span class="badge-req">req</span></li>
+          <li><code>notional_usd</code> <span class="badge-req">req</span></li>
+          <li><code>mid</code> <span class="badge-opt">opt</span> — override the mid</li>
+        </ul>
+      </div>
+
+      <!-- ============ TREASURY ============ -->
+      <div id="treasury" class="group-header">
+        <span class="num">06</span><h2>Treasury</h2>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Requires SERA_API_KEY</span>
+      </div>
+
+      <div class="tool" id="get_balances">
+        <h3>sera.get_balances</h3>
+        <p class="summary">Token balances across N wallets, in raw units.</p>
+      </div>
+
+      <div class="tool" id="treasury_value">
+        <h3>sera.treasury_value</h3>
+        <p class="summary">Total value across wallets in any reporting currency. Uses Sera's reference rate for FX conversions.</p>
+      </div>
+
+      <div class="tool" id="exposure_report">
+        <h3>sera.exposure_report</h3>
+        <p class="summary">Currency exposure breakdown. Shows what % of treasury sits in each fiat denomination.</p>
+      </div>
+
+      <div class="tool" id="rebalance_plan">
+        <h3>sera.rebalance_plan</h3>
+        <p class="summary">Computes drift from target weights, emits the swap plan that brings drift to zero. Read-only — does not execute.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>wallets</code> <span class="badge-req">req</span> — array of addresses</li>
+          <li><code>targets</code> <span class="badge-req">req</span> — <code>{ USDC: 0.5, EURC: 0.3, ... }</code></li>
+          <li><code>reporting_currency</code> <span class="badge-opt">opt</span> — default USD</li>
+        </ul>
+      </div>
+
+      <div class="tool" id="pay_invoice">
+        <h3>sera.pay_invoice</h3>
+        <p class="summary">"I owe X in currency Y, what's the cheapest source asset?" Identifies cheapest source, generates quote, returns ready-to-sign Intent.</p>
+      </div>
+
+      <!-- ============ SETTLEMENT ============ -->
+      <div id="settlement" class="group-header">
+        <span class="num">07</span><h2>Settlement</h2>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Requires SERA_API_KEY</span>
+      </div>
+
+      <div class="tool" id="settlement_status">
+        <h3>sera.settlement_status</h3>
+        <p class="summary">Query Sera's <code>/orders</code> for trade history or a specific trade. Filter by <code>trade_id</code>, <code>uuid</code>, or <code>owner_address</code>.</p>
+      </div>
+
+      <!-- ============ HISTORY ============ -->
+      <div id="history" class="group-header">
+        <span class="num">08</span><h2>History</h2>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Requires SERA_HISTORY_DB</span>
+      </div>
+
+      <div class="tool" id="fx_history">
+        <h3>sera.fx_history</h3>
+        <p class="summary">Time-series of fx_rate / quote results that this MCP install has logged. Sera doesn't publish OHLC; this turns your install into its own price feed.</p>
+      </div>
+
+      <div class="tool" id="fx_volatility">
+        <h3>sera.fx_volatility</h3>
+        <p class="summary">Annualized volatility computed over a window from logged history.</p>
+      </div>
+
+      <div class="tool" id="corridor_pnl">
+        <h3>sera.corridor_pnl</h3>
+        <p class="summary">Mark-to-market PnL on a notional position in a pair, using logged history as the price series.</p>
+      </div>
+
+      <!-- ============ ADMIN ============ -->
+      <div id="admin" class="group-header">
+        <span class="num">09</span><h2>Admin</h2>
+      </div>
+
+      <div class="tool" id="doctor">
+        <h3>sera.doctor</h3>
+        <p class="summary">One-call self-check. API health, network sanity, signer mode, policy summary, persistence state. Run this first whenever something looks off.</p>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{
+  overall_ok: boolean,
+  checks: { sera_health, network_sanity, tokens_registry, signer_mode, policy },
+  policy: { preset, daily_volume_cap_usd, dry_run },
+  persistence: { history_db_present, path }
+}</code></pre></div>
+      </div>
+
+      <!-- ============ RESOURCES & PROMPTS ============ -->
+      <div id="resources" class="group-header">
+        <span class="num">10</span><h2>MCP resources &amp; prompts</h2>
+      </div>
+
+      <div class="tool">
+        <h3>Resources (5)</h3>
+        <p class="summary">Browseable static catalogs the host can show.</p>
+        <ul class="params">
+          <li><code>sera://help/tools</code> — full tool reference (this page, machine-readable)</li>
+          <li><code>sera://catalog/currencies</code> — all supported stablecoins</li>
+          <li><code>sera://catalog/markets</code> — all trading pairs</li>
+          <li><code>sera://policy/current</code> — active policy preset + caps</li>
+          <li><code>sera://network/status</code> — chain + indexer status</li>
+        </ul>
+      </div>
+
+      <div class="tool">
+        <h3>Slash prompts (4)</h3>
+        <p class="summary">Pre-templated prompts that hosts surface as commands. Type <code>/deal_scan</code> in Claude Code, etc.</p>
+        <ul class="params">
+          <li><code>/deal_scan</code> — find FX deals across all pairs above an edge threshold</li>
+          <li><code>/treasury_brief</code> — multi-currency exposure report + drift</li>
+          <li><code>/invoice_optimizer</code> — cheapest source for a given target payout</li>
+          <li><code>/fx_integrity_check</code> — triangular-arb scan across a fiat basket</li>
+        </ul>
+      </div>
+
+      <p class="mt-12 text-sm text-chalk-500">Source: <a href="https://github.com/Josh-sera/sera-mcp" target="_blank" class="text-accent-400 hover:underline">github.com/Josh-sera/sera-mcp</a>. Schema-validated against the running MCP. Last sync: v0.4.0.</p>
+
+    </main>
+  </div>
+
+  <footer class="border-t border-white/5 py-10">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
+      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+    </div>
+  </footer>
+</body>
+</html>
