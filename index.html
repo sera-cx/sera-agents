@@ -185,6 +185,51 @@
       border: 1px solid rgba(255,255,255,.06);
     }
 
+    /* Build-with-Sera carousel (paginated 6+6 on desktop, stacked on mobile) */
+    .build-carousel { position: relative; overflow: hidden; }
+    .build-pages { display: flex; transition: transform .35s cubic-bezier(.22,.61,.36,1); }
+    .build-page { flex: 0 0 100%; min-width: 0; }
+    .build-page-grid { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @media (max-width: 1023px) {
+      .build-pages { flex-direction: column; transform: none !important; gap: 16px; }
+      .build-page { flex: 1; }
+      .build-page-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .build-pagination { display: none !important; }
+    }
+    @media (max-width: 640px) {
+      .build-page-grid { grid-template-columns: 1fr; }
+    }
+    .build-pagination {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 32px;
+    }
+    .build-pagination button {
+      width: 36px; height: 36px; border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600;
+      background: rgba(255,255,255,.04); color: #A4A89C;
+      border: 1px solid rgba(255,255,255,.08);
+      cursor: pointer; transition: all .15s;
+    }
+    .build-pagination button:hover { color: #F8F8F4; border-color: rgba(255,255,255,.2); }
+    .build-pagination button[aria-current="true"] {
+      background: rgba(61,232,160,.12); color: #7DF9C2;
+      border-color: rgba(61,232,160,.4);
+    }
+    .build-pagination .arrow {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.04); color: #A4A89C;
+      border: 1px solid rgba(255,255,255,.08);
+      cursor: pointer; transition: all .15s;
+    }
+    .build-pagination .arrow:hover { color: #F8F8F4; border-color: rgba(255,255,255,.2); }
+    .build-pagination .arrow:disabled { opacity: .3; cursor: not-allowed; }
+    .build-pagination .label {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      color: #6B7180; text-transform: uppercase; letter-spacing: .08em;
+      margin: 0 6px;
+    }
+
     /* Mobile typography tightening */
     @media (max-width: 640px) {
       h1 { font-size: 2.5rem !important; line-height: 1.1 !important; }
@@ -496,141 +541,152 @@
     </div>
   </section>
 
-  <!-- ============== BUILD WITH SERA (NEW) ============== -->
+  <!-- ============== BUILD WITH SERA ============== -->
   <section id="build" class="py-20 sm:py-24 border-t border-white/5 bg-ink-900/30">
     <div class="max-w-7xl mx-auto px-5 lg:px-6">
       <div class="max-w-3xl mb-12">
         <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Build with Sera</div>
         <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
-          Six things you can ship<br/>this <span class="accent-text">week.</span>
+          A dozen things you can ship<br/>this <span class="accent-text">week.</span>
         </h2>
         <p class="mt-5 text-base sm:text-lg text-chalk-300">
-          Sera is FX + settlement infrastructure. An AI agent is one obvious thing to build on top — but not the only one. Each card below is a real product surface with a working tutorial, reference repo, and (where possible) a live demo.
+          Sera is FX + settlement infrastructure. An AI agent is one obvious thing to build on top — but not the only one. Each card below is a real product surface with a working tutorial, reference repo, or open issue you can claim.
         </p>
       </div>
 
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="build-carousel">
+        <div class="build-pages" id="build-pages">
 
-        <!-- 01 -->
-        <a href="docs/tutorials/cross-border-payment-widget.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
-          <div class="flex items-center justify-between mb-4">
-            <span class="num-badge">01</span>
-            <span class="cost-pill"><span class="strike">$87</span> $2.50 settle $5k MYR</span>
-          </div>
-          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Cross-border payment widget</h3>
-          <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
-            Drop-in React component. User picks recipient + amount in their currency, widget quotes + executes the cheapest source asset. Replaces a $80+ SWIFT wire with a $2 on-chain swap.
-          </p>
-          <div class="logo-chain mb-4">
-            <span class="logo-pill">React</span>
-            <span class="logo-pill">sera.pay_invoice</span>
-            <span class="logo-pill">wagmi</span>
-          </div>
-          <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
-        </a>
+          <!-- Page 1 — cards 01–06 -->
+          <div class="build-page">
+            <div class="build-page-grid">
 
-        <!-- 02 -->
-        <a href="docs/tutorials/fx-trading-dashboard.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
-          <div class="flex items-center justify-between mb-4">
-            <span class="num-badge">02</span>
-            <span class="cost-pill">60+ pairs · live mid</span>
-          </div>
-          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">FX trading dashboard</h3>
-          <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
-            Live FX dashboard reading Sera's reference rates + multi-source mid + executable depth. Spot deviations in basis points across 60+ stablecoin FX pairs. Read-only — no wallet required.
-          </p>
-          <div class="logo-chain mb-4">
-            <span class="logo-pill">Next.js</span>
-            <span class="logo-pill">sera.find_deals</span>
-            <span class="logo-pill">spread_radar</span>
-          </div>
-          <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
-        </a>
+              <a href="docs/tutorials/cross-border-payment-widget.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">01</span><span class="cost-pill"><span class="strike">$87</span> $2.50 settle $5k MYR</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Cross-border payment widget</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Drop-in React component. User picks recipient + amount in their currency, widget quotes + executes the cheapest source asset. Replaces a $80+ SWIFT wire with a $2 on-chain swap.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">React</span><span class="logo-pill">sera.pay_invoice</span><span class="logo-pill">wagmi</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
+              </a>
 
-        <!-- 03 -->
-        <a href="docs/tutorials/prediction-market.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
-          <div class="flex items-center justify-between mb-4">
-            <span class="num-badge">03</span>
-            <span class="cost-pill">resolves on-chain</span>
-          </div>
-          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Prediction market on FX</h3>
-          <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
-            Binary markets like <em class="text-chalk-50">"USD/JPY &gt; 158 by Friday"</em> using Sera's reference rate as the settlement oracle. Markets settle in stablecoins; payouts route through Sera FX so winners get paid in any currency.
-          </p>
-          <div class="logo-chain mb-4">
-            <span class="logo-pill">Solidity</span>
-            <span class="logo-pill">get_fx_rate</span>
-            <span class="logo-pill">multi_source_mid</span>
-          </div>
-          <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
-        </a>
+              <a href="docs/tutorials/fx-trading-dashboard.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">02</span><span class="cost-pill">60+ pairs · live mid</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">FX trading dashboard</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Live FX dashboard reading Sera's reference rates + multi-source mid + executable depth. Spot deviations in basis points across 60+ stablecoin FX pairs. Read-only — no wallet required.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">Next.js</span><span class="logo-pill">sera.find_deals</span><span class="logo-pill">spread_radar</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
+              </a>
 
-        <!-- 04 -->
-        <a href="docs/tutorials/treasury-rebalancer.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
-          <div class="flex items-center justify-between mb-4">
-            <span class="num-badge">04</span>
-            <span class="cost-pill">cron · serverless</span>
-          </div>
-          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Treasury rebalancer</h3>
-          <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
-            Cron job that reads multi-currency wallet balances, computes drift from target weights, and emits Sera swap intents. Runs daily, signs nothing — just generates execution-ready quotes.
-          </p>
-          <div class="logo-chain mb-4">
-            <span class="logo-pill">Node CLI</span>
-            <span class="logo-pill">rebalance_plan</span>
-            <span class="logo-pill">treasury_value</span>
-          </div>
-          <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
-        </a>
+              <a href="docs/tutorials/prediction-market.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">03</span><span class="cost-pill">resolves on-chain</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Prediction market on FX</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Binary markets like <em class="text-chalk-50">"USD/JPY &gt; 158 by Friday"</em> using Sera's reference rate as the settlement oracle. Markets settle in stablecoins; payouts route through Sera FX so winners get paid in any currency.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">Solidity</span><span class="logo-pill">get_fx_rate</span><span class="logo-pill">multi_source_mid</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
+              </a>
 
-        <!-- 05 -->
-        <a href="docs/tutorials/x402-paid-api.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
-          <div class="flex items-center justify-between mb-4">
-            <span class="num-badge">05</span>
-            <span class="cost-pill">$0.001 / call</span>
-          </div>
-          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">x402-paid API</h3>
-          <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
-            Charge AI agents per call in USDC over plain HTTP. Sera's x402-service is the reference; you can wrap any API the same way. Standard 402 → pay → 200 flow. No paywall pages, no Stripe.
-          </p>
-          <div class="logo-chain mb-4">
-            <span class="logo-pill">Express</span>
-            <span class="logo-pill">x402</span>
-            <span class="logo-pill">EIP-3009</span>
-          </div>
-          <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
-        </a>
+              <a href="docs/tutorials/treasury-rebalancer.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">04</span><span class="cost-pill">cron · serverless</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Treasury rebalancer</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Cron job that reads multi-currency wallet balances, computes drift from target weights, and emits Sera swap intents. Runs daily, signs nothing — just generates execution-ready quotes.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">Node CLI</span><span class="logo-pill">rebalance_plan</span><span class="logo-pill">treasury_value</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
+              </a>
 
-        <!-- 06 -->
-        <a href="docs/tutorials/ai-agent.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
-          <div class="flex items-center justify-between mb-4">
-            <span class="num-badge">06</span>
-            <span class="cost-pill">15-min install</span>
-          </div>
-          <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">AI agent (any host)</h3>
-          <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
-            The classic — an MCP-powered agent with the full 32-tool surface. Use the bundled Sera Agent or wire the MCP into Claude Code, Cursor, Hermes, OpenClaw, or your own host.
-          </p>
-          <div class="logo-chain mb-4">
-            <span class="logo-pill">MCP</span>
-            <span class="logo-pill">Claude / GPT</span>
-            <span class="logo-pill">32 tools</span>
-          </div>
-          <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
-        </a>
+              <a href="docs/tutorials/x402-paid-api.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">05</span><span class="cost-pill">$0.001 / call</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">x402-paid API</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Charge AI agents per call in USDC over plain HTTP. Sera's x402-service is the reference; you can wrap any API the same way. Standard 402 → pay → 200 flow. No paywall pages, no Stripe.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">Express</span><span class="logo-pill">x402</span><span class="logo-pill">EIP-3009</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
+              </a>
 
+              <a href="docs/tutorials/ai-agent.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">06</span><span class="cost-pill">15-min install</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">AI agent (any host)</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">The classic — an MCP-powered agent with the full 32-tool surface. Use the bundled Sera Agent or wire the MCP into Claude Code, Cursor, Hermes, OpenClaw, or your own host.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">MCP</span><span class="logo-pill">Claude / GPT</span><span class="logo-pill">32 tools</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
+              </a>
+
+            </div>
+          </div>
+
+          <!-- Page 2 — cards 07–12 -->
+          <div class="build-page">
+            <div class="build-page-grid">
+
+              <a href="docs/tutorials/treasury-rebalancer.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">07</span><span class="cost-pill">weekly cron</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Stablecoin payroll</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Pay employees in their local stablecoin from a single USD treasury. Cron runs every payday — sources cheapest path per recipient, signs from a Safe, settles in their preferred fiat-pegged stable.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">Node + Safe</span><span class="logo-pill">pay_invoice</span><span class="logo-pill">find_cheapest_path</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Pattern →</span>
+              </a>
+
+              <a href="docs/tutorials/x402-paid-api.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">08</span><span class="cost-pill">recurring USDC</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Subscription billing</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Recurring payments via x402 + EIP-3009 pre-authorizations. Customer signs once, server charges monthly + auto-converts to your preferred treasury currency through Sera. No Stripe.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">Express</span><span class="logo-pill">x402</span><span class="logo-pill">convert_and_send</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Pattern →</span>
+              </a>
+
+              <a href="docs/tutorials/fx-trading-dashboard.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">09</span><span class="cost-pill">internal · RFQ</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">OTC desk RFQ tool</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Internal trading-desk dashboard. Trader requests a quote for a notional, sees Sera mid + executable rate + maker spread ladder, hits "execute" to fire the signed Intent. One-screen workflow.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">Next.js</span><span class="logo-pill">maker_quote_ladder</span><span class="logo-pill">get_quote</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Pattern →</span>
+              </a>
+
+              <a href="https://github.com/Josh-sera/sera-agents/issues/new?title=Tutorial+request%3A+Telegram+FX+bot" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">10</span><span class="cost-pill">consumer</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Telegram FX bot</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Bot in a Telegram chat. <code class="font-mono text-accent-400 text-xs">/quote USD MYR 5000</code> returns rate + cost. <code class="font-mono text-accent-400 text-xs">/send 0xVendor</code> generates a signing link. Group treasuries, friends-and-family payments, communities.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">grammY</span><span class="logo-pill">get_quote</span><span class="logo-pill">WalletConnect</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Request tutorial →</span>
+              </a>
+
+              <a href="docs/recipes.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">11</span><span class="cost-pill">alerts &gt; 50 bps</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Spread monitor + alerts</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Cron + spread_radar across a fiat basket. Pings Slack/Telegram any time triangular drift exceeds your threshold. Recipe in the docs is 8 lines; productionizing adds dedup + per-pair cooldown.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">Node cron</span><span class="logo-pill">spread_radar</span><span class="logo-pill">find_deals</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Recipe →</span>
+              </a>
+
+              <a href="https://github.com/Josh-sera/sera-agents/issues/new?title=Tutorial+request%3A+Market-making+bot" target="_blank" rel="noopener" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
+                <div class="flex items-center justify-between mb-4"><span class="num-badge">12</span><span class="cost-pill">automated</span></div>
+                <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Market-making bot</h3>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Automated maker on a chosen pair. Quotes both sides at a target spread, manages inventory drift, hedges on a CEX when exposure passes a limit. Uses round_trip_cost as the floor and fx_volatility for sizing.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">Node service</span><span class="logo-pill">maker_quote_ladder</span><span class="logo-pill">round_trip_cost</span></div>
+                <span class="text-accent-400 text-sm font-medium group-hover:underline">Request tutorial →</span>
+              </a>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Pagination — desktop only (hidden on mobile via CSS) -->
+        <div class="build-pagination" role="navigation" aria-label="Build with Sera pages">
+          <button class="arrow" id="build-prev" aria-label="Previous page" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <span class="label">Page</span>
+          <button data-page="0" aria-current="true">1</button>
+          <button data-page="1">2</button>
+          <button class="arrow" id="build-next" aria-label="Next page">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="mt-10 flex flex-wrap gap-3">
-        <a href="docs/" class="border border-accent-500/40 text-accent-400 hover:text-accent-500 px-5 py-2.5 rounded-lg hover:border-accent-500/60 transition text-sm font-medium">
-          Full docs →
-        </a>
-        <a href="docs/api/" class="border border-white/10 text-chalk-300 hover:text-chalk-50 px-5 py-2.5 rounded-lg hover:border-white/30 transition text-sm font-medium">
-          API reference (32 tools)
-        </a>
-        <a href="docs/recipes.html" class="border border-white/10 text-chalk-300 hover:text-chalk-50 px-5 py-2.5 rounded-lg hover:border-white/30 transition text-sm font-medium">
-          Copy-paste recipes
-        </a>
+        <a href="docs/" class="border border-accent-500/40 text-accent-400 hover:text-accent-500 px-5 py-2.5 rounded-lg hover:border-accent-500/60 transition text-sm font-medium">Full docs →</a>
+        <a href="docs/api/" class="border border-white/10 text-chalk-300 hover:text-chalk-50 px-5 py-2.5 rounded-lg hover:border-white/30 transition text-sm font-medium">API reference (32 tools)</a>
+        <a href="docs/recipes.html" class="border border-white/10 text-chalk-300 hover:text-chalk-50 px-5 py-2.5 rounded-lg hover:border-white/30 transition text-sm font-medium">Copy-paste recipes</a>
       </div>
     </div>
   </section>
@@ -1246,6 +1302,40 @@
         });
       });
     });
+
+    // Build-with-Sera carousel pagination
+    (() => {
+      const pages = document.getElementById('build-pages');
+      if (!pages) return;
+      const numButtons = document.querySelectorAll('.build-pagination [data-page]');
+      const prev = document.getElementById('build-prev');
+      const next = document.getElementById('build-next');
+      const total = numButtons.length;
+      let active = 0;
+
+      function render(idx) {
+        active = Math.max(0, Math.min(total - 1, idx));
+        pages.style.transform = `translateX(-${active * 100}%)`;
+        numButtons.forEach((b, i) => b.setAttribute('aria-current', i === active ? 'true' : 'false'));
+        prev.disabled = active === 0;
+        next.disabled = active === total - 1;
+      }
+
+      numButtons.forEach((btn, i) => btn.addEventListener('click', () => render(i)));
+      prev.addEventListener('click', () => render(active - 1));
+      next.addEventListener('click', () => render(active + 1));
+
+      // Keyboard nav (arrow keys when build section is in viewport)
+      document.addEventListener('keydown', (e) => {
+        const buildSection = document.getElementById('build');
+        if (!buildSection) return;
+        const r = buildSection.getBoundingClientRect();
+        const inView = r.top < window.innerHeight * 0.6 && r.bottom > window.innerHeight * 0.4;
+        if (!inView) return;
+        if (e.key === 'ArrowLeft' && !prev.disabled) render(active - 1);
+        if (e.key === 'ArrowRight' && !next.disabled) render(active + 1);
+      });
+    })();
   </script>
 
 </body>
