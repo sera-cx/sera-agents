@@ -114,13 +114,13 @@
     <main class="prose max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Concepts</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-6">The pieces, explained.</h1>
-      <p class="text-lg" style="color:#A4A89C">Five concepts you'll encounter constantly: <a href="#clob">CLOB</a> · <a href="#mcp">MCP</a> · <a href="#x402">x402</a> · <a href="#eip712">EIP-712</a> · <a href="#eip3009">EIP-3009</a>. Each gets a one-paragraph definition, why Sera uses it, and what changes if you swap it out.</p>
+      <p class="text-lg" style="color:#A4A89C">Five concepts you'll encounter constantly: <a href="#clob">CLOB</a> · <a href="#mcp">MCP</a> · <a href="#x402">x402</a> · <a href="#eip712">EIP-712</a> · <a href="#eip3009">EIP-3009</a>. Each gets a one-paragraph definition, why we use it, and what changes if you swap it out.</p>
 
       <!-- ============ CLOB ============ -->
       <h2 id="clob" class="gradient-text">CLOB <span class="anchor-jump">— Central Limit Order Book</span></h2>
       <p>A CLOB is an order book where makers post limit orders (price + size, no market impact) and takers cross them. Trade price is exactly the limit price — no slippage curve, no constant-product math, no impermanent loss for liquidity providers.</p>
 
-      <h3>Why Sera uses one</h3>
+      <h3>Why we use one</h3>
       <p>FX needs price discipline. AMMs (Uniswap-style) work for volatile pairs because LPs accept inventory risk for swap fees, but stablecoin FX has tiny spreads and high notional — AMM impermanent loss eats the entire margin. CLOBs let market-makers quote the same spread they'd quote at any prime broker, on-chain.</p>
 
       <h3>Implications for your code</h3>
@@ -146,7 +146,7 @@
 
       <h3>What it doesn't give you</h3>
       <ul>
-        <li>Authentication. Each tool decides its own auth model (Sera uses env-based API keys + EIP-712 signatures).</li>
+        <li>Authentication. Each tool decides its own auth model (we use env-based API keys + EIP-712 signatures).</li>
         <li>State persistence between calls. The MCP server's process is the only state.</li>
       </ul>
 
@@ -154,7 +154,7 @@
       <h2 id="x402" class="gradient-text">x402 <span class="anchor-jump">— HTTP 402 Payment Required</span></h2>
       <p>An open agent-payment standard layered on top of HTTP. The server returns <code>402 Payment Required</code> with payment instructions. The client pays (USDC, on-chain). The client retries with an <code>X-PAYMENT</code> header. The server verifies and returns <code>200 OK</code> with the goods. Idempotent, stateless, cache-friendly.</p>
 
-      <h3>Why Sera exposes one</h3>
+      <h3>Why we expose one</h3>
       <p>Some agents don't speak MCP — they speak HTTP. The x402 endpoint lets any agent that knows the standard pay USDC and get an FX-converted payout in any of 40+ stablecoins, no Sera SDK required.</p>
 
       <h3>Why this is interesting beyond Sera</h3>
@@ -164,7 +164,7 @@
       <h2 id="eip712" class="gradient-text">EIP-712 <span class="anchor-jump">— Typed structured-data signing</span></h2>
       <p>An Ethereum standard for hashing and signing structured data (instead of opaque hex strings). Wallets show humans <em>"You are signing an Order: maker=0x...; price=1.41; expiry=...,"</em> not <em>"Signature data 0xa3f7...8b2c."</em></p>
 
-      <h3>Why Sera uses it</h3>
+      <h3>Why we use it</h3>
       <p>Quote signing. Every Sera trade is a maker/taker order encoded as a typed-data struct (Maker · Market · isBid · BaseAmount · Price · Expiry · Nonce). The wallet signs that — never raw bytes. The <code>sera-mcp</code> never sees the private key; it just gets the signature back.</p>
 
       <h3>What you get</h3>

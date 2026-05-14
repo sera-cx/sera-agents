@@ -988,7 +988,7 @@
             <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
-            <code class="font-mono text-accent-400">find_deals</code> is the headline: scans markets in parallel, diffs each against external mid, ranks the deals. <code class="font-mono text-accent-400">probe_depth</code> characterizes price impact at a size ladder. <code class="font-mono text-accent-400">round_trip_cost</code> reveals the maker hedge floor. <code class="font-mono text-accent-400">infer_book</code> reconstructs a synthetic order book Sera doesn't publish.
+            <code class="font-mono text-accent-400">find_deals</code> is the headline: scans markets in parallel, diffs each against external mid, ranks the deals. <code class="font-mono text-accent-400">probe_depth</code> characterizes price impact at a size ladder. <code class="font-mono text-accent-400">round_trip_cost</code> reveals the maker hedge floor. <code class="font-mono text-accent-400">infer_book</code> reconstructs a synthetic order book that isn't published as a primitive.
           </div>
         </details>
 
@@ -1053,7 +1053,7 @@
             <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
-            Sera doesn't publish OHLC. Set <code class="font-mono text-accent-400">SERA_HISTORY_DB</code> to a SQLite path and the MCP logs every <code class="font-mono text-accent-400">fx_rate</code> + <code class="font-mono text-accent-400">quote</code> call it serves. Over time, your install becomes its own price feed — series, volatility, mark-to-market PnL queryable.
+            OHLC isn't published as a primitive. Set <code class="font-mono text-accent-400">SERA_HISTORY_DB</code> to a SQLite path and the MCP logs every <code class="font-mono text-accent-400">fx_rate</code> + <code class="font-mono text-accent-400">quote</code> call it serves. Over time, your install becomes its own price feed — series, volatility, mark-to-market PnL queryable.
           </div>
         </details>
 

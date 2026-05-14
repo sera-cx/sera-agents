@@ -237,7 +237,7 @@
       <ul>
         <li><strong>Cache properly.</strong> <code>find_deals</code> probes ~60 markets in parallel — calling it on every page load is wasteful. Rates barely move in 60s; cache them.</li>
         <li><strong>External-mid sources are rate-limited.</strong> Frankfurter and friends throttle. The <code>multi_source_mid</code> tool already deals with this; don't bypass it.</li>
-        <li><strong>Pairs change.</strong> Sera adds and removes pairs. Don't hardcode the universe — read it fresh from <code>get_markets</code> or <code>list_currencies</code>.</li>
+        <li><strong>Pairs change.</strong> Trading pairs come and go. Don't hardcode the universe — read it fresh from <code>get_markets</code> or <code>list_currencies</code>.</li>
       </ul>
 
       <p class="mt-10"><strong>Next:</strong> <a href="prediction-market.html">Prediction market on FX</a> uses Sera's reference rate as an oracle, or <a href="treasury-rebalancer.html">treasury rebalancer</a> for the same data feeding a real action.</p>
