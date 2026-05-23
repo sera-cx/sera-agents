@@ -2,6 +2,17 @@
 
 All notable changes to `sera-agents` are documented in this file.
 
+## [0.5.2] — 2026-05-24
+
+### Added
+- `.env.example` files at:
+  - `sera-agents/.env.example` (shared defaults)
+  - `templates/web-chat/.env.example`
+  - `templates/webhook-agent/.env.example` (HMAC config + safe-default `SERA_ENABLE_EXECUTION_TOOLS=false`)
+  - `x402-service/.env.example` (demo vs live mode + Sera execution wiring)
+
+Public-repo polish: every install starts with "what env vars do I set?". These files document the safe-copyable defaults inline.
+
 ## [0.5.1] — 2026-05-24
 
 ### Fixed
