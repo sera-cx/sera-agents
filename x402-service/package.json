@@ -6,7 +6,9 @@
   "description": "x402 protocol endpoint that exposes Sera's multi-currency settlement to USDC-paying agents.",
   "scripts": {
     "start": "tsx server.ts",
-    "demo": "X402_MODE=demo tsx server.ts"
+    "demo": "X402_MODE=demo tsx server.ts",
+    "typecheck": "tsc --noEmit",
+    "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",

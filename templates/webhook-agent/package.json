@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Template: HTTP webhook responder powered by the Sera MCP.",
   "scripts": {
-    "start": "tsx server.ts"
+    "start": "tsx server.ts",
+    "typecheck": "tsc --noEmit",
+    "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
     "@openai/agents": "^0.3.0",

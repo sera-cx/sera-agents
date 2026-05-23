@@ -10,28 +10,20 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  check:
+    name: typecheck + audit
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        package:
-          - x402-service
-          - templates/chat-cli
-          - templates/web-chat
-          - templates/webhook-agent
-          - sera-agent
-          - examples/invoice-payer
-          - examples/treasury-rebalancer
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: install
-        working-directory: ${{ matrix.package }}
+          cache: npm
+      - name: install workspaces
         run: npm install --no-audit --no-fund
-      - name: audit
-        working-directory: ${{ matrix.package }}
+      - name: typecheck (all packages)
+        run: npm run typecheck
+      - name: audit (high+)
         run: npm audit --audit-level=high
 
   secret-scan:
@@ -43,6 +35,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   codeql:
+    name: CodeQL
     runs-on: ubuntu-latest
     permissions:
       security-events: write

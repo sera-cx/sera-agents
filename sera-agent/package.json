@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Bundled multi-currency settlement agent built on the Sera MCP.",
   "scripts": {
-    "start": "tsx agent.ts"
+    "start": "tsx agent.ts",
+    "typecheck": "tsc --noEmit",
+    "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
     "@openai/agents": "^0.3.0"

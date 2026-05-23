@@ -32,8 +32,11 @@ sera-agents/
 git clone https://github.com/Josh-sera/sera-agents
 cd sera-agents
 
-# Pick whichever piece you're working on
-cd sera-agent && npm install        # or templates/web-chat, x402-service, etc.
+# Install all workspace packages (sera-agent, x402-service, templates/*, examples/*)
+npm install
+
+# Run typecheck + audit across all packages
+npm run check
 ```
 
 The MCP server is a separate repo. To work end-to-end you'll need it built locally:
@@ -43,14 +46,14 @@ git clone https://github.com/Josh-sera/sera-mcp ~/sera-mcp
 cd ~/sera-mcp && npm install && npm run build
 ```
 
-By default the agent code paths look for `~/Desktop/sera-mcp/dist/index.js`. Override with `SERA_MCP_DIST` env when running.
+Override the MCP path with `SERA_MCP_DIST` env when running templates/examples that spawn it.
 
 ## Pull requests
 
 - Keep PRs focused. One template, one integration, or one bug fix per PR.
 - Update the top-level [`integrations/README.md`](integrations/README.md) host table when adding a host.
-- Update [`README.md`](README.md) if you add a new top-level folder.
-- Run `npm install` in any package you touched to confirm it still resolves cleanly.
+- Update [`README.md`](README.md) if you add a new top-level folder, and [`ARCHITECTURE.md`](ARCHITECTURE.md) if you add a new top-level concept.
+- Run `npm run check` from the repo root to confirm typecheck + audit pass before opening the PR.
 
 ## Adding a host integration
 

@@ -1,14 +1,20 @@
 # Sera for Agents
 
-**Live site: [josh-sera.github.io/sera-agents](https://josh-sera.github.io/sera-agents/)**
+**Templates, examples, docs, and x402 integrations built on top of [`sera-mcp`](https://github.com/Josh-sera/sera-mcp).**
+
+**Live site: [agents.sera.cx](https://agents.sera.cx)** · **Core MCP: [Josh-sera/sera-mcp](https://github.com/Josh-sera/sera-mcp)**
+
+**Who this is for:** developers integrating Sera into an existing agent product, picking up a template to ship fast, or wiring up a protocol-level x402 endpoint for agent-to-agent FX delivery.
 
 Multi-currency settlement infrastructure for AI agents. Quote, convert, and settle across 40+ stablecoins and 20+ fiat currencies — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more — through an open Model Context Protocol server, three starter templates, a complete bundled agent, and a protocol-level x402 endpoint.
+
+For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.md`](SECURITY-MODEL.md), and [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Four paths
 
 | Path | For | Artifact |
 |---|---|---|
-| **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | `~/Desktop/sera-mcp` (the MCP) |
+| **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | [`sera-mcp`](https://github.com/Josh-sera/sera-mcp) (the MCP) |
 | **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent}` |
 | **C — Run** | Want it ready out of the box | `sera-agent/` (interactive CLI) |
 | **D — Protocol** | Agent doesn't know what Sera is, only x402 | `x402-service/` |
@@ -53,12 +59,13 @@ sera-agents/
 
 Plus repo-root files: `LICENSE` (MIT), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.github/` (issue + PR templates).
 
-The MCP server itself lives at `~/Desktop/sera-mcp/` — separate package, distributed independently. v0.4.0, 32 tools.
+The MCP server itself lives in a separate repo: [Josh-sera/sera-mcp](https://github.com/Josh-sera/sera-mcp) — distributed independently. v0.5.0, 32 tools.
 
 ## Path A — install the MCP
 
 ```bash
-cd ~/Desktop/sera-mcp
+git clone https://github.com/Josh-sera/sera-mcp
+cd sera-mcp
 npm install && npm run build
 
 claude mcp add sera --scope user \
@@ -152,12 +159,46 @@ Sera complements single-currency agent rails rather than replacing them. Use any
 | Integration | Hosted SDK / API | Open MCP, four paths above |
 | Custody | Centralized | Non-custodial, on-chain settlement |
 
+## Status
+
+Honest read of what's solid vs what's still moving:
+
+| Surface | Status | Notes |
+|---|---|---|
+| Docs site ([agents.sera.cx](https://agents.sera.cx)) | **Stable** | Static, served via GitHub Pages |
+| Integration guides (OpenClaw, Hermes, NanoClaw, standard MCP hosts) | **Stable** | Config snippets verified against current host versions |
+| Templates (`chat-cli`, `web-chat`, `webhook-agent`) | **Demo / starter** | Copy-and-customize; not maintained as products |
+| Examples (`invoice-payer`, `treasury-rebalancer`) | **Demo / starter** | Reference flows; not turnkey services |
+| `sera-agent/` bundled CLI | **Demo / starter** | Interactive REPL for quick exploration |
+| `x402-service/` demo mode | **Experimental** | Self-contained; no facilitator needed; safe to run locally |
+| `x402-service/` live mode | **Experimental — not production-complete** | `verifyPayment` is intentional scaffold; live settlement awaits official x402 facilitator (`@coinbase/x402`) integration. See [`x402-service/README.md`](x402-service/README.md). |
+| Streamable HTTP MCP usage in templates | **Planned** | Templates currently use stdio (`MCPServerStdio`). |
+| `npx create-sera-agent` scaffolder | **Planned** | After more template adoption. |
+
 ## Roadmap
 
-- **`x402.sera.cx`** — host the x402 service for real (vault wallet, monitoring, facilitator integration).
-- **Hosted MCP transport** — SSE/HTTP for hosts that don't run stdio subprocesses.
+- **`x402-service` live mode** — replace `verifyPayment` stub with official Coinbase CDP facilitator (`@coinbase/x402`); add idempotency store, `Cache-Control: no-store`, confirmation depth ≥3 on Base; define refund/failure behavior.
+- **Streamable HTTP templates** — alongside stdio examples; for ChatGPT connectors and hosted/remote agents. No SSE work planned (deprecated upstream).
 - **`npx create-sera-agent`** — proper scaffolder once enough people use the templates.
 - **Push subscriptions** — deal alerts and rate-threshold notifications instead of polling.
+
+## Development
+
+```bash
+# install all workspace packages
+npm install
+
+# run typecheck across every package
+npm run typecheck
+
+# run audit across every package (high+)
+npm run audit
+
+# both
+npm run check
+```
+
+CI runs the same checks on every PR — see [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ## License
 
