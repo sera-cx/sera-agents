@@ -2,6 +2,43 @@
 
 All notable changes to `sera-agents` are documented in this file.
 
+## [0.6.0] — 2026-05-24
+
+### x402-service v0.3.0 — live mode wired
+
+**Modular split** (audit recommendation): `server.ts` broken into 5 focused modules + a slim HTTP layer:
+- `env.ts` — boot config + safety gates (refuses live without all required envs + `X402_LIVE_ACK=true` + `X402_CONFIRMATION_DEPTH ≥ 3`).
+- `state.ts` — payment state machine (`pending → verified → executing → delivered | failed_refundable`) with SQLite persistence + atomic `cas(payment_id, expected, next, extra)` for every transition.
+- `facilitator.ts` — Coinbase CDP facilitator client (`/verify` + `/settle`).
+- `sera-client.ts` — sera-mcp stdio JSON-RPC client (long-lived subprocess).
+- `payment.ts` — verify/settle/execute orchestration tying it all together.
+- `server.ts` — HTTP routes + Hono + boot only (~430 lines, was 724).
+
+**Live mode now actually wires the facilitator** (per arXiv:2605.11781 hardening checklist):
+- `verifyPayment` calls `POST {X402_FACILITATOR_URL}/verify` with EIP-3009 paymentHeader + paymentRequirements.
+- `settlePayment` calls `POST /settle` after the verify CAS succeeds. Two-phase flow.
+- Atomic idempotency: every state transition is CAS-gated; replays return cached `delivered_payload`, never re-settle, never re-execute. Mitigates Attack II (replay/idempotency).
+- `Cache-Control: no-store, no-cache, private` + `Pragma: no-cache` on every `/x402/*` route. Mitigates Attack III (CDN cache leak).
+- `X402_CONFIRMATION_DEPTH ≥ 3` enforced at boot. Mitigates Attack I-A (revert-grant).
+- Facilitator calls bound caller identity via `Bearer {api_key_id}:{api_secret}`. Mitigates Attack I-B (settlement preemption).
+- Settle response (`tx_hash` + `networkId`) persisted alongside payment state for audit.
+
+**Refund policy: manual queue (default).** Failed-after-settle payments transition to `failed_refundable`; operators query `GET /admin/refundables` (auth: `Bearer ${X402_ADMIN_TOKEN}`). Automated refund via facilitator settlement-reversal is on the roadmap pending CDP-side support.
+
+**Live mode boot gates** — refuses to start without ALL of:
+- `X402_FACILITATOR_URL`, `X402_CDP_API_KEY_ID`, `X402_CDP_API_KEY_SECRET`, `X402_VAULT_ADDRESS`
+- `X402_LIVE_ACK=true` (operator acknowledges live wiring is NOT YET production-tested against Coinbase mainnet; complete Base Sepolia E2E first)
+- `X402_CONFIRMATION_DEPTH ≥ 3`
+
+Demo mode unchanged — boots on `127.0.0.1` by default, short-circuits verify+settle, returns `demo:true` + `tx_hash:null` + `X-Sera-Demo-Mode` header so consumers can't confuse it with real settlement.
+
+### Updated
+- `SECURITY-MODEL.md`: x402 attack-surface coverage matrix now reflects v0.6.0 mitigations (all four applicable attacks have status: Mitigated). "Hardening status" section shows 5 of 6 items code-complete; the remaining gate is operator-driven Base Sepolia E2E.
+
+### Notes
+- Live mode wiring is in place but NOT yet production-verified against Coinbase mainnet. Per SECURITY-MODEL.md, complete Base Sepolia E2E before flipping `X402_NETWORK=base`.
+- Demo mode safe to run locally as before.
+
 ## [0.5.2] — 2026-05-24
 
 ### Added

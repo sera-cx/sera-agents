@@ -29,40 +29,46 @@ For vulnerability reporting, see [`SECURITY.md`](SECURITY.md). For architecture,
 
 This is the highest-risk surface in the repo. It implements a payment flow and is the most likely package to be promoted from "experimental" to "production." The hardening posture is intentionally explicit:
 
-### Current state (`live` mode)
+### Current state (`live` mode) — v0.6.0
 
-- `verifyPayment` at `server.ts` is **scaffold**. It returns `"live verification not yet implemented"` and **does not call any facilitator**.
-- The state machine (`pending → verified → executing → delivered | failed_refundable`) is wired and correct in shape.
-- Idempotency is partial: payments are keyed by `payment_id` in SQLite, but there is no atomic "reserve before release" guard.
-- No `Cache-Control: no-store` headers on `/x402/swap` responses.
-- No confirmation-depth check on settlement.
-- No refund implementation for `failed_refundable` — manual operator action required.
+- **`verifyPayment` wired against the Coinbase CDP facilitator.** Calls `POST {X402_FACILITATOR_URL}/verify` with the EIP-3009 `paymentHeader` + `paymentRequirements`. Auth via Bearer `{X402_CDP_API_KEY_ID}:{X402_CDP_API_KEY_SECRET}` (refine to HMAC-SHA256 JWT during first Base Sepolia E2E if CDP requires it).
+- **`settlePayment` wired.** Two-phase flow: verify → CAS to verified → settle → CAS to executing → execute Sera swap. Settle failure after verify success transitions to `failed_refundable`.
+- **Atomic idempotency.** SQLite UPSERT plus `cas(payment_id, expected_status, next_status)` for every transition. Concurrent X-PAYMENT submissions for the same payment_id can't double-settle or double-execute — losing the CAS path falls back to the idempotent-replay branch.
+- **`Cache-Control: no-store, no-cache, private`** + `Pragma: no-cache` on every `/x402/*` response. Mitigates Attack III (CDN cache leak).
+- **`X402_CONFIRMATION_DEPTH=3` enforced at boot** (refuses to start if < 3). CDP facilitator honors this when broadcasting.
+- **Refund policy: manual queue (default).** Failed swaps move to `failed_refundable`; operator queries `GET /admin/refundables` (gated by `X402_ADMIN_TOKEN` Bearer) for the list. Re-payment is operator-driven via off-server tooling. Automated refund via facilitator settlement-reversal is on the roadmap (requires CDP-side support).
+- **Live mode requires explicit operator ack** via `X402_LIVE_ACK=true`. Boot refuses otherwise — wiring is in place but NOT YET production-tested against Coinbase mainnet. Per protocol: complete Base Sepolia E2E first.
+- **All env required for live boot:** `X402_FACILITATOR_URL` + `X402_CDP_API_KEY_ID` + `X402_CDP_API_KEY_SECRET` + `X402_VAULT_ADDRESS` + `X402_LIVE_ACK=true` + `X402_CONFIRMATION_DEPTH≥3`. Missing any → boot fails with a clear message listing the missing vars.
 
-### Known attack surface (per arXiv:2605.11781, "Five Attacks on x402")
+### Known attack surface (per arXiv:2605.11781, "Five Attacks on x402") — v0.6.0 coverage
 
-| Attack | Applies to this package? | Mitigation status |
+| Attack | Applies to this package? | Mitigation status (v0.6.0) |
 |---|---|---|
-| I-A — Revert-grant (grant before finality) | Yes (if live-mode is enabled without confirmations) | Not implemented — confirmation depth must be `k≥3` on Base before release. |
-| I-B — Settlement preemption (observer submits EIP-3009 auth before facilitator) | Yes (if hand-rolled verify is enabled) | Mitigated by using official `@coinbase/x402` facilitator client; planned. |
-| II — Replay / idempotency (same X-PAYMENT triggers multiple grants) | Yes (current SQLite reserve is non-atomic) | Atomic "reserve before release" + idempotency store with TTL planned. |
-| III — Header / proxy confusion (CDN caches 200 with paid content) | Yes (no Cache-Control today) | `Cache-Control: no-store, no-cache, private` planned on all `/x402/*` routes. |
+| I-A — Revert-grant (grant before finality) | Yes in live mode | **Mitigated**. Boot enforces `X402_CONFIRMATION_DEPTH ≥ 3`; CDP facilitator honors this. |
+| I-B — Settlement preemption (observer submits EIP-3009 auth before facilitator) | Yes if hand-rolled verify | **Mitigated**. Verify + settle both via Coinbase CDP facilitator — bounds caller identity. |
+| II — Replay / idempotency (same X-PAYMENT triggers multiple grants) | Yes pre-v0.6.0 | **Mitigated**. Atomic `cas(payment_id, expected, next)` on every state transition. Replay returns cached `delivered_payload`; never re-settles, never re-executes. |
+| III — Header / proxy confusion (CDN caches 200 with paid content) | Yes pre-v0.6.0 | **Mitigated**. `Cache-Control: no-store, no-cache, private` + `Pragma: no-cache` on every `/x402/*` route. |
 | IV — Server-selection (Sybil / metadata in Bazaar) | Not applicable — endpoint is direct, no Bazaar registry use. | N/A |
 
-### Hardening required before going live
+### Hardening status (v0.6.0)
 
-The path to "live-mode is production-complete" is:
+All six hardening items below are now CODE-COMPLETE. The single remaining gate is **operator-driven Base Sepolia E2E verification** before flipping mainnet:
 
-1. Replace `verifyPayment` stub with calls to Coinbase CDP facilitator endpoints (`https://api.cdp.coinbase.com/platform/v2/x402/verify` and `/settle`). Use the `@coinbase/x402` package as a facilitator client; **do not** replace the dynamic FX state machine with `x402-express` middleware — the shape is wrong for FX delivery.
-2. Add atomic idempotency: `(payment_id, resource_id)` upsert in SQLite (or Redis for multi-instance) **before** moving to `executing`. TTL = `maxTimeoutSeconds + 60`.
-3. Set `Cache-Control: no-store, no-cache, private` on all `/x402/*` responses.
-4. Set confirmation depth `k≥3` on Base mainnet before transitioning `verified → delivered`.
-5. Define refund behavior for `failed_refundable`:
-   - **Option A** (recommended for v0.1): automatic refund via facilitator's settlement-reversal if it exists, else queue for manual operator action.
-   - **Option B**: never settle until execution is confirmed (escrow-until-ready).
-   - This is a product decision, not a code one.
-6. Test the full pipeline on Base Sepolia end-to-end before flipping mainnet.
+1. ✅ `verifyPayment` calls Coinbase CDP facilitator `/verify`. The dynamic FX state machine is preserved (per [[x402-service-design-insight]] — never replaced with `x402-express` middleware).
+2. ✅ Atomic idempotency via SQLite-backed `cas(payment_id, expected_status, next_status)`. Every state transition is CAS-gated. Concurrent X-PAYMENT submissions for the same payment_id resolve idempotently.
+3. ✅ `Cache-Control: no-store, no-cache, private` on every `/x402/*` response.
+4. ✅ `X402_CONFIRMATION_DEPTH ≥ 3` enforced at boot. Honored by CDP facilitator.
+5. ✅ Refund policy: **manual queue (default)**. `failed_refundable` payments are surfaced via `GET /admin/refundables` (auth: `Bearer ${X402_ADMIN_TOKEN}`). Automated refund via facilitator settlement-reversal is on the roadmap pending CDP-side support.
+6. ⚠️ **Base Sepolia E2E NOT YET COMPLETED.** Live mode boots only when `X402_LIVE_ACK=true` is also set — operator must acknowledge they've completed the testnet E2E and accept residual risk.
 
-Until all six land, **do not run `X402_MODE=live` against real money**. The demo mode is safe.
+**Practical operator path to going live:**
+1. Configure all live envs (see `.env.example`).
+2. Set `X402_MODE=live` + `X402_NETWORK=base-sepolia` + `X402_LIVE_ACK=true`.
+3. Run an end-to-end test: trigger 402 → pay USDC on Sepolia → confirm settle tx_hash + delivery via Sera Sepolia.
+4. Inspect facilitator response shapes — refine `authHeader()` in `facilitator.ts` if CDP requires HMAC-SHA256 JWT instead of the current `Bearer ${id}:${secret}` form.
+5. Once Sepolia E2E is green: switch `X402_NETWORK=base` for mainnet. Don't switch any other knobs.
+
+Until Sepolia E2E is verified, **demo mode is the safe default**.
 
 ## Template security expectations
 

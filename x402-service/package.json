@@ -1,6 +1,6 @@
 {
   "name": "sera-x402-service",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "x402 protocol endpoint that exposes Sera's multi-currency settlement to USDC-paying agents.",
