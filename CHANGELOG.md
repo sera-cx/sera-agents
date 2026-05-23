@@ -2,6 +2,16 @@
 
 All notable changes to `sera-agents` are documented in this file.
 
+## [0.5.1] — 2026-05-24
+
+### Fixed
+- **CI now uses `npm ci`** (lockfile-reproducible) instead of `npm install` (which mutates the lockfile). Previous CI could pass on a PR that would fail after merge if any sub-dep version float was triggered by `install` rewrites.
+
+### Added
+- Root `npm run build` (`--workspaces --if-present`) and `npm run test` (`--workspaces --if-present`) scripts.
+- Root `npm run ci` aggregator: `npm ci && typecheck && build && test && audit` — one command for the full quality gate locally.
+- CI workflow now runs `npm test` step (no-op until packages add test scripts in v0.6.0).
+
 ## [0.5.0] — 2026-05-24
 
 ### Added

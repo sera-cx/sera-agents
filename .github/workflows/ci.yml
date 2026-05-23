@@ -19,10 +19,12 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - name: install workspaces
-        run: npm install --no-audit --no-fund
+      - name: install workspaces (lockfile-reproducible)
+        run: npm ci --no-audit --no-fund
       - name: typecheck (all packages)
         run: npm run typecheck
+      - name: test (workspaces, if-present)
+        run: npm test
       - name: audit (high+)
         run: npm audit --audit-level=high
 

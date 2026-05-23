@@ -1,6 +1,6 @@
 {
   "name": "sera-agents",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "Agent templates, x402 services, docs, demos, and host integrations built on top of sera-mcp.",
   "workspaces": [
@@ -14,8 +14,11 @@
   ],
   "scripts": {
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
     "audit": "npm audit --workspaces --audit-level=high",
-    "check": "npm run typecheck && npm run audit"
+    "check": "npm run typecheck && npm run audit",
+    "ci": "npm ci && npm run typecheck && npm run build && npm run test && npm run audit"
   },
   "overrides": {
     "qs": "^6.15.2",
