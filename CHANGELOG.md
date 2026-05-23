@@ -2,6 +2,21 @@
 
 All notable changes to `sera-agents` are documented in this file.
 
+## [0.7.0] — 2026-05-24
+
+### Added — two new templates demonstrating the v0.6.0+ sera-mcp surface
+- **`templates/market-maker/`** — two-sided spread market-making bot. Cancel-before-place loop, multi-source mid pricing, env-driven knobs (`MM_PAIR`, `MM_NOTIONAL`, `MM_SPREAD_BPS`, `MM_DRIFT_BPS`, `MM_POLL_SECONDS`, `MM_EXPIRATION_SECONDS`). Uses the maker tools (`sera.multi_source_mid`, `sera.cancel_all_orders`, `sera.place_order`). Includes a 10-item "Production checklist before deploying" — wallet isolation, dry-run first deploy, kill-switch, cancel cooldown handling, restart safety, observability.
+- **`templates/withdraw-cli/`** — terminal walkthrough of Sera's 4-step dual-sig instant-withdrawal flow. Demonstrates `sera.withdraw_request` → (local sign) → `sera.withdraw_build` → (local sign) → `sera.withdraw_send`. Generates fresh `uuid` per run, echoes the recipient prominently before any signing step, prints the EIP-712 typed-data shape your wallet must sign.
+
+Each template ships: `package.json`, `tsconfig.json`, `.env.example`, `README.md` (with status banner + production checklist), `agent.ts`.
+
+### Updated
+- Root workspace `package.json` includes the two new templates.
+
+### Notes
+- Both templates intentionally stop short of full execution (the wallet-side signing step needs ethers/viem and is left to the integrator). The README of each documents the production wiring path.
+- Templates are labeled "Demo / starter" in their READMEs and require explicit operator action to wire real signing.
+
 ## [0.6.0] — 2026-05-24
 
 ### x402-service v0.3.0 — live mode wired

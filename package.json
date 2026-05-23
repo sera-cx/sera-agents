@@ -1,6 +1,6 @@
 {
   "name": "sera-agents",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "description": "Agent templates, x402 services, docs, demos, and host integrations built on top of sera-mcp.",
   "workspaces": [
@@ -9,6 +9,8 @@
     "templates/chat-cli",
     "templates/web-chat",
     "templates/webhook-agent",
+    "templates/market-maker",
+    "templates/withdraw-cli",
     "examples/invoice-payer",
     "examples/treasury-rebalancer"
   ],
