@@ -16,8 +16,9 @@
 import { Agent, run, MCPServerStdio, user } from "@openai/agents";
 import express from "express";
 import { resolve } from "node:path";
-import { timingSafeEqual, createHmac } from "node:crypto";
+import { timingSafeEqual } from "node:crypto";
 import helmet from "helmet";
+import { verifyHmac as verifyHmacImpl, makeNonceStore, type HmacProvider } from "./hmac.js";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const HOST = process.env.HOST ?? "127.0.0.1";
@@ -30,8 +31,7 @@ const TRUST_PROXY = (process.env.WEBHOOK_TRUST_PROXY ?? "false").toLowerCase() =
 //   stripe → Stripe-Signature header, secret = whsec_...
 //   github → X-Hub-Signature-256 header, secret = your repo secret
 //   generic → X-Webhook-Signature header (sha256 of body)
-const HMAC_PROVIDER = (process.env.WEBHOOK_HMAC_PROVIDER ?? "none").toLowerCase() as
-  | "none" | "stripe" | "github" | "generic";
+const HMAC_PROVIDER = (process.env.WEBHOOK_HMAC_PROVIDER ?? "none").toLowerCase() as HmacProvider;
 const HMAC_SECRET = process.env.WEBHOOK_HMAC_SECRET;
 const HMAC_TOLERANCE_SECONDS = Number(process.env.WEBHOOK_HMAC_TOLERANCE_SECONDS ?? 300);
 
@@ -97,70 +97,24 @@ function TASK_BUILDER(eventPayload: any): string | { error: string } {
 }
 
 // ── Replay protection: timestamp tolerance + nonce LRU ───────────────────
-const seenNonces = new Map<string, number>();
-function rememberNonce(nonce: string): boolean {
-  if (seenNonces.has(nonce)) return false;
-  if (seenNonces.size > 5_000) {
-    // GC oldest 1000
-    const sorted = [...seenNonces.entries()].sort((a, b) => a[1] - b[1]);
-    for (let i = 0; i < 1000; i++) seenNonces.delete(sorted[i][0]);
-  }
-  seenNonces.set(nonce, Date.now());
-  return true;
-}
+// Extracted into ./hmac.ts. One nonce store per process; pass a fresh one
+// to verifyHmac.
+const nonceStore = makeNonceStore();
 
 function verifyHmac(
   rawBody: Buffer,
   headers: Record<string, string | undefined>,
-): { ok: true } | { ok: false; reason: string } {
-  if (HMAC_PROVIDER === "none") return { ok: true };
-  if (!HMAC_SECRET) return { ok: false, reason: "no_hmac_secret" };
-
-  const now = Math.floor(Date.now() / 1000);
-  if (HMAC_PROVIDER === "stripe") {
-    const sig = headers["stripe-signature"];
-    if (!sig) return { ok: false, reason: "missing_stripe_signature" };
-    const parts = sig.split(",").reduce<Record<string, string>>((acc, p) => {
-      const [k, v] = p.split("=");
-      if (k && v) acc[k] = v;
-      return acc;
-    }, {});
-    const t = Number(parts.t);
-    const v1 = parts.v1;
-    if (!t || !v1) return { ok: false, reason: "malformed_stripe_signature" };
-    if (Math.abs(now - t) > HMAC_TOLERANCE_SECONDS) return { ok: false, reason: "stale_signature" };
-    const expected = createHmac("sha256", HMAC_SECRET).update(`${t}.${rawBody.toString()}`).digest("hex");
-    const a = Buffer.from(expected);
-    const b = Buffer.from(v1);
-    if (a.length !== b.length || !timingSafeEqual(a, b)) return { ok: false, reason: "bad_signature" };
-    if (!rememberNonce(`stripe:${t}:${v1.slice(0, 16)}`)) return { ok: false, reason: "replay" };
-    return { ok: true };
-  }
-  if (HMAC_PROVIDER === "github") {
-    const sig = headers["x-hub-signature-256"];
-    if (!sig?.startsWith("sha256=")) return { ok: false, reason: "missing_github_signature" };
-    const expected = "sha256=" + createHmac("sha256", HMAC_SECRET).update(rawBody).digest("hex");
-    const a = Buffer.from(expected);
-    const b = Buffer.from(sig);
-    if (a.length !== b.length || !timingSafeEqual(a, b)) return { ok: false, reason: "bad_signature" };
-    const deliveryId = headers["x-github-delivery"];
-    if (deliveryId && !rememberNonce(`github:${deliveryId}`)) return { ok: false, reason: "replay" };
-    return { ok: true };
-  }
-  if (HMAC_PROVIDER === "generic") {
-    const sig = headers["x-webhook-signature"];
-    const ts = Number(headers["x-webhook-timestamp"] ?? 0);
-    const nonce = headers["x-webhook-nonce"];
-    if (!sig || !ts || !nonce) return { ok: false, reason: "missing_signature_fields" };
-    if (Math.abs(now - ts) > HMAC_TOLERANCE_SECONDS) return { ok: false, reason: "stale_signature" };
-    const expected = createHmac("sha256", HMAC_SECRET).update(`${ts}.${nonce}.${rawBody.toString()}`).digest("hex");
-    const a = Buffer.from(expected);
-    const b = Buffer.from(sig);
-    if (a.length !== b.length || !timingSafeEqual(a, b)) return { ok: false, reason: "bad_signature" };
-    if (!rememberNonce(`generic:${nonce}`)) return { ok: false, reason: "replay" };
-    return { ok: true };
-  }
-  return { ok: false, reason: "unknown_hmac_provider" };
+) {
+  return verifyHmacImpl(
+    {
+      provider: HMAC_PROVIDER,
+      secret: HMAC_SECRET,
+      toleranceSeconds: HMAC_TOLERANCE_SECONDS,
+      nonceStore,
+    },
+    rawBody,
+    headers,
+  );
 }
 
 // ── Concurrency + per-IP rate limit ──────────────────────────────────────

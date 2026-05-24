@@ -8,6 +8,8 @@
     "start": "tsx server.ts",
     "demo": "X402_MODE=demo tsx server.ts",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "tsx": "^4.0.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^2.1.9"
   }
 }

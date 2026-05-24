@@ -2,6 +2,29 @@
 
 All notable changes to `sera-agents` are documented in this file.
 
+## [0.7.2] — 2026-05-24
+
+### Added — test coverage across x402-service + webhook-agent (0 → 73 tests)
+
+**x402-service (52 tests across 4 files):**
+- `test/state.test.ts` (15 tests) — atomic CAS for every state transition (the load-bearing mitigation for Attack II from arXiv:2605.11781), idempotent replay, `listFailedRefundable` for operator queue, `gcExpired` keeps `failed_refundable` + `delivered` entries.
+- `test/env.test.ts` (11 tests) — boot gates: defaults, demo-on-public refusal, live-mode required-env enforcement (X402_FACILITATOR_URL / CDP_API_KEY_ID / VAULT_ADDRESS / LIVE_ACK / CONFIRMATION_DEPTH ≥ 3), invalid mode rejection.
+- `test/facilitator.test.ts` (10 tests) — CDP `/verify` + `/settle` request shape (URL, headers, body), success/failure path handling, network errors, trailing-slash normalization.
+- `test/payment.test.ts` (16 tests) — verify/settle/execute orchestration with mocked facilitator + mocked MCP, demo short-circuit paths, MCP `isError` handling, MCP subprocess crash handling, state transition helpers including atomic two-concurrent-CAS test.
+
+**webhook-agent (21 tests):**
+- `test/hmac.test.ts` — HMAC verification across Stripe / GitHub / generic providers with replay protection. Tests valid signatures, missing/malformed headers, stale timestamps, wrong signatures, missing secret, nonce replay rejection. Bonus: `makeNonceStore` LRU GC behavior.
+- Refactored `verifyHmac` + `rememberNonce` out of `server.ts` into testable `hmac.ts` module with injected dependencies (`HmacConfig` carries `nonceStore` + optional `now` test seam).
+
+### Added — vitest scaffolding
+- x402-service: vitest devDep + test script + vitest.config.ts.
+- webhook-agent: vitest devDep + test script + vitest.config.ts.
+- Root `npm run test` (`--workspaces --if-present`) now picks up both — workspace-wide test runs go from 0 → 73 tests.
+
+### Notes
+- All 73 tests pass in <500ms.
+- No production behavior change. One refactor (HMAC extraction) for testability; behavior identical.
+
 ## [0.7.1] — 2026-05-24
 
 ### Fixed — docs out of sync with shipped reality (sera-agents v0.6.0+)
