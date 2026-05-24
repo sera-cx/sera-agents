@@ -1,6 +1,6 @@
 {
   "name": "sera-agents",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "private": true,
   "description": "Agent templates, x402 services, docs, demos, and host integrations built on top of sera-mcp.",
   "workspaces": [

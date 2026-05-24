@@ -2,6 +2,25 @@
 
 All notable changes to `sera-agents` are documented in this file.
 
+## [0.7.3] — 2026-05-25
+
+### Changed — `templates/market-maker` rewritten as deterministic loop (v0.1.0 → v0.2.0)
+- Dropped `@openai/agents` dependency. The maker loop is rule-based — wrapping it in an LLM tool-use harness adds latency and failure modes without value.
+- Added `ethers` v6 for client-side EIP-712 Order signing.
+- New `lib/` modules:
+  - `lib/order-signer.ts` — EIP-712 OrderStruct (`user / expiration / feeBps / recipient / fromToken / toToken / fromAmount / toAmount / initialDepositAmount / uuid`), domain (`name: "Sera", version: "1", chainId, verifyingContract`), `signOrder` + `orderHash` helpers via `ethers.TypedDataEncoder`.
+  - `lib/uuid-int.ts` — composite 256-bit `uuid_int` layout (`executor_id[4] | uuid_bits[128] | group_id[112] | leg_id[12]`). `makeOrderId` for standalone orders; `makeVlSibling` for VL batches.
+  - `lib/mcp-client.ts` — minimal stdio JSON-RPC client. Spawns `sera-mcp` once, holds the subprocess, exposes `tool(name, args)` over MCP `tools/call`. No SDK wrapper.
+  - `lib/loop.ts` — single-tick cancel → mid → drift-gate → sign+place. Spend-direction semantics for fromToken/toToken (bid spends quote / ask spends base). DRY-RUN logs order hash without submitting.
+- `agent.ts` — refuses to start without `SIGNER_PRIVATE_KEY`. Refuses non-Sepolia networks unless `MM_MAINNET_ACK=true` is set explicitly. Boots sera-mcp, runs `sera.doctor` for boot sanity (chain_id match, contracts present, tokens loaded), looks up market via `sera.get_markets`, runs loop with SIGINT cancel-on-exit.
+- `package.json` — added `dry-run` script (`MM_DRY_RUN=true tsx agent.ts`).
+- `tsconfig.json` — include `lib/**/*.ts`.
+
+### Verified
+- `npm run typecheck` clean on `templates/market-maker`.
+- DRY-RUN smoke-tested on mainnet EURC/USDC (previous session).
+- Compatible with `sera-mcp` v0.8.3 testnet endpoint correction (`api-testnet.sera.cx`).
+
 ## [0.7.2] — 2026-05-24
 
 ### Added — test coverage across x402-service + webhook-agent (0 → 73 tests)

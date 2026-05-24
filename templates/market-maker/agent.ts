@@ -1,24 +1,22 @@
+#!/usr/bin/env node
 /**
- * market-maker template — two-sided spread bot on Sera.
+ * sera-market-maker — Sepolia-safe two-sided spread bot driver.
  *
- * Uses the OpenAI Agents SDK with sera-mcp v0.7.0+ maker tools. The agent
- * runs a cancel-before-place loop, reading multi-source FX mid and quoting
- * a tight spread around it. Designed as an educational scaffold — see
- * README "Production checklist before deploying" before running with real
- * money.
+ * Reads env config, boots sera-mcp, fetches market + chain context, then
+ * runs the cancel-before-place loop in lib/loop.ts. DRY_RUN by default —
+ * flip MM_DRY_RUN=false to start actually placing orders.
  *
- * Loop knobs come from env (MM_PAIR, MM_NOTIONAL, MM_SPREAD_BPS, MM_DRIFT_BPS,
- * MM_POLL_SECONDS, MM_EXPIRATION_SECONDS). The agent itself is non-LLM — it
- * deterministically calls sera tools via the SDK's MCP tool wrapping.
- *
- * Why no LLM in the loop? Market making at this granularity is rule-based,
- * not natural-language-driven. A real product might layer an LLM-driven
- * supervisor on top (anomaly detection, regime change), but the inner loop
- * should always be deterministic.
+ * The agent code path is deterministic — no LLM in the inner loop. An
+ * optional supervisor layer (Manus, Claude, OpenAI Agents SDK) can wrap
+ * this for anomaly-detection / regime-change adjustments, but the trade
+ * loop itself is rule-based.
  */
-import { Agent, MCPServerStdio, run } from "@openai/agents";
+import { Wallet } from "ethers";
 import { resolve } from "node:path";
+import { startSeraMcp } from "./lib/mcp-client.js";
+import { runOneTick, sleep, type LoopConfig, type LoopState, type MarketInfo } from "./lib/loop.js";
 
+// ── env config ──────────────────────────────────────────────────────────
 const MCP_PATH =
   process.env.SERA_MCP_DIST ??
   resolve(process.env.HOME!, "Desktop/SERA MCP and AGENT/sera-mcp/dist/index.js");
@@ -27,109 +25,181 @@ const PAIR = process.env.MM_PAIR ?? "EURC/USDC";
 const NOTIONAL = Number(process.env.MM_NOTIONAL ?? 100);
 const SPREAD_BPS = Number(process.env.MM_SPREAD_BPS ?? 10);
 const DRIFT_BPS = Number(process.env.MM_DRIFT_BPS ?? 5);
-const POLL_SECONDS = Number(process.env.MM_POLL_SECONDS ?? 3);
+const POLL_SECONDS = Number(process.env.MM_POLL_SECONDS ?? 60);
+const EXPIRATION_SECONDS = Number(process.env.MM_EXPIRATION_SECONDS ?? 3600);
+const DRY_RUN = (process.env.MM_DRY_RUN ?? "true").toLowerCase() !== "false";
+const NETWORK = process.env.SERA_NETWORK ?? "sepolia";
 
-if (!process.env.OPENAI_API_KEY) {
-  console.error("OPENAI_API_KEY required.");
+const PRIVATE_KEY = process.env.SIGNER_PRIVATE_KEY;
+if (!PRIVATE_KEY) {
+  process.stderr.write(
+    `\nrefusing to start: SIGNER_PRIVATE_KEY is required (the wallet that signs Order structs).\n` +
+      `Use a wallet you've INTENTIONALLY funded for this bot. Sepolia first.\n\n`,
+  );
   process.exit(1);
+}
+if (NETWORK !== "sepolia" && DRY_RUN === false) {
+  process.stderr.write(
+    `\nrefusing to start: SERA_NETWORK=${NETWORK} with MM_DRY_RUN=false.\n` +
+      `Set SERA_NETWORK=sepolia for the internal test. Live mainnet maker mode requires\n` +
+      `explicit MM_MAINNET_ACK=true (not set).\n\n`,
+  );
+  if (process.env.MM_MAINNET_ACK !== "true") process.exit(1);
 }
 
 async function main() {
-  const sera = new MCPServerStdio({
-    name: "sera",
-    command: "node",
-    args: [MCP_PATH],
-  });
-  await sera.connect();
-
-  // Agent is intentionally narrow: it's a deterministic shell around the MCP
-  // tool surface, not an LLM-driven decision loop. The "instructions" are a
-  // safety preamble so an accidental LLM bridge upstream couldn't divert.
-  const agent = new Agent({
-    name: "sera-market-maker",
-    instructions:
-      "You are a deterministic market-making operator. Only run the exact tool calls the orchestrator issues. " +
-      "Do not invent additional trades. Do not exceed POLICY_MAX_NOTIONAL_USD.",
-    mcpServers: [sera],
-  });
+  const wallet = new Wallet(PRIVATE_KEY!);
+  const ownerAddress = wallet.address;
 
   console.log(
-    `\nsera market-maker template starting:\n` +
-      `  pair: ${PAIR}\n` +
-      `  notional: ${NOTIONAL}\n` +
-      `  spread: ±${SPREAD_BPS}bps (${(2 * SPREAD_BPS) / 100}% round-trip)\n` +
-      `  drift threshold: ${DRIFT_BPS}bps\n` +
-      `  poll: ${POLL_SECONDS}s\n` +
-      `  mcp: ${MCP_PATH}\n` +
-      `\nCtrl-C to stop. Open orders are NOT auto-cancelled on exit — call sera.cancel_all_orders from another session.\n\n`,
+    `\nsera-market-maker v0.2.0\n` +
+      `  network:     ${NETWORK}\n` +
+      `  pair:        ${PAIR}\n` +
+      `  notional:    ${NOTIONAL} (base units)\n` +
+      `  spread:      ±${SPREAD_BPS}bps (round-trip ${(2 * SPREAD_BPS) / 100}%)\n` +
+      `  drift gate:  ${DRIFT_BPS}bps\n` +
+      `  poll:        ${POLL_SECONDS}s\n` +
+      `  expiration:  ${EXPIRATION_SECONDS}s per order\n` +
+      `  wallet:      ${ownerAddress}\n` +
+      `  mode:        ${DRY_RUN ? "DRY-RUN (no orders submitted)" : "LIVE (orders submitted)"}\n` +
+      `  mcp:         ${MCP_PATH}\n`,
   );
 
-  let lastMid: number | null = null;
+  // Boot sera-mcp with the SAME network + signer-mode setup, propagating the
+  // wallet key so server-side signing works if anyone wants to use it. We
+  // sign Order structs client-side regardless — server-side signer is
+  // unused by this template.
+  const mcp = await startSeraMcp({
+    mcpPath: MCP_PATH,
+    env: {
+      SERA_NETWORK: NETWORK,
+      SERA_SIGNER_MODE: "external",            // we sign locally
+      SERA_ENABLE_EXECUTION_TOOLS: "true",     // we need place_order
+      POLICY_PRESET: process.env.POLICY_PRESET ?? "starter",
+      LOG_LEVEL: "warn",
+    },
+  });
+
+  // Boot sanity checks via sera.doctor.
+  console.log(`reading sera.doctor for executor_id + network sanity…`);
+  const doctor = await mcp.tool<{
+    overall_ok: boolean;
+    checks: Array<{ name: string; ok: boolean; detail: string }>;
+  }>("sera.doctor");
+  if (!doctor.overall_ok) {
+    console.error("doctor.overall_ok=false. Checks:");
+    for (const c of doctor.checks) console.error(`  ${c.ok ? "✓" : "✗"} ${c.name}: ${c.detail}`);
+    process.exit(2);
+  }
+  const executorIdCheck = doctor.checks.find((c) => c.name === "executor_id");
+  const executorId = parseExecutorId(executorIdCheck?.detail) ?? 0n;
+  console.log(`  executor_id=${executorId}`);
+
+  // Pull live contract addresses from sera://config (not hardcoded — Sera docs say so).
+  // We expose this via the doctor 'contracts' check.
+  const contractsCheck = doctor.checks.find((c) => c.name === "contracts");
+  const { seraAddress, chainId } = parseContracts(contractsCheck?.detail, NETWORK);
+  console.log(`  sera=${seraAddress} chainId=${chainId}`);
+
+  // Look up market info.
+  console.log(`looking up market ${PAIR}…`);
+  const market = await findMarket(mcp, PAIR);
+  console.log(
+    `  base=${market.base_symbol} (${market.base_address.slice(0, 8)}…, ${market.base_decimals}d) ` +
+      `quote=${market.quote_symbol} (${market.quote_address.slice(0, 8)}…, ${market.quote_decimals}d)`,
+  );
+
+  const cfg: LoopConfig = {
+    pair: PAIR,
+    notional: NOTIONAL,
+    spreadBps: SPREAD_BPS,
+    driftBps: DRIFT_BPS,
+    pollSeconds: POLL_SECONDS,
+    expirationSeconds: EXPIRATION_SECONDS,
+    dryRun: DRY_RUN,
+    wallet,
+    ownerAddress,
+    chainId,
+    seraAddress,
+    executorId,
+  };
+  const state: LoopState = {
+    lastMid: null,
+    ticks: 0,
+    ordersPosted: 0,
+    ordersFailed: 0,
+    errors: 0,
+  };
+
+  console.log(`\nstarting loop. Ctrl-C to stop.\n`);
+
+  // Graceful shutdown: on Ctrl-C, attempt one final cancel_all_orders.
+  process.on("SIGINT", async () => {
+    console.log(`\n\nSIGINT — attempting final cancel_all_orders…`);
+    try {
+      const r = await mcp.tool<{ total: number }>("sera.cancel_all_orders", { owner_address: ownerAddress });
+      console.log(`  cancelled ${r.total ?? 0} on exit.`);
+    } catch (e: any) {
+      console.error(`  cancel-on-exit warning: ${e?.message ?? String(e)}`);
+    }
+    console.log(`\nfinal stats: ticks=${state.ticks} posted=${state.ordersPosted} failed=${state.ordersFailed} errors=${state.errors}`);
+    mcp.close();
+    process.exit(0);
+  });
 
   for (;;) {
-    try {
-      // Step 1: kill stale quotes (5-min per-order cooldown applies).
-      await run(agent, [
-        {
-          role: "user",
-          content: `Call sera.cancel_all_orders for the configured owner. Return only the tool's response — do not narrate.`,
-        },
-      ]);
-
-      // Step 2: read multi-source mid for the configured pair.
-      const [base, quote] = PAIR.split("/");
-      const midResult = await run(agent, [
-        {
-          role: "user",
-          content: `Call sera.multi_source_mid with base="${base}" and quote="${quote}". Return only the median rate as a single number.`,
-        },
-      ]);
-      const midText = String(midResult.finalOutput ?? "").match(/[\d.]+/)?.[0];
-      const mid = midText ? Number(midText) : NaN;
-      if (!Number.isFinite(mid) || mid <= 0) {
-        console.error(`[tick] mid unparseable: ${midResult.finalOutput}`);
-        await sleep(POLL_SECONDS);
-        continue;
-      }
-
-      // Step 3: drift gate — only requote if mid moved enough.
-      if (lastMid !== null) {
-        const driftBps = Math.abs((mid - lastMid) / lastMid) * 10_000;
-        if (driftBps < DRIFT_BPS) {
-          console.log(`[tick] mid=${mid.toFixed(6)} drift=${driftBps.toFixed(2)}bps < ${DRIFT_BPS}bps — hold.`);
-          await sleep(POLL_SECONDS);
-          continue;
-        }
-      }
-      lastMid = mid;
-
-      const bidPrice = mid * (1 - SPREAD_BPS / 10_000);
-      const askPrice = mid * (1 + SPREAD_BPS / 10_000);
-      console.log(
-        `[tick] mid=${mid.toFixed(6)} bid=${bidPrice.toFixed(6)} ask=${askPrice.toFixed(6)} ` +
-          `(${PAIR}, ${NOTIONAL} ${base})`,
-      );
-
-      // Step 4: place fresh bid + ask. This template stops at logging intended
-      // orders — actual sera.place_order requires the agent to construct
-      // uuid_int and sign Order structs as EIP-712, which needs a wallet
-      // library (ethers / viem) beyond OpenAI Agents SDK's scope. See
-      // README for the production wiring path.
-      console.log(`[tick] (template stops here — wire sera.place_order with signed Order structs to go live)`);
-
-      await sleep(POLL_SECONDS);
-    } catch (e: any) {
-      console.error(`[tick] error: ${e?.message ?? String(e)}`);
-      await sleep(POLL_SECONDS);
-    }
+    await runOneTick(mcp, market, cfg, state);
+    await sleep(POLL_SECONDS);
   }
 }
 
-function sleep(seconds: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, seconds * 1000));
+// ── helpers ─────────────────────────────────────────────────────────────
+
+function parseExecutorId(detail?: string): bigint | null {
+  // detail format: "executor_id=0 (matches expected for mainnet)"
+  const m = detail?.match(/executor_id=(\d+)/);
+  return m ? BigInt(m[1]) : null;
+}
+
+function parseContracts(detail: string | undefined, network: string): { seraAddress: string; chainId: number } {
+  // detail format: "sera=0xB5C5…E198 vault=0xC7d4…4D43 sor=0xa7A0…1c18"
+  const m = detail?.match(/sera=(0x[0-9a-fA-F]{40})/);
+  if (!m) {
+    throw new Error(`Could not extract sera contract address from doctor. Got: ${detail ?? "(undefined)"}`);
+  }
+  return {
+    seraAddress: m[1],
+    chainId: network === "mainnet" ? 1 : 11155111,
+  };
+}
+
+interface SeraMarket {
+  symbol: string;
+  base_address: string;
+  quote_address: string;
+  base_symbol: string;
+  quote_symbol: string;
+  base_decimals: number;
+  quote_decimals: number;
+}
+
+async function findMarket(mcp: Awaited<ReturnType<typeof startSeraMcp>>, pair: string): Promise<MarketInfo> {
+  const r = await mcp.tool<{ markets: SeraMarket[] }>("sera.get_markets");
+  const target = pair.toUpperCase();
+  const match = r.markets.find((m) => m.symbol?.toUpperCase() === target);
+  if (!match) {
+    const available = r.markets.map((m) => m.symbol).slice(0, 20).join(", ");
+    throw new Error(
+      `market "${pair}" not found in /markets. Available (first 20): ${available}.`,
+    );
+  }
+  if (!match.base_address || !match.quote_address) {
+    throw new Error(`market "${pair}" missing base/quote addresses: ${JSON.stringify(match)}`);
+  }
+  return match;
 }
 
 main().catch((e) => {
-  console.error("fatal", e);
+  console.error("fatal:", e);
   process.exit(1);
 });

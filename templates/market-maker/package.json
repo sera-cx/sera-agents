@@ -1,18 +1,20 @@
 {
   "name": "sera-template-market-maker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Template: two-sided spread market-making bot on Sera. Demonstrates the maker tool surface (place_order, cancel_all_orders, multi_source_mid) added in sera-mcp v0.7.0.",
+  "description": "Two-sided spread market-making bot on Sera. Real EIP-712 Order signing via ethers. Sepolia-safe DRY_RUN default. Demonstrates the maker tool surface (place_order / cancel_all_orders / multi_source_mid) added in sera-mcp v0.7.0.",
   "scripts": {
     "start": "tsx agent.ts",
+    "dry-run": "MM_DRY_RUN=true tsx agent.ts",
     "typecheck": "tsc --noEmit",
     "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
-    "@openai/agents": "^0.3.0"
+    "ethers": "^6.13.4"
   },
   "devDependencies": {
+    "@types/node": "^22.7.5",
     "tsx": "^4.0.0",
     "typescript": "^5.4.0"
   }
