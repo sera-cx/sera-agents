@@ -2,6 +2,18 @@
 
 All notable changes to `sera-agents` are documented in this file.
 
+## [0.7.1] — 2026-05-24
+
+### Fixed — docs out of sync with shipped reality (sera-agents v0.6.0+)
+Public-repo credibility issue caught by audit pass: docs were saying "planned" / "stub" / "not built" for things that landed in v0.6.0. Reconciled across:
+
+- **`README.md`**: Status table x402 row no longer says "Experimental — `verifyPayment` is intentional scaffold". Now says "Wired, not yet production-verified" with the actual v0.6.0 surface (CDP facilitator integration, atomic CAS, Cache-Control, k≥3 gate, operator ack). Roadmap entry rewritten from "replace verifyPayment stub" to "Base Sepolia E2E verification" — that's the actual remaining work.
+- **`ARCHITECTURE.md`**: Path D section now documents the modular split (env / state / facilitator / sera-client / payment / server), the CAS-gated state machine diagram, atomic idempotency mitigation per arXiv:2605.11781, manual-refund queue + `/admin/refundables`, persistence shape. No longer says "live verification not yet implemented".
+- **`x402-service/README.md`**: complete rewrite. Status banner at top reflects v0.3.0 state (live wired, not yet mainnet-verified). Live-mode run-instructions list all 5 required env vars with explanations. Threat-model coverage matrix. "Remaining gate before mainnet flip" section. "What's not built yet" trimmed to the actually-unbuilt: automated facilitator settlement-reversal, OAuth on /admin/refundables, multi-instance horizontal scale.
+
+### Notes
+- No code changes. This is purely a docs reconciliation release — the gap between "what shipped in v0.6.0" and "what the public docs claimed" was its own credibility risk.
+
 ## [0.7.0] — 2026-05-24
 
 ### Added — two new templates demonstrating the v0.6.0+ sera-mcp surface

@@ -145,22 +145,43 @@ A single-file interactive CLI built on the same OpenAI Agents SDK + stdio MCP pa
 
 ## Path D — the x402 service
 
-`x402-service/server.ts` is a Hono server implementing the [x402](https://github.com/coinbase/x402) flow: initial `POST /x402/swap` returns 402 with payment requirements, client supplies `X-PAYMENT`, server verifies → reserves → executes Sera swap → returns 200 + settlement metadata.
+`x402-service/` is a Hono server implementing the [x402](https://github.com/coinbase/x402) flow: `POST /x402/swap` → 402 with payment requirements → client supplies `X-PAYMENT` → server verifies → atomic CAS reserves → settles → executes Sera swap → returns 200 + settlement metadata.
+
+**Modular layout (v0.6.0):**
+
+```
+x402-service/
+├── env.ts            Boot config + safety gates (refuses unsafe configs)
+├── state.ts          PaymentStatus state machine + SQLite-backed atomic CAS store
+├── facilitator.ts    Coinbase CDP facilitator client (/verify + /settle)
+├── sera-client.ts    Long-lived sera-mcp stdio subprocess + JSON-RPC wrapper
+├── payment.ts        verify/settle/execute orchestration + state transitions
+└── server.ts         Hono routes + rate-limit + concurrency cap + boot
+```
 
 **Two modes:**
 
-- `X402_MODE=demo` (default) — self-contained. `verifyPayment` short-circuits to accept any `<payment_id>:authorization` shape. Safe to run locally.
-- `X402_MODE=live` — **not production-complete**. `verifyPayment` returns `"live verification not yet implemented"`. Replacing this with the official Coinbase CDP facilitator (`@coinbase/x402`) is on the roadmap.
+- `X402_MODE=demo` (default, `127.0.0.1` only) — self-contained. `verifyPayment` short-circuits; `settlePayment` is a no-op; `executeSwap` returns a mock. Safe to run locally.
+- `X402_MODE=live` — Coinbase CDP facilitator integration. `verifyPayment` → `POST {X402_FACILITATOR_URL}/verify` (returns `isValid`). `settlePayment` → `POST /settle` (returns `txHash`, `networkId`). `executeSwap` → `sera.convert_and_send` via MCP. Operator-gated behind `X402_LIVE_ACK=true` + `X402_CONFIRMATION_DEPTH ≥ 3` + full CDP env (`X402_FACILITATOR_URL` + `X402_CDP_API_KEY_ID` + `X402_CDP_API_KEY_SECRET` + `X402_VAULT_ADDRESS`) — boot refuses without all of these, pending Base Sepolia E2E verification.
 
-State machine (simplified):
+**State machine** (CAS-gated at every transition):
 
 ```
-pending  ─verify→  verified  ─execute→  executing  ─settle→  delivered
-   │                  │                                          │
-   └─expires─→ 410    └─verify fails─→ 402                       └─swap fails─→ failed_refundable
+pending  ─cas(verify ok)→  verified  ─cas→  executing  ─cas(swap ok)→  delivered
+   │                          │                            │
+   ├─expires────────→ 410     ├─verify fail─→ 402          ├─settle fail──→ failed_refundable
+   │                          │                            ├─swap fail────→ failed_refundable
+   └─unknown────────→ 410     └─concurrent retry rejected
+                              with 202 still_executing
 ```
 
-Persistence: SQLite via `better-sqlite3`, keyed by `payment_id`. The DB lives next to `server.ts` and is created on first run.
+Every transition is an atomic `cas(payment_id, expected_status, next_status)` in SQLite. Concurrent X-PAYMENT retries for a single `payment_id` collapse safely: replay after `delivered` returns the cached `delivered_payload`; replay during `executing` returns 202.
+
+**Idempotency / replay protection** — mitigates Attack II from arXiv:2605.11781 (replay/idempotency: the live testbed observed 248 grants per single payment against a non-atomic implementation).
+
+**Refund policy:** manual queue (default). `failed_refundable` payments surface via `GET /admin/refundables` (auth: `Bearer ${X402_ADMIN_TOKEN}`). Automated facilitator settlement-reversal is on the roadmap.
+
+**Persistence:** SQLite via `better-sqlite3`, schema in `state.ts`. Path via `X402_STATE_DB`. Memory store mirrors for cache; SQLite is authoritative on restart.
 
 ## Examples
 

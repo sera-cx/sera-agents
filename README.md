@@ -171,13 +171,13 @@ Honest read of what's solid vs what's still moving:
 | Examples (`invoice-payer`, `treasury-rebalancer`) | **Demo / starter** | Reference flows; not turnkey services |
 | `sera-agent/` bundled CLI | **Demo / starter** | Interactive REPL for quick exploration |
 | `x402-service/` demo mode | **Experimental** | Self-contained; no facilitator needed; safe to run locally |
-| `x402-service/` live mode | **Experimental — not production-complete** | `verifyPayment` is intentional scaffold; live settlement awaits official x402 facilitator (`@coinbase/x402`) integration. See [`x402-service/README.md`](x402-service/README.md). |
+| `x402-service/` live mode | **Wired, not yet production-verified** (v0.6.0) | Coinbase CDP facilitator integration shipped (`verifyPayment` + `settlePayment` call `/verify` and `/settle`). Atomic CAS idempotency, `Cache-Control: no-store`, `X402_CONFIRMATION_DEPTH ≥ 3` enforced. Operator-gated behind `X402_LIVE_ACK=true` — boot refuses without it, pending Base Sepolia E2E verification. See [`x402-service/README.md`](x402-service/README.md) + [`SECURITY-MODEL.md`](SECURITY-MODEL.md). |
 | Streamable HTTP MCP usage in templates | **Planned** | Templates currently use stdio (`MCPServerStdio`). |
 | `npx create-sera-agent` scaffolder | **Planned** | After more template adoption. |
 
 ## Roadmap
 
-- **`x402-service` live mode** — replace `verifyPayment` stub with official Coinbase CDP facilitator (`@coinbase/x402`); add idempotency store, `Cache-Control: no-store`, confirmation depth ≥3 on Base; define refund/failure behavior.
+- **`x402-service` live mode — Base Sepolia E2E verification.** v0.6.0 wired the Coinbase CDP facilitator integration end-to-end (verify + settle + atomic CAS idempotency + cache-control + k≥3 confirmation gate + manual-refund queue). Operator needs to run one full payment cycle on Base Sepolia, refine `authHeader()` if CDP requires HMAC-SHA256 JWT instead of the current `Bearer ${id}:${secret}` form, then switch `X402_NETWORK=base` for mainnet.
 - **Streamable HTTP templates** — alongside stdio examples; for ChatGPT connectors and hosted/remote agents. No SSE work planned (deprecated upstream).
 - **`npx create-sera-agent`** — proper scaffolder once enough people use the templates.
 - **Push subscriptions** — deal alerts and rate-threshold notifications instead of polling.
