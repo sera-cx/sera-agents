@@ -183,11 +183,11 @@ npm install &amp;&amp; npm start</code></pre>
       </div>
       <div class="codeblock">
         <div class="filename">the loop (lib/loop.ts)</div>
-<pre><code>get_balances             <span style="color:#6B7180"># inventory guard — skip if unfunded</span>
-mid = multi_source_mid
-deal = find_deals        <span style="color:#6B7180"># best executable rate (or get_quote)</span>
-<span style="color:#A78BFA">if</span> deal.edge_bps &lt; TK_MIN_EDGE_BPS: hold
-convert_and_send         <span style="color:#6B7180"># take it (max_slippage = the edge you gated on)</span></code></pre>
+<pre><code>deal = find_deals        <span style="color:#6B7180"># scan markets, diff Sera vs external mid; filter to TK_PAIR</span>
+edge = directional(deal.sera_rate, deal.external_mid)
+<span style="color:#A78BFA">if</span> edge &lt; TK_MIN_EDGE_BPS: hold
+get_balances             <span style="color:#6B7180"># inventory guard — skip if you can't fund the spend leg</span>
+convert_and_send         <span style="color:#6B7180"># take it (the edge gate is your slippage protection)</span></code></pre>
       </div>
 
       <h3><span class="step-num">3</span>Cap the risk before going live</h3>

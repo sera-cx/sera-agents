@@ -29,6 +29,7 @@ const MCP_PATH =
 const PAIR = process.env.TK_PAIR ?? "EURC/USDC";
 const SIDE = (process.env.TK_SIDE ?? "buy").toLowerCase() as TakeSide;
 const NOTIONAL = Number(process.env.TK_NOTIONAL ?? 100);
+const NOTIONAL_USD = Number(process.env.TK_NOTIONAL_USD ?? NOTIONAL);
 const MIN_EDGE_BPS = Number(process.env.TK_MIN_EDGE_BPS ?? 15);
 const POLL_SECONDS = Number(process.env.TK_POLL_SECONDS ?? 30);
 const DRY_RUN = (process.env.TK_DRY_RUN ?? "true").toLowerCase() !== "false";
@@ -109,6 +110,7 @@ async function main() {
     pair: PAIR,
     side: SIDE,
     notional: NOTIONAL,
+    notionalUsd: NOTIONAL_USD,
     minEdgeBps: MIN_EDGE_BPS,
     pollSeconds: POLL_SECONDS,
     dryRun,
@@ -116,7 +118,6 @@ async function main() {
     recipient: RECIPIENT!,
   };
   const state: TakerState = {
-    lastMid: null,
     ticks: 0,
     takesExecuted: 0,
     takesFailed: 0,

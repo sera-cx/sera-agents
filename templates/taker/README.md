@@ -20,15 +20,14 @@ Run both against the same wallet if you want to make on one pair and take on ano
 
 ```
 loop every TK_POLL_SECONDS:
-  1. get_balances            (inventory guard — skip if you can't fund the take)
-  2. multi_source_mid        (reference mid for the pair)
-  3. find_deals              (best executable rate; falls back to get_quote)
-  4. edge gate               (only take if rate beats mid by ≥ TK_MIN_EDGE_BPS)
-  5. convert_and_send        (take it — or just log it if TK_DRY_RUN)
-  6. sleep TK_POLL_SECONDS
+  1. find_deals              (scan all markets, diff Sera vs external mid; filter to TK_PAIR)
+  2. edge gate               (only take if the directional edge ≥ TK_MIN_EDGE_BPS)
+  3. get_balances            (inventory guard — skip if you can't fund the spend leg)
+  4. convert_and_send        (take it — or just log it if TK_DRY_RUN)
+  5. sleep TK_POLL_SECONDS
 ```
 
-Uses sera-mcp tools: `sera.get_balances`, `sera.multi_source_mid`, `sera.find_deals` (or `sera.get_quote`), `sera.convert_and_send`, `sera.doctor`.
+`find_deals` already diffs Sera's rate against external mid per market, so the loop reads `sera_rate` + `external_mid` straight off each deal and computes the **directional** edge for your side (buy wants Sera cheaper than mid; sell wants it richer). Uses sera-mcp tools: `sera.find_deals`, `sera.get_balances`, `sera.convert_and_send`, `sera.doctor`. Signatures follow the [API reference](https://agents.sera.cx/docs/api/) (`find_deals { min_bps, notional_usd }` → `{ deals:[{ pair, edge_bps, sera_rate, external_mid }] }`; `get_quote`/`convert_and_send` use `from`/`to`/`amount`).
 
 ## Run
 
@@ -43,7 +42,7 @@ You'll see each tick print the mid, the best rate, the computed edge, and — wh
 
 ## Tool-shape caveat
 
-`find_deals` / `get_quote` field names (`edge_bps`, `rate`, `deals[…]`) vary by sera-mcp version. `lib/loop.ts` accepts several shapes and **refuses to act on anything it can't parse** (it holds instead). Before going live, run `sera.doctor` and eyeball a raw `sera.find_deals` response against your installed version, then adjust the parsers in `bestDeal()` / `parseRate()` if needed.
+Tool field names can drift across sera-mcp versions. `lib/loop.ts` reads `find_deals` results loosely (`sera_rate`/`rate`, `external_mid`/`mid`, `deals[…]`) and **refuses to act on anything it can't parse** — it holds instead of guessing. Before going live, run `sera.doctor` and eyeball a raw `sera.find_deals` response against your installed version, then adjust `normalizeDeal()` if the shape differs. The execution call (`convert_and_send`) isn't fully specified in the public reference beyond `from`/`to`/`amount` — verify its exact params on your install and dry-run first.
 
 ## How it differs from a real production taker
 
@@ -61,7 +60,7 @@ This template intentionally omits:
 - [ ] **`POLICY_PRESET=starter` (or stricter).** `POLICY_MAX_NOTIONAL_USD` caps a single take; `POLICY_DAILY_VOLUME_CAP_USD` is your kill switch.
 - [ ] **`TK_DRY_RUN=true` first.** Watch the logs until the edges and takes look right.
 - [ ] **Verify tool shapes.** Confirm `find_deals`/`get_quote` parse on your sera-mcp version (see caveat above).
-- [ ] **Slippage = edge.** `max_slippage_bps` is wired to `TK_MIN_EDGE_BPS` so you never fill worse than you gated on. Keep it tight.
+- [ ] **Slippage.** `convert_and_send` re-quotes at execution; the loop's `TK_MIN_EDGE_BPS` gate is your only edge protection. Keep it well above round-trip cost (`sera.round_trip_cost`) and confirm the delivered rate via `sera.settlement_status` after each take.
 - [ ] **Rate limits.** Sera enforces per-wallet trade limits (5/s). Keep `TK_POLL_SECONDS` sane.
 - [ ] **Observability.** Log every fill (`sera.get_fills`) to a sink you watch.
 - [ ] **Mainnet ack.** Live mainnet requires `TK_MAINNET_ACK=true` — the bot refuses otherwise.
