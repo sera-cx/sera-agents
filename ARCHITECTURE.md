@@ -65,7 +65,10 @@ sera-agents/
 │   ├── README.md
 │   ├── chat-cli/               Terminal REPL template
 │   ├── web-chat/               Express + browser chat UI
-│   └── webhook-agent/          HTTP endpoint that triggers an agent task
+│   ├── webhook-agent/          HTTP endpoint that triggers an agent task
+│   ├── market-maker/           Deploy liquidity — deterministic maker loop
+│   ├── taker/                  Take liquidity — deterministic taker loop
+│   └── withdraw-cli/           Dual-sig instant-withdrawal walkthrough
 │
 ├── examples/                   Reference flows (programmatic, single-task)
 │   ├── invoice-payer/          Cross-currency invoice settlement
@@ -93,7 +96,7 @@ sera-agents/
 
 ## Workspaces
 
-This repo is an `npm` workspace. Root `package.json` declares 7 packages:
+This repo is an `npm` workspace. Root `package.json` declares 10 packages:
 
 ```
 sera-agent
@@ -101,6 +104,9 @@ x402-service
 templates/chat-cli
 templates/web-chat
 templates/webhook-agent
+templates/market-maker
+templates/taker
+templates/withdraw-cli
 examples/invoice-payer
 examples/treasury-rebalancer
 ```
@@ -129,7 +135,7 @@ External — uses `sera-mcp` directly, no code in this repo. See `README.md` Pat
 - Spawns `sera-mcp` as a stdio subprocess via `MCPServerStdio`.
 - Defines a system prompt + agent role; the agent decides which `sera.*` tools to call.
 
-Each template exposes one shape:
+The conversational templates expose one shape each:
 
 | Template | Shape | Auth |
 |---|---|---|
@@ -138,6 +144,17 @@ Each template exposes one shape:
 | `webhook-agent` | HTTP `POST /webhook` → run agent → return result | HMAC (Stripe / GitHub / generic) |
 
 Templates do not bundle production-grade auth, rate limiting, or persistence. They are starters.
+
+### Trading templates — maker and taker
+
+`market-maker` and `taker` are a different shape: **deterministic loops with no LLM in the hot path** (an LLM supervisor can wrap them, but the trade loop is rule-based). They share `lib/mcp-client.ts` — a minimal stdio JSON-RPC client that spawns `sera-mcp` once and exposes `tool(name, args)`.
+
+| Template | Loop | Execution tool | Signing |
+|---|---|---|---|
+| `market-maker` | cancel → mid → drift gate → place bid+ask | `sera.place_order` | client-side EIP-712 (`lib/order-signer.ts`) |
+| `taker` | inventory guard → mid → find best deal → edge gate → take | `sera.convert_and_send` | delegated to `sera-mcp` local signer |
+
+Both default to dry-run (`MM_DRY_RUN` / `TK_DRY_RUN`), refuse mainnet without an explicit ack env, and enforce `sera-mcp` policy caps. They are educational scaffolds — each README carries a Production checklist of what a real bot must add (inventory skew, kill-switch, observability, restart safety).
 
 ## Path C — the bundled `sera-agent/` CLI
 

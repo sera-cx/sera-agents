@@ -1,0 +1,18 @@
+{
+  "name": "sera-template-taker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Taker bot on Sera — watches a corridor and crosses the spread (convert_and_send) when the executable rate beats a reference mid by enough bps. Sepolia-safe DRY_RUN default. Mirror of templates/market-maker.",
+  "scripts": {
+    "start": "tsx agent.ts",
+    "dry-run": "TK_DRY_RUN=true tsx agent.ts",
+    "typecheck": "tsc --noEmit",
+    "audit": "npm audit --omit=dev --audit-level=high"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}

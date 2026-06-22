@@ -2,6 +2,32 @@
 
 All notable changes to `sera-agents` are documented in this file.
 
+## [Unreleased] — make the maker/taker (deploy-liquidity vs take) paths first-class
+
+### Added — `templates/taker` (the mirror image of `market-maker`)
+- New deterministic-loop template for **consuming** liquidity: inventory guard (`sera.get_balances`) → reference mid (`sera.multi_source_mid`) → best executable deal (`sera.find_deals`, falls back to `sera.get_quote`) → edge gate → take (`sera.convert_and_send`). No LLM in the hot path; shares the maker's stdio `lib/mcp-client.ts` shape.
+- `TK_DRY_RUN=true` by default — logs the take it would fire and changes nothing. Refuses mainnet without `TK_MAINNET_ACK=true`; refuses live execution without `SIGNER_PRIVATE_KEY`. Defensive parsers refuse to act on unparseable tool responses. `max_slippage_bps` wired to `TK_MIN_EDGE_BPS` so a fill never beats the edge it gated on.
+- Signing delegated to `sera-mcp`'s local signer (`SERA_SIGNER_MODE=local`) since conversions route across legs.
+- README with a maker-vs-taker comparison and a Production checklist.
+
+### Fixed — `templates/market-maker` (v0.2.0 → v0.3.0)
+- `.env.example` ↔ code contradictions resolved: the template signs **client-side** (`SERA_SIGNER_MODE=external`, set by `agent.ts`) — `.env.example` previously claimed `local`/"server signs". The live switch is `MM_DRY_RUN` (default `true`); `.env.example` previously only set `POLICY_DRY_RUN`, which the loop ignored (silent dry-run). `POLICY_DRY_RUN=true` now *also* forces dry-run, belt-and-suspenders.
+- Removed the hardcoded personal `~/Desktop/...` default MCP path; defaults to `../../sera-mcp/dist/index.js` (override with `SERA_MCP_DIST`).
+- `.env.example` defaults to `SERA_NETWORK=sepolia` (was `mainnet`).
+- Added a startup `cancel_all_orders` (restart safety — a crashed run no longer leaves stale quotes that the next run stacks on top of).
+- Added an inventory-aware sizing **stub** (`fundableSides`) — skips a side the wallet can't fund instead of posting an unfillable quote.
+
+### Fixed — hardcoded MCP path across all entry points
+- The `~/Desktop/sera-mcp/dist/index.js` default leaked into `chat-cli`, `web-chat`, `webhook-agent`, `withdraw-cli`, `sera-agent`, `invoice-payer`, and `treasury-rebalancer`. All now default to `../../sera-mcp/dist/index.js` and honor `SERA_MCP_DIST`.
+
+### Changed — docs surface the maker/taker paths
+- `market-maker`, `taker`, and `withdraw-cli` were in the workspaces but absent from `README.md`, `templates/README.md`, and `ARCHITECTURE.md`. All three now appear in every index, with a "Maker vs taker" framing.
+- New docs tutorial: `docs/tutorials/maker-vs-taker.html` (Tutorial 07), wired into the tutorials index and every tutorial sidebar.
+- Root `package.json` workspaces 9 → 10 (`templates/taker`).
+
+### Verified
+- `npm run typecheck` clean across all 10 workspace packages.
+
 ## [0.7.3] — 2026-05-25
 
 ### Changed — `templates/market-maker` rewritten as deterministic loop (v0.1.0 → v0.2.0)

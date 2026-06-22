@@ -73,7 +73,7 @@ function parseArgs(argv: string[]): Args {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const seraMcpPath =
-    args.seraMcpDist ?? resolve(process.env.HOME!, "Desktop/sera-mcp/dist/index.js");
+    args.seraMcpDist ?? process.env.SERA_MCP_DIST ?? resolve(process.cwd(), "../../sera-mcp/dist/index.js");
 
   // Spin up the Sera MCP as a subprocess. The Agent SDK speaks MCP and will
   // auto-discover the 32 sera.* tools.

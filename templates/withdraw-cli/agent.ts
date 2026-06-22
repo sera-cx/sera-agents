@@ -20,7 +20,7 @@ import { randomBytes } from "node:crypto";
 
 const MCP_PATH =
   process.env.SERA_MCP_DIST ??
-  resolve(process.env.HOME!, "Desktop/SERA MCP and AGENT/sera-mcp/dist/index.js");
+  resolve(process.cwd(), "../../sera-mcp/dist/index.js");
 
 const USER = process.env.WITHDRAW_USER;
 const RECIPIENT = process.env.WITHDRAW_RECIPIENT;

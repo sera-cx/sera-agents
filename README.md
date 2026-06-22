@@ -15,7 +15,7 @@ For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.m
 | Path | For | Artifact |
 |---|---|---|
 | **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | [`sera-mcp`](https://github.com/Josh-sera/sera-mcp) (the MCP) |
-| **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent}` |
+| **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent, market-maker, taker, withdraw-cli}` |
 | **C — Run** | Want it ready out of the box | `sera-agent/` (interactive CLI) |
 | **D — Protocol** | Agent doesn't know what Sera is, only x402 | `x402-service/` |
 
@@ -37,7 +37,10 @@ sera-agents/
 │   ├── README.md
 │   ├── chat-cli/                 Terminal REPL.
 │   ├── web-chat/                 Express + browser chat UI.
-│   └── webhook-agent/            HTTP endpoint that triggers an agent task.
+│   ├── webhook-agent/            HTTP endpoint that triggers an agent task.
+│   ├── market-maker/             Deploy liquidity — post two-sided quotes (maker).
+│   ├── taker/                    Take liquidity — cross the spread on edge (taker).
+│   └── withdraw-cli/             Dual-sig instant-withdrawal walkthrough.
 │
 ├── x402-service/                 PATH D — protocol-level service.
 │   ├── server.ts                 Hono server. Implements 402 → pay → 200.
@@ -88,6 +91,32 @@ npm start
 ```
 
 Then customize `SYSTEM_PROMPT` in `agent.ts`/`server.ts` to make the agent yours. See [`templates/README.md`](templates/README.md) for what each template is shaped for.
+
+### Deploy liquidity or take — the two trading templates
+
+Two of the templates are a matched pair for the two sides of a Sera market. Both are deterministic loops (no LLM in the hot path), both default to a safe dry-run, and both enforce `sera-mcp` policy caps.
+
+| | [`templates/market-maker`](templates/market-maker) | [`templates/taker`](templates/taker) |
+|---|---|---|
+| Role | **Deploy liquidity** (maker) | **Take liquidity** (taker) |
+| Action | `place_order` — resting bid + ask around mid | `convert_and_send` — cross the spread on edge |
+| Earns | The spread, if filled | The edge over mid, right now |
+| Signing | Client-side EIP-712 (ethers) | Delegated to `sera-mcp`'s local signer |
+| Go live | `MM_DRY_RUN=false` (+ `MM_MAINNET_ACK` on mainnet) | `TK_DRY_RUN=false` (+ `TK_MAINNET_ACK` on mainnet) |
+
+```bash
+# Deploy liquidity (maker)
+cp -r templates/market-maker ~/my-maker && cd ~/my-maker
+cp .env.example .env   # set SIGNER_PRIVATE_KEY, SERA_API_KEY/SECRET; keep MM_DRY_RUN=true
+npm install && npm start
+
+# Take liquidity (taker)
+cp -r templates/taker ~/my-taker && cd ~/my-taker
+cp .env.example .env   # set SERA_OWNER_ADDRESS, SERA_API_KEY/SECRET; keep TK_DRY_RUN=true
+npm install && npm start
+```
+
+Both ship in dry-run: they print the orders/takes they *would* make and change nothing until you flip the switch. Read each template's **Production checklist** before going live — these are starters, not turnkey trading bots.
 
 ## Path C — run the bundled agent
 

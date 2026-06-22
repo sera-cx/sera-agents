@@ -113,8 +113,22 @@ export async function runOneTick(
       executorId: cfg.executorId,
     });
 
+    // Inventory-aware sizing (stub). A real maker skews quotes and sizes by
+    // current position; here we do the minimum honest thing — don't post a side
+    // the wallet can't fund. Best-effort: if get_balances is unavailable we post
+    // both sides (the policy caps + on-chain checks are the real backstop).
+    //
+    // TODO (production): replace the skip with a skew — widen/shrink each side's
+    // price and size as inventory drifts from your target, and pull one side
+    // entirely past a hard band. See README "Inventory monitoring".
+    const fundable = await fundableSides(mcp, cfg, market, bidPrice, log);
+
     // Step 5: submit (or dry-run log).
     for (const { side, body, struct } of [bidOrder, askOrder]) {
+      if (!fundable[side]) {
+        log(`  ${side.toUpperCase()} skipped — inventory can't fund this side`);
+        continue;
+      }
       if (cfg.dryRun) {
         log(`  [DRY-RUN] ${side.toUpperCase()} order_id=${body.order_id} hash=${orderHash(domain, struct).slice(0, 18)}…`);
         continue;
@@ -146,6 +160,40 @@ export async function runOneTick(
     log(`tick failed: ${e?.message ?? String(e)}`);
   } finally {
     log(`tick done in ${Date.now() - tickStart}ms`);
+  }
+}
+
+/**
+ * Inventory-aware sizing stub. Returns which sides the wallet can fund:
+ *   - bid spends QUOTE (need ~notional × price of quote)
+ *   - ask spends BASE  (need ~notional of base)
+ * Best-effort: if get_balances isn't available (no API key), allow both — the
+ * sera-mcp policy caps and on-chain balance checks remain the hard backstop.
+ */
+async function fundableSides(
+  mcp: SeraMcpClient,
+  cfg: LoopConfig,
+  market: MarketInfo,
+  bidPrice: number,
+  log: (m: string) => void,
+): Promise<{ bid: boolean; ask: boolean }> {
+  try {
+    const r = await mcp.tool<{ balances?: Array<{ symbol?: string; available?: string | number }> }>(
+      "sera.get_balances",
+      { owner_address: cfg.ownerAddress },
+    );
+    const avail = (symbol: string): number => {
+      const row = r.balances?.find((b) => b.symbol?.toUpperCase() === symbol.toUpperCase());
+      const n = row ? Number(row.available) : 0;
+      return Number.isFinite(n) ? n : 0;
+    };
+    return {
+      bid: avail(market.quote_symbol) >= cfg.notional * bidPrice,
+      ask: avail(market.base_symbol) >= cfg.notional,
+    };
+  } catch (e: any) {
+    log(`  get_balances unavailable (${e?.message ?? String(e)}) — posting both sides`);
+    return { bid: true, ask: true };
   }
 }
 

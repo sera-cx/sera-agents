@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Maker vs taker — Sera tutorial</title>
+  <meta name="theme-color" content="#06070A" />
+  <meta name="description" content="Deploy liquidity to Sera (maker) or cross the spread on edge (taker) with two deterministic-loop templates. Dry-run by default, policy-capped, ~15 min." />
+  <meta name="author" content="Sera Protocol" />
+  <link rel="canonical" href="https://agents.sera.cx/docs/tutorials/maker-vs-taker.html" />
+
+  <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="../../favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../../apple-touch-icon.png" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Sera for Agents" />
+  <meta property="og:title" content="Maker vs taker — Sera tutorial" />
+  <meta property="og:description" content="Deploy liquidity to Sera (maker) or cross the spread on edge (taker) with two deterministic-loop templates. Dry-run by default, policy-capped, ~15 min." />
+  <meta property="og:url" content="https://agents.sera.cx/docs/tutorials/maker-vs-taker.html" />
+  <meta property="og:image" content="https://agents.sera.cx/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Sera for Agents — multi-currency settlement for AI agents" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Maker vs taker — Sera tutorial" />
+  <meta name="twitter:description" content="Deploy liquidity to Sera (maker) or cross the spread on edge (taker) with two deterministic-loop templates. Dry-run by default, policy-capped, ~15 min." />
+  <meta name="twitter:image" content="https://agents.sera.cx/og-image.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter','ui-sans-serif','system-ui'], mono: ['JetBrains Mono','ui-monospace','monospace'] },
+      colors: { ink:{950:'#06070A',900:'#0B0D12',800:'#11141B',700:'#181C26'}, chalk:{50:'#F8F8F4',100:'#EDEDE6',300:'#A4A89C',500:'#6B7180'}, accent:{400:'#7DF9C2',500:'#3DE8A0',600:'#10C77F'} }
+    }}};
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    html, body { background:#06070A; color:#F8F8F4; }
+    body { overflow-x: hidden; }
+    .glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+    .gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+    a { color: inherit; }
+    .codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding: 16px 20px; }
+    .codeblock pre { font-size: 12.5px; line-height: 1.55; overflow-x: auto; }
+    .codeblock .filename { font-size: 11px; color:#6B7180; text-transform:uppercase; letter-spacing:.05em; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.05); margin-bottom: 12px; }
+    .prose h2 { font-size: 1.6rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; }
+    .prose h3 { font-size: 1.15rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: .5rem; color:#F8F8F4; }
+    .prose p { color:#A4A89C; line-height:1.7; margin-bottom: 1rem; }
+    .prose ul, .prose ol { color:#A4A89C; margin-bottom: 1rem; padding-left: 1.4rem; }
+    .prose li { margin-bottom: .35rem; line-height: 1.6; }
+    .prose code { font-family:'JetBrains Mono',monospace; font-size: .85em; color:#7DF9C2; background: rgba(125,249,194,.08); padding: 2px 6px; border-radius: 4px; }
+    .prose strong { color:#F8F8F4; font-weight: 600; }
+    .prose a { color:#7DF9C2; text-decoration: underline; text-underline-offset: 2px; }
+    .step-num { display:inline-flex; width:30px; height:30px; align-items:center; justify-content:center; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.2); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:600; margin-right: 10px; }
+    .meta-pill { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; padding:3px 10px; border-radius:999px; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.18); margin-right:6px; }
+    .sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+    .sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+    .sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+    .sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+    .callout { padding: 16px 20px; border-radius: 12px; background: rgba(125,249,194,.04); border: 1px solid rgba(125,249,194,.18); margin: 18px 0; }
+    .callout .callout-label { font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:#7DF9C2; margin-bottom: 6px; }
+    table.cmp { width:100%; border-collapse: collapse; margin: 18px 0; font-size: 13.5px; }
+    table.cmp th, table.cmp td { text-align:left; padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.06); color:#A4A89C; }
+    table.cmp th { color:#F8F8F4; font-weight:600; }
+    table.cmp td:first-child { color:#6B7180; font-family:'JetBrains Mono',monospace; font-size:12px; }
+  </style>
+</head>
+<body class="font-sans antialiased">
+
+  <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-5">
+        <a href="../../" class="flex items-center gap-2.5">
+          <img src="../../logo.png" alt="Sera" class="w-7 h-7 rounded-md" />
+          <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
+        </a>
+        <span class="text-chalk-500">/</span>
+        <a href="../" class="text-sm text-chalk-300 hover:text-chalk-50">Docs</a>
+        <span class="text-chalk-500">/</span>
+        <a href="index.html" class="text-sm text-chalk-300 hover:text-chalk-50">Tutorials</a>
+        <span class="text-chalk-500">/</span>
+        <span class="text-sm text-chalk-300">Maker vs taker</span>
+      </div>
+      <a href="../../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-5 lg:px-6 grid lg:grid-cols-[240px_minmax(0,1fr)] gap-10 pt-28 pb-24">
+
+    <aside class="sidebar lg:sticky lg:top-20 self-start">
+      <div class="group-label">Get started</div>
+      <a href="../index.html">Overview</a>
+      <a href="../architecture.html">Architecture</a>
+      <a href="../concepts.html">Concepts</a>
+      <div class="group-label">Build</div>
+      <a href="index.html">Tutorials</a>
+      <a href="cross-border-payment-widget.html" class="pl-5 text-[12.5px]">→ Payment widget</a>
+      <a href="fx-trading-dashboard.html" class="pl-5 text-[12.5px]">→ Trading dashboard</a>
+      <a href="prediction-market.html" class="pl-5 text-[12.5px]">→ Prediction market</a>
+      <a href="treasury-rebalancer.html" class="pl-5 text-[12.5px]">→ Treasury rebalancer</a>
+      <a href="x402-paid-api.html" class="pl-5 text-[12.5px]">→ x402-paid API</a>
+      <a href="ai-agent.html" class="pl-5 text-[12.5px]">→ AI agent</a>
+      <a href="maker-vs-taker.html" class="active pl-5 text-[12.5px]">→ Maker vs taker</a>
+      <a href="../recipes.html">Recipes</a>
+      <div class="group-label">Reference</div>
+      <a href="../api/">API reference (32)</a>
+    </aside>
+
+    <main class="prose max-w-3xl">
+      <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 07</div>
+      <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Maker vs taker.</h1>
+      <p class="text-lg" style="color:#A4A89C">Two deterministic-loop templates for the two sides of a Sera market. <strong>Deploy liquidity</strong> by posting resting quotes (maker), or <strong>take liquidity</strong> by crossing the spread the moment the rate beats mid (taker). Both ship dry-run, both honor policy caps.</p>
+
+      <div class="my-6">
+        <span class="meta-pill">15 min</span>
+        <span class="meta-pill">Node loop</span>
+        <span class="meta-pill">no LLM in hot path</span>
+        <span class="meta-pill">dry-run default</span>
+      </div>
+
+      <div class="callout">
+        <div class="callout-label">What you'll have at the end</div>
+        <p style="color:#A4A89C; margin: 0;">Two bots you can run against the same dedicated wallet: a maker posting two-sided quotes on one pair, and a taker converting on another the instant the edge clears your threshold — each refusing to touch mainnet until you explicitly ack.</p>
+      </div>
+
+      <h2 class="gradient-text">Which one do I want?</h2>
+      <table class="cmp">
+        <thead><tr><th></th><th>market-maker</th><th>taker</th></tr></thead>
+        <tbody>
+          <tr><td>role</td><td>Provides liquidity</td><td>Consumes liquidity</td></tr>
+          <tr><td>action</td><td><code>place_order</code> (resting bid + ask)</td><td><code>convert_and_send</code> (immediate fill)</td></tr>
+          <tr><td>earns</td><td>The spread, if filled</td><td>The edge over mid, right now</td></tr>
+          <tr><td>risk</td><td>Inventory / adverse selection</td><td>Slippage / missing the move</td></tr>
+          <tr><td>signing</td><td>Client-side EIP-712 (ethers)</td><td>Delegated to sera-mcp's signer</td></tr>
+          <tr><td>live switch</td><td><code>MM_DRY_RUN=false</code></td><td><code>TK_DRY_RUN=false</code></td></tr>
+        </tbody>
+      </table>
+      <p>They aren't exclusive — run both against one wallet to make on a deep pair and take on a thin one.</p>
+
+      <h2 class="gradient-text">Steps</h2>
+
+      <h3><span class="step-num">1</span>Deploy liquidity (maker)</h3>
+      <p>The maker runs a cancel-before-place loop: kill stale quotes, read a multi-source mid, and — only if the mid moved enough — post a fresh bid below and ask above.</p>
+      <div class="codeblock">
+        <div class="filename">deploy the maker</div>
+<pre><code>cp -r templates/market-maker ~/my-maker &amp;&amp; cd ~/my-maker
+cp .env.example .env
+<span style="color:#6B7180"># set SIGNER_PRIVATE_KEY (DEDICATED wallet), SERA_API_KEY/SECRET</span>
+<span style="color:#6B7180"># keep MM_DRY_RUN=true for the first runs</span>
+npm install &amp;&amp; npm start</code></pre>
+      </div>
+      <div class="codeblock">
+        <div class="filename">the loop (lib/loop.ts)</div>
+<pre><code>cancel_all_orders        <span style="color:#6B7180"># clear stale quotes</span>
+mid = multi_source_mid   <span style="color:#6B7180"># median of 3 FX sources</span>
+<span style="color:#A78BFA">if</span> drift &lt; MM_DRIFT_BPS: hold
+place_order bid @ mid × (1 − MM_SPREAD_BPS/1e4)
+place_order ask @ mid × (1 + MM_SPREAD_BPS/1e4)</code></pre>
+      </div>
+      <div class="callout">
+        <div class="callout-label">Safe by default</div>
+        <p style="color:#A4A89C; margin: 0;"><code>MM_DRY_RUN=true</code> logs the bid/ask it would post and submits nothing. It also runs <code>cancel_all_orders</code> at startup (so a crashed run doesn't leave stale quotes) and on Ctrl-C. Mainnet needs <code>MM_MAINNET_ACK=true</code>.</p>
+      </div>
+
+      <h3><span class="step-num">2</span>Take liquidity (taker)</h3>
+      <p>The taker is the mirror image: it polls for an executable rate and fires a conversion the moment the rate beats the reference mid by enough basis points.</p>
+      <div class="codeblock">
+        <div class="filename">deploy the taker</div>
+<pre><code>cp -r templates/taker ~/my-taker &amp;&amp; cd ~/my-taker
+cp .env.example .env
+<span style="color:#6B7180"># set SERA_OWNER_ADDRESS, SERA_API_KEY/SECRET</span>
+<span style="color:#6B7180"># keep TK_DRY_RUN=true; add SIGNER_PRIVATE_KEY only when going live</span>
+npm install &amp;&amp; npm start</code></pre>
+      </div>
+      <div class="codeblock">
+        <div class="filename">the loop (lib/loop.ts)</div>
+<pre><code>get_balances             <span style="color:#6B7180"># inventory guard — skip if unfunded</span>
+mid = multi_source_mid
+deal = find_deals        <span style="color:#6B7180"># best executable rate (or get_quote)</span>
+<span style="color:#A78BFA">if</span> deal.edge_bps &lt; TK_MIN_EDGE_BPS: hold
+convert_and_send         <span style="color:#6B7180"># take it (max_slippage = the edge you gated on)</span></code></pre>
+      </div>
+
+      <h3><span class="step-num">3</span>Cap the risk before going live</h3>
+      <p>Both templates forward the same <code>sera-mcp</code> policy caps. These are enforced server-side regardless of your loop knobs — set them before you flip the dry-run switch:</p>
+      <ul>
+        <li><code>POLICY_PRESET=starter</code> — the tightest preset.</li>
+        <li><code>POLICY_MAX_NOTIONAL_USD</code> — the most a single quote/take can risk.</li>
+        <li><code>POLICY_DAILY_VOLUME_CAP_USD</code> — your rolling 24h kill switch.</li>
+      </ul>
+      <p>Use a wallet you funded <em>only</em> for the bot, hard-capped to what you can afford to lose. Each template's README has a full <strong>Production checklist</strong> — work through it before live trading.</p>
+
+      <h2 class="gradient-text">Common gotchas</h2>
+      <ul>
+        <li><strong>Dry-run is the starting line, not a formality.</strong> Watch the logged orders/takes until the prices and edges look right. The signer is wired but inert until you set <code>MM_DRY_RUN=false</code> / <code>TK_DRY_RUN=false</code>.</li>
+        <li><strong>Tool shapes vary by sera-mcp version.</strong> The taker's <code>find_deals</code>/<code>get_quote</code> parsers accept several field shapes and <em>refuse to act on anything they can't read</em> — confirm a raw response with <code>sera.doctor</code> before going live.</li>
+        <li><strong>Rate limits are real.</strong> Sera enforces per-wallet trade/cancel limits (5/s, 2/s). Keep <code>MM_POLL_SECONDS</code> / <code>TK_POLL_SECONDS</code> sane; the maker's 5-min per-order cancel cooldown will 429 if you hammer it.</li>
+        <li><strong>Spread must beat round-trip cost.</strong> Run <code>sera.round_trip_cost</code> for your pair and confirm <code>MM_SPREAD_BPS</code> clears it, or you quote at a loss.</li>
+      </ul>
+
+      <p class="mt-10"><strong>Next:</strong> <a href="treasury-rebalancer.html">Treasury rebalancer</a> — schedule a taker-style rebalance on a cron instead of a live loop.</p>
+
+    </main>
+  </div>
+
+  <footer class="border-t border-white/5 py-10">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
+      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+    </div>
+  </footer>
+</body>
+</html>

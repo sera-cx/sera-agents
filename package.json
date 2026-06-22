@@ -10,6 +10,7 @@
     "templates/web-chat",
     "templates/webhook-agent",
     "templates/market-maker",
+    "templates/taker",
     "templates/withdraw-cli",
     "examples/invoice-payer",
     "examples/treasury-rebalancer"

@@ -1,8 +1,8 @@
 # market-maker
 
-Template: simple two-sided spread market-making bot on Sera. Cancel-before-place loop, multi-source mid pricing, tight policy caps.
+Template: simple two-sided spread market-making bot on Sera. Cancel-before-place loop, multi-source mid pricing, tight policy caps. The **maker** half of the pair — for the mirror image that *consumes* liquidity, see [`../taker`](../taker).
 
-**Status:** **Demo / starter.** Educational scaffold, not a production maker. Read the [Production checklist](#production-checklist-before-deploying) before deploying.
+**Status:** **Demo / starter.** Educational scaffold, not a production maker. `MM_DRY_RUN=true` by default — it logs the orders it *would* post and submits nothing. Read the [Production checklist](#production-checklist-before-deploying) before deploying.
 
 ## What it does
 
@@ -22,17 +22,20 @@ Uses sera-mcp v0.7.0+ maker tools: `sera.multi_source_mid`, `sera.cancel_all_ord
 
 ```bash
 cp .env.example .env
-# Edit .env: set OPENAI_API_KEY, SIGNER_PRIVATE_KEY (DEDICATED wallet), SERA_API_KEY/SECRET
+# Edit .env: set OPENAI_API_KEY, SIGNER_PRIVATE_KEY (DEDICATED wallet), SERA_API_KEY/SECRET.
+# Leave MM_DRY_RUN=true for the first runs.
 npm install
 npm start
 ```
 
-The agent prints each loop tick to stdout. Stop with Ctrl-C — open orders are NOT auto-cancelled on exit. Either `sera.cancel_all_orders` from another session, or let the per-order `MM_EXPIRATION_SECONDS` expire them.
+The agent prints each loop tick to stdout. `MM_DRY_RUN=true` (the default) logs the bid/ask it would post and submits nothing — flip it to `false` only once the loop looks right. When live, the bot runs a `cancel_all_orders` at **startup** (clears stale quotes from a crashed prior run) and attempts a final `cancel_all_orders` on Ctrl-C. If either is interrupted, cancel from another session or let the per-order `MM_EXPIRATION_SECONDS` expire them.
+
+> **Signing:** this template signs Order structs **client-side** with ethers (it sets `SERA_SIGNER_MODE=external` for you). Your `SIGNER_PRIVATE_KEY` never leaves the process.
 
 ## How it differs from a real production maker
 
 This template intentionally omits:
-- Inventory rebalancing (a real maker monitors filled position and adjusts spread / pulls one side when inventory drifts).
+- Inventory rebalancing. There's a **stub** (`fundableSides` in `lib/loop.ts`) that skips a side the wallet can't fund — a real maker would *skew* price and size as inventory drifts and pull one side past a hard band, not just skip.
 - Adverse-selection protection (no order-flow toxicity detection).
 - Cross-venue arb hedging.
 - Persistence of position state across restarts.
@@ -47,7 +50,7 @@ If you fork this template into something real, complete ALL of these:
 
 - [ ] Wallet isolation. `SIGNER_PRIVATE_KEY` is a wallet you've intentionally funded for THIS bot, not a hot wallet of value. Hard cap balance to the maximum you're comfortable losing.
 - [ ] Tight `POLICY_PRESET=starter` (or stricter). `POLICY_MAX_NOTIONAL_USD` = the most you'll let a single quote risk. `POLICY_DAILY_VOLUME_CAP_USD` = your kill-switch.
-- [ ] `POLICY_DRY_RUN=true` on first ever deploy. Watch logs for a few hours. Only flip to `false` after you've verified the loop behaves.
+- [ ] `MM_DRY_RUN=true` on first ever deploy (the default). Watch logs for a few hours. Only flip to `false` after you've verified the loop behaves. (`POLICY_DRY_RUN=true` also forces dry-run, as a second switch.)
 - [ ] Inventory monitoring. Cron job that reads `sera.get_balances` every minute and pages you if inventory drifts beyond a band you set.
 - [ ] Kill-switch endpoint. A separate process / button that can run `sera.cancel_all_orders` if the bot misbehaves.
 - [ ] Spread-vs-cost reality check. Run `sera.maker_quote_ladder` for your pair before launch. Confirm `MM_SPREAD_BPS` is larger than the round-trip cost on the pair (`sera.round_trip_cost`).

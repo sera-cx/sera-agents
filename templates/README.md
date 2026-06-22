@@ -1,12 +1,26 @@
 # Templates — build your own Sera agent
 
-Three starters for common shapes. Copy whichever matches what you're building, change the prompt + plumbing, ship.
+Starters for common shapes. Copy whichever matches what you're building, change the prompt + plumbing, ship.
+
+**Conversational / event-driven** (LLM-in-the-loop, built on the OpenAI Agents SDK):
 
 | Template | Shape | Use when |
 |---|---|---|
 | [`chat-cli/`](chat-cli) | Interactive terminal chat | You want a CLI assistant for your team's treasury / FX work. |
 | [`web-chat/`](web-chat) | Browser chat (Express + HTML, SSE streaming) | You want non-engineers to use a Sera agent through a web page. |
 | [`webhook-agent/`](webhook-agent) | HTTP webhook responder | You want an agent that runs in response to external events (Stripe, cron, GitHub, etc.). |
+
+**Trading / settlement** (deterministic loops, no LLM in the hot path):
+
+| Template | Shape | Use when |
+|---|---|---|
+| [`market-maker/`](market-maker) | **Deploy liquidity** — post two-sided quotes | You want to *provide* liquidity on a Sera pair and earn the spread. |
+| [`taker/`](taker) | **Take liquidity** — cross the spread on edge | You want to *consume* liquidity / convert the moment the rate beats mid. |
+| [`withdraw-cli/`](withdraw-cli) | Dual-sig instant-withdrawal walkthrough | You want to see Sera's 4-step withdrawal flow end to end. |
+
+### Maker vs taker
+
+`market-maker` and `taker` are a matched pair — the two sides of the same market. Both are deterministic loops, both default to a safe **dry-run** (they log the orders/takes they *would* make and change nothing), and both enforce `sera-mcp` policy caps (`POLICY_MAX_NOTIONAL_USD`, `POLICY_DAILY_VOLUME_CAP_USD`). Run both against the same wallet to make on one pair and take on another. Each has a **Production checklist** in its README — they're starters, not turnkey bots.
 
 ## Common scaffolding
 

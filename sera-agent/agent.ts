@@ -41,7 +41,7 @@ Common workflows:
 async function main() {
   const seraMcpPath =
     process.env.SERA_MCP_DIST ??
-    resolve(process.env.HOME!, "Desktop/sera-mcp/dist/index.js");
+    resolve(process.cwd(), "../../sera-mcp/dist/index.js");
 
   const sera = new MCPServerStdio({
     command: "node",

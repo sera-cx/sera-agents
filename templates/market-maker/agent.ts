@@ -17,9 +17,10 @@ import { startSeraMcp } from "./lib/mcp-client.js";
 import { runOneTick, sleep, type LoopConfig, type LoopState, type MarketInfo } from "./lib/loop.js";
 
 // ── env config ──────────────────────────────────────────────────────────
+// Path to the sera-mcp build. No personal-machine default — set SERA_MCP_DIST
+// or drop sera-mcp next to this repo (../../sera-mcp/dist/index.js).
 const MCP_PATH =
-  process.env.SERA_MCP_DIST ??
-  resolve(process.env.HOME!, "Desktop/SERA MCP and AGENT/sera-mcp/dist/index.js");
+  process.env.SERA_MCP_DIST ?? resolve(process.cwd(), "../../sera-mcp/dist/index.js");
 
 const PAIR = process.env.MM_PAIR ?? "EURC/USDC";
 const NOTIONAL = Number(process.env.MM_NOTIONAL ?? 100);
@@ -27,7 +28,10 @@ const SPREAD_BPS = Number(process.env.MM_SPREAD_BPS ?? 10);
 const DRIFT_BPS = Number(process.env.MM_DRIFT_BPS ?? 5);
 const POLL_SECONDS = Number(process.env.MM_POLL_SECONDS ?? 60);
 const EXPIRATION_SECONDS = Number(process.env.MM_EXPIRATION_SECONDS ?? 3600);
-const DRY_RUN = (process.env.MM_DRY_RUN ?? "true").toLowerCase() !== "false";
+// MM_DRY_RUN is THE live switch. A sera-mcp-level POLICY_DRY_RUN=true also
+// forces dry-run (belt-and-suspenders) so the two flags can't disagree.
+const POLICY_DRY = (process.env.POLICY_DRY_RUN ?? "").toLowerCase() === "true";
+const DRY_RUN = (process.env.MM_DRY_RUN ?? "true").toLowerCase() !== "false" || POLICY_DRY;
 const NETWORK = process.env.SERA_NETWORK ?? "sepolia";
 
 const PRIVATE_KEY = process.env.SIGNER_PRIVATE_KEY;
@@ -52,7 +56,7 @@ async function main() {
   const ownerAddress = wallet.address;
 
   console.log(
-    `\nsera-market-maker v0.2.0\n` +
+    `\nsera-market-maker v0.3.0\n` +
       `  network:     ${NETWORK}\n` +
       `  pair:        ${PAIR}\n` +
       `  notional:    ${NOTIONAL} (base units)\n` +
@@ -130,6 +134,18 @@ async function main() {
     ordersFailed: 0,
     errors: 0,
   };
+
+  // Restart safety: if a previous run crashed with orders still resting, clear
+  // them before we start posting fresh quotes (otherwise we stack duplicates).
+  if (!DRY_RUN) {
+    console.log(`startup cancel_all_orders (clearing any stale quotes from a prior run)…`);
+    try {
+      const r = await mcp.tool<{ total: number }>("sera.cancel_all_orders", { owner_address: ownerAddress });
+      console.log(`  cancelled ${r.total ?? 0} stale order(s).`);
+    } catch (e: any) {
+      console.error(`  startup cancel warning: ${e?.message ?? String(e)}`);
+    }
+  }
 
   console.log(`\nstarting loop. Ctrl-C to stop.\n`);
 
