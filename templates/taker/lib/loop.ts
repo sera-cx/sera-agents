@@ -8,7 +8,7 @@
  * LLM in the hot path.
  *
  * Tool signatures below are reconciled against the sera-mcp SOURCE
- * (github.com/Josh-sera/sera-mcp, src/tools/{deals,core,treasury}.ts), not just
+ * (github.com/sera-cx/sera-mcp, src/tools/{deals,core,treasury}.ts), not just
  * the published summary:
  *
  *   sera.find_deals

@@ -1,8 +1,8 @@
 # Sera for Agents
 
-**Templates, examples, docs, and x402 integrations built on top of [`sera-mcp`](https://github.com/Josh-sera/sera-mcp).**
+**Templates, examples, docs, and x402 integrations built on top of [`sera-mcp`](https://github.com/sera-cx/sera-mcp).**
 
-**Live site: [agents.sera.cx](https://agents.sera.cx)** · **Core MCP: [Josh-sera/sera-mcp](https://github.com/Josh-sera/sera-mcp)**
+**Live site: [agents.sera.cx](https://agents.sera.cx)** · **Core MCP: [sera-cx/sera-mcp](https://github.com/sera-cx/sera-mcp)**
 
 **Who this is for:** developers integrating Sera into an existing agent product, picking up a template to ship fast, or wiring up a protocol-level x402 endpoint for agent-to-agent FX delivery.
 
@@ -14,7 +14,7 @@ For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.m
 
 | Path | For | Artifact |
 |---|---|---|
-| **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | [`sera-mcp`](https://github.com/Josh-sera/sera-mcp) (the MCP) |
+| **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | [`sera-mcp`](https://github.com/sera-cx/sera-mcp) (the MCP) |
 | **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent, market-maker, taker, withdraw-cli}` |
 | **C — Run** | Want it ready out of the box | `sera-agent/` (interactive CLI) |
 | **D — Protocol** | Agent doesn't know what Sera is, only x402 | `x402-service/` |
@@ -62,12 +62,12 @@ sera-agents/
 
 Plus repo-root files: `LICENSE` (MIT), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.github/` (issue + PR templates).
 
-The MCP server itself lives in a separate repo: [Josh-sera/sera-mcp](https://github.com/Josh-sera/sera-mcp) — distributed independently. v0.5.0, 32 tools.
+The MCP server itself lives in a separate repo: [sera-cx/sera-mcp](https://github.com/sera-cx/sera-mcp) — distributed independently. v0.5.0, 32 tools.
 
 ## Path A — install the MCP
 
 ```bash
-git clone https://github.com/Josh-sera/sera-mcp
+git clone https://github.com/sera-cx/sera-mcp
 cd sera-mcp
 npm install && npm run build
 

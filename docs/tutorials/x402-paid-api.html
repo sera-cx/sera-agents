@@ -222,7 +222,7 @@ app.listen(<span style="color:#7DF9C2">3000</span>);</code></pre>
 }</code></pre>
       </div>
 
-      <p>The verifier (in <code>./verify.ts</code>) checks the EIP-3009 signature, validates the recipient + amount + token + nonce + expiry against your <code>opts</code>, returns <code>{ valid: boolean, reason: string }</code>. Sera's <code>x402-service/</code> in <a href="https://github.com/Josh-sera/sera-agents/tree/main/x402-service" target="_blank">github.com/Josh-sera/sera-agents/x402-service</a> has a working reference for this code.</p>
+      <p>The verifier (in <code>./verify.ts</code>) checks the EIP-3009 signature, validates the recipient + amount + token + nonce + expiry against your <code>opts</code>, returns <code>{ valid: boolean, reason: string }</code>. Sera's <code>x402-service/</code> in <a href="https://github.com/sera-cx/sera-agents/tree/main/x402-service" target="_blank">github.com/sera-cx/sera-agents/x402-service</a> has a working reference for this code.</p>
 
       <h3><span class="step-num">4</span>Test with curl (demo mode first)</h3>
       <p>While developing, set a flag that accepts <code>X-PAYMENT: any:demo-authorization</code> instead of verifying real signatures. Lets you exercise the protocol without spending USDC.</p>

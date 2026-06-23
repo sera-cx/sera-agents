@@ -1,6 +1,6 @@
 # Architecture
 
-How `sera-agents` is laid out. For setup and usage, see [`README.md`](README.md). For threat model and the x402 hardening posture, see [`SECURITY-MODEL.md`](SECURITY-MODEL.md). For the core MCP it depends on, see [Josh-sera/sera-mcp](https://github.com/Josh-sera/sera-mcp).
+How `sera-agents` is laid out. For setup and usage, see [`README.md`](README.md). For threat model and the x402 hardening posture, see [`SECURITY-MODEL.md`](SECURITY-MODEL.md). For the core MCP it depends on, see [sera-cx/sera-mcp](https://github.com/sera-cx/sera-mcp).
 
 ## What this repo is
 

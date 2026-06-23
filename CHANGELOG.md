@@ -5,10 +5,15 @@ All notable changes to `sera-agents` are documented in this file.
 ## [Unreleased] — make the maker/taker (deploy-liquidity vs take) paths first-class
 
 ### Added — `templates/taker` (the mirror image of `market-maker`)
-- New deterministic-loop template for **consuming** liquidity: inventory guard (`sera.get_balances`) → reference mid (`sera.multi_source_mid`) → best executable deal (`sera.find_deals`, falls back to `sera.get_quote`) → edge gate → take (`sera.convert_and_send`). No LLM in the hot path; shares the maker's stdio `lib/mcp-client.ts` shape.
-- `TK_DRY_RUN=true` by default — logs the take it would fire and changes nothing. Refuses mainnet without `TK_MAINNET_ACK=true`; refuses live execution without `SIGNER_PRIVATE_KEY`. Defensive parsers refuse to act on unparseable tool responses. `max_slippage_bps` wired to `TK_MIN_EDGE_BPS` so a fill never beats the edge it gated on.
+- New deterministic-loop template for **consuming** liquidity: `sera.find_deals` (probe `TK_PAIR`, read the directional `good_buy`/`good_sell` bucket) → edge gate → inventory guard (`sera.get_balances`, vault-funded) → take (`sera.convert_and_send`). No LLM in the hot path; shares the maker's stdio `lib/mcp-client.ts` shape.
+- `TK_DRY_RUN=true` by default — logs the take it would fire and changes nothing. Refuses mainnet without `TK_MAINNET_ACK=true`; refuses live execution without `SIGNER_PRIVATE_KEY`. Defensive parsers refuse to act on unparseable tool responses. The `TK_MIN_EDGE_BPS` gate is the slippage guard (`convert_and_send` re-quotes at execution).
 - Signing delegated to `sera-mcp`'s local signer (`SERA_SIGNER_MODE=local`) since conversions route across legs.
 - README with a maker-vs-taker comparison and a Production checklist.
+
+### Changed — schemas reconciled against the engine source; engine links repointed to the org
+- Verified every taker tool call against the canonical `sera-cx/sera-mcp` source (`src/tools/{schemas,deals,maker_orders,treasury}.ts`): `convert_and_send` requires `gas_mode` (added `TK_GAS_MODE`); `find_deals` takes `{ pairs, notional_per_quote, min_deviation_bps, use_multi_source }` and returns directional buckets; `get_balances` returns RAW units + `decimals`; `SERA_SIGNER_MODE=local` confirmed valid (`external`/`local`/`readonly`).
+- Corrected the published `docs/api/index.html` entries for `find_deals`, `get_quote`, and `convert_and_send` to match the engine.
+- Repointed all engine/repo links from the personal `github.com/Josh-sera/*` to the org `github.com/sera-cx/*` (README, `index.html` landing page, every `docs/*.html`, CONTRIBUTING, SECURITY-MODEL, integrations, taker comment). LICENSE copyright + skill author handles left as attribution.
 
 ### Fixed — `templates/market-maker` (v0.2.0 → v0.3.0)
 - `.env.example` ↔ code contradictions resolved: the template signs **client-side** (`SERA_SIGNER_MODE=external`, set by `agent.ts`) — `.env.example` previously claimed `local`/"server signs". The live switch is `MM_DRY_RUN` (default `true`); `.env.example` previously only set `POLICY_DRY_RUN`, which the loop ignored (silent dry-run). `POLICY_DRY_RUN=true` now *also* forces dry-run, belt-and-suspenders.
@@ -180,7 +185,7 @@ Public-repo polish: every install starts with "what env vars do I set?". These f
 ### Changed
 - CI workflow rewritten: now runs `npm run typecheck` (was missing entirely — only `npm audit` ran), then audit + gitleaks + CodeQL. Single workspace install instead of per-package matrix.
 - Root `overrides` block forces `qs ^6.15.2` and `ws ^8.21.0` across the dependency tree.
-- README positioning paragraph at top — explicit "Templates, examples, docs, and x402 integrations built on top of [`sera-mcp`](https://github.com/Josh-sera/sera-mcp)".
+- README positioning paragraph at top — explicit "Templates, examples, docs, and x402 integrations built on top of [`sera-mcp`](https://github.com/sera-cx/sera-mcp)".
 - README references `sera-mcp` via GitHub URL instead of local Desktop path.
 
 ### Fixed

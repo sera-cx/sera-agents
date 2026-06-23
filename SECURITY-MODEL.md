@@ -1,6 +1,6 @@
 # Security Model
 
-For vulnerability reporting, see [`SECURITY.md`](SECURITY.md). For architecture, see [`ARCHITECTURE.md`](ARCHITECTURE.md). For the core MCP's threat model, see [`sera-mcp/SECURITY-MODEL.md`](https://github.com/Josh-sera/sera-mcp/blob/main/SECURITY-MODEL.md).
+For vulnerability reporting, see [`SECURITY.md`](SECURITY.md). For architecture, see [`ARCHITECTURE.md`](ARCHITECTURE.md). For the core MCP's threat model, see [`sera-mcp/SECURITY-MODEL.md`](https://github.com/sera-cx/sera-mcp/blob/main/SECURITY-MODEL.md).
 
 ## Threat model
 

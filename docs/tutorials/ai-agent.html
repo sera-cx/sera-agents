@@ -130,7 +130,7 @@
       <h2 class="gradient-text">Path A — Bundled Sera Agent (fastest)</h2>
       <p>Best if you just want a working agent now and don't care which host it runs in. Comes pre-wired with MCP + LLM.</p>
       <div class="codeblock">
-<pre><code>git clone https://github.com/Josh-sera/sera-agents
+<pre><code>git clone https://github.com/sera-cx/sera-agents
 <span style="color:#A78BFA">cd</span> sera-agents/sera-agent &amp;&amp; npm install
 <span style="color:#A78BFA">export</span> OPENAI_API_KEY=sk-...
 npm start
@@ -146,7 +146,7 @@ npm start
 
       <h3><span class="step-num">1</span>Get sera-mcp on your machine</h3>
       <div class="codeblock">
-<pre><code>git clone https://github.com/Josh-sera/sera-mcp
+<pre><code>git clone https://github.com/sera-cx/sera-mcp
 <span style="color:#A78BFA">cd</span> sera-mcp &amp;&amp; npm install &amp;&amp; npm run build</code></pre>
       </div>
 
@@ -158,7 +158,7 @@ npm start
   --env POLICY_PRESET=standard \
   -- node $(pwd)/dist/index.js</code></pre>
       </div>
-      <p>For Cursor: Settings → MCP → Add a server with the same command. For ChatGPT: Settings → Connectors → MCP. See <a href="https://github.com/Josh-sera/sera-agents/tree/main/integrations" target="_blank">integrations/</a> for per-host snippets.</p>
+      <p>For Cursor: Settings → MCP → Add a server with the same command. For ChatGPT: Settings → Connectors → MCP. See <a href="https://github.com/sera-cx/sera-agents/tree/main/integrations" target="_blank">integrations/</a> for per-host snippets.</p>
 
       <h3><span class="step-num">3</span>Verify</h3>
       <p>In any agent session, type:</p>

@@ -7,7 +7,7 @@
 1. **Build the Sera MCP** (one-time):
 
    ```bash
-   git clone https://github.com/Josh-sera/sera-mcp
+   git clone https://github.com/sera-cx/sera-mcp
    cd sera-mcp && npm install && npm run build
    ```
 

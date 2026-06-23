@@ -25,7 +25,7 @@ Multi-currency settlement infrastructure for AI agents. Connects OpenClaw to [Se
 1. Build the Sera MCP locally (one-time):
 
    ```bash
-   git clone https://github.com/Josh-sera/sera-mcp
+   git clone https://github.com/sera-cx/sera-mcp
    cd sera-mcp && npm install && npm run build
    ```
 
@@ -67,8 +67,8 @@ Expect `overall_ok: true` with checks for sera_health, network_sanity, tokens_re
 
 ## Source
 
-- MCP: https://github.com/Josh-sera/sera-mcp
-- Suite (templates, x402, integrations): https://github.com/Josh-sera/sera-agents
+- MCP: https://github.com/sera-cx/sera-mcp
+- Suite (templates, x402, integrations): https://github.com/sera-cx/sera-agents
 - Sera Protocol docs: https://docs.sera.cx
 
 ## License
