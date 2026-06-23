@@ -7,6 +7,7 @@
   "scripts": {
     "start": "tsx agent.ts",
     "dry-run": "MM_DRY_RUN=true tsx agent.ts",
+    "test": "node --import tsx --test test/*.test.ts",
     "typecheck": "tsc --noEmit",
     "audit": "npm audit --omit=dev --audit-level=high"
   },

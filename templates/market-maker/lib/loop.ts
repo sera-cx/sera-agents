@@ -291,8 +291,13 @@ function buildOrder(a: BuildOrderArgs): BuiltOrder {
 }
 
 function toRaw(human: number, decimals: number): bigint {
-  // Avoid floating-point loss: split integer + fractional, multiply 10^d.
-  const [intPart, fracPart = ""] = human.toString().split(".");
+  if (!Number.isFinite(human) || human < 0) {
+    throw new Error(`toRaw: invalid amount ${human}`);
+  }
+  // toFixed(decimals) renders without scientific notation for sane magnitudes
+  // (plain Number.toString() emits e.g. "1e-7" for small values, which
+  // BigInt() can't parse) and rounds to the token's precision.
+  const [intPart, fracPart = ""] = human.toFixed(decimals).split(".");
   const frac = (fracPart + "0".repeat(decimals)).slice(0, decimals);
   return BigInt(intPart) * 10n ** BigInt(decimals) + BigInt(frac || "0");
 }

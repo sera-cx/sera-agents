@@ -25,8 +25,17 @@ All notable changes to `sera-agents` are documented in this file.
 - New docs tutorial: `docs/tutorials/maker-vs-taker.html` (Tutorial 07), wired into the tutorials index and every tutorial sidebar.
 - Root `package.json` workspaces 9 → 10 (`templates/taker`).
 
+### Fixed — bugs caught in verification pass
+- **market-maker inventory guard (regression):** `fundableSides` read a non-existent `.available` field on `get_balances` rows → `NaN`→`0` → skipped BOTH bid and ask on every live tick whenever balances loaded (maker silently posted nothing). Now reads `vault_available`/`wallet_balance`, scales RAW units by `decimals`, and fails OPEN on uncertainty.
+- **taker inventory guard:** compared RAW balance units against human-unit amounts (no `decimals` scaling) → guard never blocked. Now scales by `decimals`.
+- **both mcp-clients:** per-request `setTimeout` was never cleared on success → timers leaked across the poll loop. Now cleared when the request settles.
+- **market-maker `toRaw`:** `(amount*price).toString()` could emit scientific notation (e.g. `"1e-7"`) that `BigInt()` can't parse; switched to `toFixed(decimals)` + a finite/non-negative guard.
+
+### Tests
+- Added `templates/taker/test/loop.test.ts` (6 tests) and `templates/market-maker/test/loop.test.ts` (3 tests) — mock-`sera-mcp` behavioral coverage for the take/hold/inventory paths and the regression above. Wired `test` scripts; CI already runs `npm test`.
+
 ### Verified
-- `npm run typecheck` clean across all 10 workspace packages.
+- `npm run typecheck` + `npm test` clean across all 10 workspace packages (9 tests pass).
 
 ## [0.7.3] — 2026-05-25
 
