@@ -124,6 +124,18 @@
       <p class="text-lg mb-2" style="color:#A4A89C">All 32 tools exposed by <code class="font-mono text-accent-400 text-base">sera-mcp</code>, organized by category. Every tool is callable from any MCP host (Claude, Cursor, ChatGPT, OpenAI Agents SDK, etc.) and from the bundled <code class="font-mono text-accent-400 text-base">sera</code> CLI.</p>
       <p class="text-sm" style="color:#6B7180">Schema source-of-truth: <code class="font-mono text-accent-400 text-xs">sera-mcp/dist/index.js</code> — these signatures are kept in sync with the running MCP. For Sera Protocol's underlying REST endpoints, see <a href="https://docs.sera.cx" target="_blank" class="text-accent-400 hover:underline">docs.sera.cx</a>.</p>
 
+      <!-- ============ NETWORKS ============ -->
+      <div class="tool" style="margin-top:18px">
+        <div class="label">Networks</div>
+        <p class="text-sm" style="color:#A4A89C; margin-bottom:12px">The same <code class="font-mono text-accent-400 text-xs">sera-mcp</code> binary serves both networks — you don't set an endpoint by hand. Set <code class="font-mono text-accent-400 text-xs">SERA_NETWORK</code> at launch and the MCP resolves the matching REST base URL.</p>
+        <ul class="params" style="list-style:none; padding:0">
+          <li><code>SERA_NETWORK=mainnet</code> &rarr; <code>https://api.sera.cx</code> &middot; docs: <a href="https://docs.sera.cx" target="_blank" class="text-accent-400 hover:underline">docs.sera.cx</a> &middot; Ethereum mainnet</li>
+          <li><code>SERA_NETWORK=sepolia</code> &rarr; <code>https://api-testnet.sera.cx</code> &middot; docs: <a href="https://docs.testnet.sera.cx" target="_blank" class="text-accent-400 hover:underline">docs.testnet.sera.cx</a> &middot; Sepolia testnet</li>
+        </ul>
+        <p class="text-xs" style="color:#6B7180; margin-top:10px">The <code class="font-mono text-accent-400 text-xs">market-maker</code> and <code class="font-mono text-accent-400 text-xs">taker</code> templates default to <code class="font-mono text-accent-400 text-xs">sepolia</code> and refuse mainnet until you set <code class="font-mono text-accent-400 text-xs">*_MAINNET_ACK=true</code>. Run <code class="font-mono text-accent-400 text-xs">sera.doctor</code> to confirm the active chain.</p>
+        <!-- TODO(testnet): source the Sepolia chain_id and contract addresses from sera-cx/sera-mcp (network config) or docs.testnet.sera.cx and surface them here, as the mainnet reference does. Not added blind. -->
+      </div>
+
       <!-- ============ DISCOVERY ============ -->
       <div id="discovery" class="group-header">
         <span class="num">01</span><h2>Discovery</h2>

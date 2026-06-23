@@ -15,6 +15,10 @@ All notable changes to `sera-agents` are documented in this file.
 - Corrected the published `docs/api/index.html` entries for `find_deals`, `get_quote`, and `convert_and_send` to match the engine.
 - Repointed all engine/repo links from the personal `github.com/Josh-sera/*` to the org `github.com/sera-cx/*` (README, `index.html` landing page, every `docs/*.html`, CONTRIBUTING, SECURITY-MODEL, integrations, taker comment). LICENSE copyright + skill author handles left as attribution.
 
+### Added — testnet network path surfaced in the docs (was mainnet-only)
+- The published docs referenced `docs.sera.cx` / `api.sera.cx` (mainnet) but never mentioned the testnet equivalents. Added a **Networks** block to `docs/api/index.html` and a testnet line to the `docs/index.html` install section: `SERA_NETWORK=mainnet` → `api.sera.cx` / `docs.sera.cx`; `SERA_NETWORK=sepolia` → `api-testnet.sera.cx` / `docs.testnet.sera.cx` — same binary, switched at launch.
+- Sepolia `chain_id` and testnet contract addresses left as an explicit `TODO` (HTML comment) pending a read of `sera-cx/sera-mcp` source or `docs.testnet.sera.cx` — not added blind.
+
 ### Fixed — `templates/market-maker` (v0.2.0 → v0.3.0)
 - `.env.example` ↔ code contradictions resolved: the template signs **client-side** (`SERA_SIGNER_MODE=external`, set by `agent.ts`) — `.env.example` previously claimed `local`/"server signs". The live switch is `MM_DRY_RUN` (default `true`); `.env.example` previously only set `POLICY_DRY_RUN`, which the loop ignored (silent dry-run). `POLICY_DRY_RUN=true` now *also* forces dry-run, belt-and-suspenders.
 - Removed the hardcoded personal `~/Desktop/...` default MCP path; defaults to `../../sera-mcp/dist/index.js` (override with `SERA_MCP_DIST`).
