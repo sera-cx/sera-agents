@@ -218,14 +218,20 @@
 
       <div class="tool" id="find_deals">
         <h3>sera.find_deals</h3>
-        <p class="summary">The headline analytical tool. Probes markets, diffs each against external mid, ranks the deals.</p>
+        <p class="summary">The headline analytical tool. Probes markets, diffs each against an external benchmark, sorts into directional buckets.</p>
         <div class="label">Params</div>
         <ul class="params">
-          <li><code>min_bps</code> <span class="badge-opt">opt</span> — minimum edge (default 25)</li>
-          <li><code>notional_usd</code> <span class="badge-opt">opt</span> — probe size (default $1k)</li>
+          <li><code>pairs</code> <span class="badge-opt">opt</span> — array of <code>{ base, quote }</code> to probe (default: scan)</li>
+          <li><code>notional_per_quote</code> <span class="badge-opt">opt</span> — probe size</li>
+          <li><code>min_deviation_bps</code> <span class="badge-opt">opt</span> — surface only deviations ≥ this</li>
+          <li><code>use_multi_source</code> <span class="badge-opt">opt</span> — benchmark against multi-source mid</li>
+          <li><code>max_pairs</code> · <code>max_concurrency</code> · <code>only_policy_allowed</code> · <code>gas_mode</code> <span class="badge-opt">opt</span></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ deals: [{ pair, edge_bps, sera_rate, external_mid, notional }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ good_buy: [item], good_sell: [item], fair: [item], summary, skipped }
+// good_buy  = Sera quote &lt; benchmark (favorable to BUY base)
+// good_sell = Sera quote &gt; benchmark (favorable to SELL base)
+// item = { pair, rate, base_fiat, quote_fiat, benchmark, deviation_bps, status_label }</code></pre></div>
       </div>
 
       <div class="tool" id="probe_depth">
@@ -258,10 +264,11 @@
         <p class="summary">Single-use quote + EIP-712 typed data ready for the wallet to sign. Pass <code>simulate:true</code> to probe with no wallet.</p>
         <div class="label">Params</div>
         <ul class="params">
-          <li><code>from</code> <span class="badge-req">req</span> — source token symbol</li>
-          <li><code>to</code> <span class="badge-req">req</span> — target token symbol</li>
+          <li><code>from</code> <span class="badge-req">req</span> — source currency ref (symbol or address)</li>
+          <li><code>to</code> <span class="badge-req">req</span> — target currency ref</li>
           <li><code>amount</code> <span class="badge-req">req</span> — in <code>from</code>-token units</li>
-          <li><code>simulate</code> <span class="badge-opt">opt</span> — read-only probe (default false)</li>
+          <li><code>gas_mode</code> <span class="badge-req">req</span> — <code>receive_less</code> | <code>pay_more</code></li>
+          <li><code>owner_address</code> · <code>recipient</code> · <code>expiration_seconds</code> (≤3600) · <code>simulate</code> <span class="badge-opt">opt</span></li>
         </ul>
         <div class="label">Returns</div>
         <div class="codeblock"><pre><code>{ uuid, typed_data, expected_out, expiry, route_params }</code></pre></div>
@@ -287,6 +294,14 @@
       <div class="tool" id="convert_and_send">
         <h3>sera.convert_and_send</h3>
         <p class="summary">Quote-sign-execute-transfer in one tool call. Recipient gets the target asset directly.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> — source currency ref</li>
+          <li><code>to</code> <span class="badge-req">req</span> — target currency ref</li>
+          <li><code>amount</code> <span class="badge-req">req</span> — in <code>from</code>-token units</li>
+          <li><code>owner_address</code> <span class="badge-req">req</span> · <code>recipient</code> <span class="badge-req">req</span></li>
+          <li><code>gas_mode</code> <span class="badge-req">req</span> — <code>receive_less</code> | <code>pay_more</code></li>
+        </ul>
       </div>
 
       <div class="tool" id="quote_recipient_amount">

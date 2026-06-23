@@ -20,14 +20,20 @@ Run both against the same wallet if you want to make on one pair and take on ano
 
 ```
 loop every TK_POLL_SECONDS:
-  1. find_deals              (scan all markets, diff Sera vs external mid; filter to TK_PAIR)
-  2. edge gate               (only take if the directional edge ≥ TK_MIN_EDGE_BPS)
-  3. get_balances            (inventory guard — skip if you can't fund the spend leg)
-  4. convert_and_send        (take it — or just log it if TK_DRY_RUN)
+  1. find_deals { pairs:[{base,quote}] }   (probe TK_PAIR vs external benchmark)
+  2. edge gate     (read the good_buy / good_sell bucket for your side; take if deviation_bps ≥ TK_MIN_EDGE_BPS)
+  3. get_balances  (inventory guard — skip if the vault can't fund the spend leg)
+  4. convert_and_send { from, to, amount, owner_address, recipient, gas_mode }
   5. sleep TK_POLL_SECONDS
 ```
 
-`find_deals` already diffs Sera's rate against external mid per market, so the loop reads `sera_rate` + `external_mid` straight off each deal and computes the **directional** edge for your side (buy wants Sera cheaper than mid; sell wants it richer). Uses sera-mcp tools: `sera.find_deals`, `sera.get_balances`, `sera.convert_and_send`, `sera.doctor`. Signatures follow the [API reference](https://agents.sera.cx/docs/api/) (`find_deals { min_bps, notional_usd }` → `{ deals:[{ pair, edge_bps, sera_rate, external_mid }] }`; `get_quote`/`convert_and_send` use `from`/`to`/`amount`).
+`find_deals` sorts each probed market into directional buckets — `good_buy` (Sera cheaper than benchmark, favorable to buy base) and `good_sell` (Sera richer, favorable to sell) — each item carrying `rate` + `deviation_bps`. The loop reads the bucket for your side, so the edge is already directional. Signatures are reconciled against the **sera-mcp source** (`src/tools/{deals,maker_orders,treasury}.ts`):
+
+| Tool | Input | Output (fields the loop reads) |
+|---|---|---|
+| `find_deals` | `{ pairs:[{base,quote}], notional_per_quote, min_deviation_bps, use_multi_source }` | `{ good_buy:[…], good_sell:[…], fair:[…] }`, item `{ pair, rate, deviation_bps }` |
+| `convert_and_send` | `{ from, to, amount, owner_address, recipient, gas_mode }` (all required) | `{ trade_id, tx_hash, status }` |
+| `get_balances` | `{ owner_address }` | `{ balances:[{ symbol, vault_available, wallet_balance, decimals }] }` |
 
 ## Run
 
@@ -42,7 +48,7 @@ You'll see each tick print the mid, the best rate, the computed edge, and — wh
 
 ## Tool-shape caveat
 
-Tool field names can drift across sera-mcp versions. `lib/loop.ts` reads `find_deals` results loosely (`sera_rate`/`rate`, `external_mid`/`mid`, `deals[…]`) and **refuses to act on anything it can't parse** — it holds instead of guessing. Before going live, run `sera.doctor` and eyeball a raw `sera.find_deals` response against your installed version, then adjust `normalizeDeal()` if the shape differs. The execution call (`convert_and_send`) isn't fully specified in the public reference beyond `from`/`to`/`amount` — verify its exact params on your install and dry-run first.
+Signatures here are reconciled against the sera-mcp source (see table above), but field names can still drift across versions. `lib/loop.ts` reads responses loosely (`vault_available`/`wallet_balance`, `pair` as string or `{base,quote}`) and **refuses to act on anything it can't parse** — it holds instead of guessing. Before going live, run `sera.doctor` and eyeball a raw `sera.find_deals` response against your installed version, then adjust `normalizeDeal()` / `canFund()` if the shape differs.
 
 ## How it differs from a real production taker
 

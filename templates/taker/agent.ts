@@ -18,7 +18,7 @@
  */
 import { resolve } from "node:path";
 import { startSeraMcp } from "./lib/mcp-client.js";
-import { runOneTick, sleep, type TakerConfig, type TakerState, type TakeSide } from "./lib/loop.js";
+import { runOneTick, sleep, type TakerConfig, type TakerState, type TakeSide, type GasMode } from "./lib/loop.js";
 
 // ── env config ──────────────────────────────────────────────────────────
 // Path to the sera-mcp build. No personal-machine default — set SERA_MCP_DIST
@@ -31,6 +31,7 @@ const SIDE = (process.env.TK_SIDE ?? "buy").toLowerCase() as TakeSide;
 const NOTIONAL = Number(process.env.TK_NOTIONAL ?? 100);
 const NOTIONAL_USD = Number(process.env.TK_NOTIONAL_USD ?? NOTIONAL);
 const MIN_EDGE_BPS = Number(process.env.TK_MIN_EDGE_BPS ?? 15);
+const GAS_MODE = (process.env.TK_GAS_MODE ?? "receive_less") as GasMode;
 const POLL_SECONDS = Number(process.env.TK_POLL_SECONDS ?? 30);
 const DRY_RUN = (process.env.TK_DRY_RUN ?? "true").toLowerCase() !== "false";
 // Belt-and-suspenders: a sera-mcp-level POLICY_DRY_RUN=true also forces dry.
@@ -42,6 +43,10 @@ const RECIPIENT = process.env.TK_RECIPIENT ?? OWNER;
 
 if (SIDE !== "buy" && SIDE !== "sell") {
   process.stderr.write(`\nrefusing to start: TK_SIDE must be "buy" or "sell" (got "${SIDE}").\n\n`);
+  process.exit(1);
+}
+if (GAS_MODE !== "receive_less" && GAS_MODE !== "pay_more") {
+  process.stderr.write(`\nrefusing to start: TK_GAS_MODE must be "receive_less" or "pay_more" (got "${GAS_MODE}").\n\n`);
   process.exit(1);
 }
 if (!OWNER) {
@@ -112,6 +117,7 @@ async function main() {
     notional: NOTIONAL,
     notionalUsd: NOTIONAL_USD,
     minEdgeBps: MIN_EDGE_BPS,
+    gasMode: GAS_MODE,
     pollSeconds: POLL_SECONDS,
     dryRun,
     ownerAddress: OWNER!,

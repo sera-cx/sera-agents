@@ -3,35 +3,50 @@
  *
  * Where the maker POSTS resting orders and waits to be filled, the taker
  * CONSUMES liquidity: it polls for an executable edge and fires a conversion
- * the moment Sera's rate beats external mid by enough basis points to be worth
- * taking. Same deterministic-loop shape as templates/market-maker — no LLM in
- * the hot path.
+ * the moment Sera's rate beats the external benchmark by enough basis points to
+ * be worth taking. Same deterministic-loop shape as templates/market-maker — no
+ * LLM in the hot path.
  *
- * Tool signatures below follow the published reference at
- * agents.sera.cx/docs/api (mirrored in this repo at docs/api/index.html):
- *   - sera.find_deals { min_bps, notional_usd } -> { deals:[{ pair, edge_bps,
- *     sera_rate, external_mid, notional }] }   (scans ALL markets; we filter to ours)
- *   - sera.multi_source_mid { base, quote }    -> { median, sources, spread_bps }
- *   - sera.get_quote { from, to, amount, simulate } -> { uuid, expected_out, ... }
- *   - sera.convert_and_send { from, to, amount, recipient, owner_address }
- *   - sera.get_balances { owner_address }      -> token balances (raw units)
+ * Tool signatures below are reconciled against the sera-mcp SOURCE
+ * (github.com/Josh-sera/sera-mcp, src/tools/{deals,core,treasury}.ts), not just
+ * the published summary:
+ *
+ *   sera.find_deals
+ *     in:  { pairs:[{base,quote}], notional_per_quote, min_deviation_bps,
+ *            use_multi_source, gas_mode? }
+ *     out: { good_sell:[item], good_buy:[item], fair:[item], summary, ... }
+ *          item = { pair, rate, base_fiat, quote_fiat, benchmark,
+ *                   deviation_bps, status_label }
+ *          good_buy  = Sera quote < benchmark → favorable to BUY base
+ *          good_sell = Sera quote > benchmark → favorable to SELL base
+ *
+ *   sera.convert_and_send
+ *     in:  { from, to, amount, owner_address, recipient, gas_mode }   (all req)
+ *          gas_mode "receive_less" = spend exactly `amount` of `from`
+ *          gas_mode "pay_more"     = deliver exactly `amount` of `to`
+ *
+ *   sera.get_balances
+ *     in:  { owner_address }
+ *     out: { balances:[{ symbol, wallet_balance, vault_available, decimals }] }
  *
  * One tick:
- *   1. find_deals -> best edge on our pair (directional, vs the deal's own mid).
- *   2. edge gate: hold unless edge >= TK_MIN_EDGE_BPS.
- *   3. inventory guard: hold if the wallet can't fund the spend leg.
+ *   1. find_deals on our pair → the directional bucket for our side.
+ *   2. edge gate: hold unless deviation_bps >= TK_MIN_EDGE_BPS.
+ *   3. inventory guard: hold if the vault can't fund the spend leg.
  *   4. take: convert_and_send (or log the intended call if DRY_RUN).
  */
 import type { SeraMcpClient } from "./mcp-client.js";
 
 export type TakeSide = "buy" | "sell";
+export type GasMode = "receive_less" | "pay_more";
 
 export interface TakerConfig {
   pair: string;            // "EURC/USDC" — base/quote
   side: TakeSide;          // "buy" = acquire base, "sell" = offload base
   notional: number;        // base units to take per fill
-  notionalUsd: number;     // approx USD probe size for find_deals
-  minEdgeBps: number;      // only take if executable rate beats mid by >= this
+  notionalUsd: number;     // approx USD probe size (notional_per_quote)
+  minEdgeBps: number;      // only take if Sera beats benchmark by >= this
+  gasMode: GasMode;        // convert_and_send gas accounting
   pollSeconds: number;
   dryRun: boolean;
   ownerAddress: string;
@@ -47,8 +62,8 @@ export interface TakerState {
 
 /** A normalized, directional opportunity on our pair. */
 interface Deal {
-  rate: number;            // sera_rate, quote per base
-  edgeBps: number;         // directional edge for our side, in bps (positive = good)
+  rate: number;            // Sera executable rate, quote per base
+  edgeBps: number;         // deviation_bps for our side (positive = favorable)
 }
 
 export async function runOneTick(
@@ -62,21 +77,21 @@ export async function runOneTick(
   const [base, quote] = cfg.pair.split("/");
 
   try {
-    // Step 1: best edge on our pair (find_deals already diffs Sera vs external mid).
-    const deal = await bestDeal(mcp, cfg, log);
+    // Step 1: best edge on our pair, on the side we want.
+    const deal = await bestDeal(mcp, cfg, base, quote, log);
     if (!deal) {
-      log(`no executable deal on ${cfg.pair} — hold`);
+      log(`no favorable ${cfg.side} deal on ${cfg.pair} — hold`);
       return;
     }
-    log(`sera_rate=${deal.rate.toFixed(6)} edge=${deal.edgeBps.toFixed(2)}bps (${cfg.side})`);
+    log(`sera_rate=${deal.rate.toFixed(6)} edge=${deal.edgeBps.toFixed(0)}bps (${cfg.side})`);
 
     // Step 2: edge gate.
     if (deal.edgeBps < cfg.minEdgeBps) {
-      log(`edge ${deal.edgeBps.toFixed(2)}bps < ${cfg.minEdgeBps}bps — hold`);
+      log(`edge ${deal.edgeBps.toFixed(0)}bps < ${cfg.minEdgeBps}bps — hold`);
       return;
     }
 
-    // Step 3: figure out the spend leg + amount, then check we can fund it.
+    // Step 3: spend leg + amount (in `from` units, since gas_mode=receive_less).
     //   buy  base: spend QUOTE (~notional × rate), receive BASE
     //   sell base: spend BASE  (~notional),        receive QUOTE
     const from = cfg.side === "buy" ? quote : base;
@@ -84,20 +99,21 @@ export async function runOneTick(
     const spendAmount = cfg.side === "buy" ? cfg.notional * deal.rate : cfg.notional;
 
     if (!(await canFund(mcp, cfg, from, spendAmount, log))) {
-      log(`inventory guard: insufficient ${from} to fund ${spendAmount.toFixed(4)} — hold`);
+      log(`inventory guard: vault can't fund ${spendAmount.toFixed(4)} ${from} — hold`);
       return;
     }
 
     // Step 4: take. convert_and_send quotes-signs-executes-transfers in one call;
     // the recipient receives `to` directly. sera-mcp signs (SERA_SIGNER_MODE=local).
-    // Our edge gate above is the slippage protection — convert_and_send re-quotes
-    // at execution, so confirm the delivered rate in logs / sera.settlement_status.
+    // It RE-QUOTES at execution — our edge gate is the only slippage guard, so
+    // confirm the delivered rate via sera.settlement_status after each fill.
     const takeArgs = {
-      owner_address: cfg.ownerAddress,
-      recipient: cfg.recipient,
       from,
       to,
       amount: String(spendAmount),
+      owner_address: cfg.ownerAddress,
+      recipient: cfg.recipient,
+      gas_mode: cfg.gasMode,
     };
 
     if (cfg.dryRun) {
@@ -125,53 +141,65 @@ export async function runOneTick(
 }
 
 /**
- * find_deals scans every market and ranks Sera rate vs external mid. We filter
- * to our pair and compute the DIRECTIONAL edge for our side from the deal's own
- * sera_rate + external_mid (don't trust an abs edge_bps sign). Returns null
- * (hold) if find_deals is unavailable or our pair isn't in the results — we
- * never act on data we can't read.
+ * find_deals probes our pair and sorts each market into directional buckets
+ * (good_buy / good_sell / fair). We read the bucket for our side and take the
+ * best deviation_bps. Returns null (hold) if find_deals is unavailable or our
+ * pair isn't favorable for our side — we never act on data we can't read.
  */
 async function bestDeal(
   mcp: SeraMcpClient,
   cfg: TakerConfig,
+  base: string,
+  quote: string,
   log: (m: string) => void,
 ): Promise<Deal | null> {
   let r: any;
   try {
     r = await mcp.tool<any>("sera.find_deals", {
-      min_bps: 1, // surface thin edges too; our own TK_MIN_EDGE_BPS is the gate
-      notional_usd: cfg.notionalUsd,
+      pairs: [{ base, quote }],
+      notional_per_quote: cfg.notionalUsd,
+      min_deviation_bps: 0, // surface everything; our TK_MIN_EDGE_BPS is the gate
+      use_multi_source: true,
     });
   } catch (e: any) {
     log(`  find_deals unavailable (${e?.message ?? String(e)}) — hold`);
     return null;
   }
 
-  const rows: any[] = r?.deals ?? (Array.isArray(r) ? r : []);
-  const target = cfg.pair.toUpperCase();
-  const candidates = rows
-    .filter((d) => String(d?.pair ?? "").toUpperCase() === target)
-    .map((d) => normalizeDeal(d, cfg.side))
+  // good_buy = favorable to buy base; good_sell = favorable to sell base.
+  const bucket: any[] = (cfg.side === "buy" ? r?.good_buy : r?.good_sell) ?? [];
+  const candidates = bucket
+    .filter((d) => pairMatches(d?.pair, base, quote))
+    .map(normalizeDeal)
     .filter((d): d is Deal => d !== null)
     .sort((a, b) => b.edgeBps - a.edgeBps);
   return candidates[0] ?? null;
 }
 
-function normalizeDeal(d: any, side: TakeSide): Deal | null {
-  const rate = num(d?.sera_rate ?? d?.rate);
-  const mid = num(d?.external_mid ?? d?.mid);
-  if (rate === null || rate <= 0 || mid === null || mid <= 0) return null;
-  // Buying base: a LOWER Sera rate than mid is the edge.
-  // Selling base: a HIGHER Sera rate than mid is the edge.
-  const rel = side === "buy" ? (mid - rate) / mid : (rate - mid) / mid;
-  return { rate, edgeBps: rel * 10_000 };
+/** `pair` may be a "BASE/QUOTE" string or a { base, quote } object. */
+function pairMatches(pair: unknown, base: string, quote: string): boolean {
+  const want = `${base}/${quote}`.toUpperCase();
+  if (typeof pair === "string") return pair.toUpperCase() === want;
+  if (pair && typeof pair === "object") {
+    const p = pair as { base?: string; quote?: string };
+    return `${p.base ?? ""}/${p.quote ?? ""}`.toUpperCase() === want;
+  }
+  return false;
+}
+
+function normalizeDeal(d: any): Deal | null {
+  const rate = num(d?.rate);
+  const edge = num(d?.deviation_bps);
+  if (rate === null || rate <= 0 || edge === null) return null;
+  // Items already live in the directional bucket, so deviation_bps is the
+  // favorable edge magnitude. Math.abs guards against a signed value.
+  return { rate, edgeBps: Math.abs(edge) };
 }
 
 /**
- * Inventory guard. Best-effort: if get_balances is unavailable (no API key) we
- * fail OPEN in DRY_RUN (so you can still watch edges) and fail CLOSED when live.
- * Response shape is "balances across N wallets in raw units" — we read it
- * loosely and treat unparseable as zero.
+ * Inventory guard against the VAULT balance (what convert_and_send can spend).
+ * Best-effort: if get_balances is unavailable (no API key) we fail OPEN in
+ * DRY_RUN (so you can still watch edges) and fail CLOSED when live.
  */
 async function canFund(
   mcp: SeraMcpClient,
@@ -184,7 +212,8 @@ async function canFund(
     const r = await mcp.tool<any>("sera.get_balances", { owner_address: cfg.ownerAddress });
     const rows: any[] = r?.balances ?? (Array.isArray(r) ? r : []);
     const row = rows.find((b) => String(b?.symbol ?? "").toUpperCase() === spendSymbol.toUpperCase());
-    const available = num(row?.available ?? row?.balance ?? row?.amount) ?? 0;
+    // vault_available is the tradeable balance; fall back to wallet_balance.
+    const available = num(row?.vault_available ?? row?.wallet_balance ?? row?.available) ?? 0;
     return available >= needed;
   } catch (e: any) {
     log(`  get_balances unavailable (${e?.message ?? String(e)})`);

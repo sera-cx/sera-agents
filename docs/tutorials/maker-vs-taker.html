@@ -183,11 +183,11 @@ npm install &amp;&amp; npm start</code></pre>
       </div>
       <div class="codeblock">
         <div class="filename">the loop (lib/loop.ts)</div>
-<pre><code>deal = find_deals        <span style="color:#6B7180"># scan markets, diff Sera vs external mid; filter to TK_PAIR</span>
-edge = directional(deal.sera_rate, deal.external_mid)
-<span style="color:#A78BFA">if</span> edge &lt; TK_MIN_EDGE_BPS: hold
-get_balances             <span style="color:#6B7180"># inventory guard — skip if you can't fund the spend leg</span>
-convert_and_send         <span style="color:#6B7180"># take it (the edge gate is your slippage protection)</span></code></pre>
+<pre><code>deals = find_deals({ pairs:[{base,quote}] })   <span style="color:#6B7180"># probe TK_PAIR vs benchmark</span>
+deal = best(deals.good_buy)   <span style="color:#6B7180"># or good_sell when selling base — already directional</span>
+<span style="color:#A78BFA">if</span> deal.deviation_bps &lt; TK_MIN_EDGE_BPS: hold
+get_balances             <span style="color:#6B7180"># inventory guard — vault must fund the spend leg</span>
+convert_and_send({ from, to, amount, owner_address, recipient, gas_mode })</code></pre>
       </div>
 
       <h3><span class="step-num">3</span>Cap the risk before going live</h3>
