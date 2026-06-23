@@ -167,8 +167,11 @@ export async function runOneTick(
  * Inventory-aware sizing stub. Returns which sides the wallet can fund:
  *   - bid spends QUOTE (need ~notional × price of quote)
  *   - ask spends BASE  (need ~notional of base)
- * Best-effort: if get_balances isn't available (no API key), allow both — the
- * sera-mcp policy caps and on-chain balance checks remain the hard backstop.
+ * get_balances returns RAW token units + `decimals`, so we scale to human units
+ * before comparing. FAIL OPEN on any uncertainty (missing row, unparseable
+ * value, or no API key) — a broken inventory read must never silently stop the
+ * maker from quoting. The sera-mcp policy caps + on-chain checks are the hard
+ * backstop.
  */
 async function fundableSides(
   mcp: SeraMcpClient,
@@ -178,23 +181,37 @@ async function fundableSides(
   log: (m: string) => void,
 ): Promise<{ bid: boolean; ask: boolean }> {
   try {
-    const r = await mcp.tool<{ balances?: Array<{ symbol?: string; available?: string | number }> }>(
-      "sera.get_balances",
-      { owner_address: cfg.ownerAddress },
-    );
-    const avail = (symbol: string): number => {
+    const r = await mcp.tool<{
+      balances?: Array<{
+        symbol?: string;
+        vault_available?: string | number;
+        wallet_balance?: string | number;
+        decimals?: number;
+      }>;
+    }>("sera.get_balances", { owner_address: cfg.ownerAddress });
+    // Human-unit available balance for a symbol, or null if we can't tell.
+    const availHuman = (symbol: string): number | null => {
       const row = r.balances?.find((b) => b.symbol?.toUpperCase() === symbol.toUpperCase());
-      const n = row ? Number(row.available) : 0;
-      return Number.isFinite(n) ? n : 0;
+      if (!row) return null;
+      const raw = toNum(row.vault_available ?? row.wallet_balance);
+      if (raw === null) return null;
+      return typeof row.decimals === "number" ? raw / 10 ** row.decimals : raw;
     };
+    const q = availHuman(market.quote_symbol);
+    const b = availHuman(market.base_symbol);
     return {
-      bid: avail(market.quote_symbol) >= cfg.notional * bidPrice,
-      ask: avail(market.base_symbol) >= cfg.notional,
+      bid: q === null ? true : q >= cfg.notional * bidPrice,
+      ask: b === null ? true : b >= cfg.notional,
     };
   } catch (e: any) {
     log(`  get_balances unavailable (${e?.message ?? String(e)}) — posting both sides`);
     return { bid: true, ask: true };
   }
+}
+
+function toNum(v: unknown): number | null {
+  const n = typeof v === "string" ? Number(v) : (v as number);
+  return typeof n === "number" && Number.isFinite(n) ? n : null;
 }
 
 async function readMid(mcp: SeraMcpClient, base: string, quote: string): Promise<number> {

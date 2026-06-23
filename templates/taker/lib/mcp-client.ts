@@ -71,14 +71,19 @@ export async function startSeraMcp(opts: SeraMcpClientOptions): Promise<SeraMcpC
     const id = ++reqId;
     const payload = JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n";
     return new Promise((resolve, reject) => {
-      pending.set(id, { resolve, reject });
-      proc!.stdin.write(payload);
-      setTimeout(() => {
+      // Clear the timeout when the request settles so timers don't accumulate
+      // across a fast poll loop and keep the event loop alive.
+      const timer = setTimeout(() => {
         if (pending.has(id)) {
           pending.delete(id);
           reject(new Error(`mcp ${method} timeout after ${requestTimeout}ms`));
         }
       }, requestTimeout);
+      pending.set(id, {
+        resolve: (v) => { clearTimeout(timer); resolve(v); },
+        reject: (e) => { clearTimeout(timer); reject(e); },
+      });
+      proc!.stdin.write(payload);
     });
   }
 

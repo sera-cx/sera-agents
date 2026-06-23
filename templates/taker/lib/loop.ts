@@ -212,8 +212,14 @@ async function canFund(
     const r = await mcp.tool<any>("sera.get_balances", { owner_address: cfg.ownerAddress });
     const rows: any[] = r?.balances ?? (Array.isArray(r) ? r : []);
     const row = rows.find((b) => String(b?.symbol ?? "").toUpperCase() === spendSymbol.toUpperCase());
+    // Unknown balance → watch in dry-run, hold when live.
+    if (!row) return cfg.dryRun;
     // vault_available is the tradeable balance; fall back to wallet_balance.
-    const available = num(row?.vault_available ?? row?.wallet_balance ?? row?.available) ?? 0;
+    // Values are RAW token units — scale by decimals to compare with `needed`.
+    const raw = num(row.vault_available ?? row.wallet_balance ?? row.available);
+    if (raw === null) return cfg.dryRun;
+    const dec = num(row.decimals);
+    const available = dec !== null ? raw / 10 ** dec : raw;
     return available >= needed;
   } catch (e: any) {
     log(`  get_balances unavailable (${e?.message ?? String(e)})`);
