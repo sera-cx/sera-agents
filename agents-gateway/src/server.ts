@@ -8,6 +8,21 @@ import { makeQuoteCache } from "./quote-cache.js";
 import { makeHandlers } from "./handlers.js";
 import { OPENAPI_DOC } from "./openapi.js";
 import { buildMcpServer, handleMcpRequest } from "./mcp.js";
+import { GatewayError } from "./errors.js";
+import type { Context } from "hono";
+
+/**
+ * Render a handler failure. A GatewayError (e.g. an upstream throttle) keeps its
+ * own status and, on 429/503, a Retry-After header so clients back off
+ * correctly. Everything else is an upstream fault → 502.
+ */
+function failure(c: Context, e: any, fallback: string) {
+  if (e instanceof GatewayError) {
+    if (e.retryAfter != null) c.header("Retry-After", String(e.retryAfter));
+    return c.json({ error: e.message }, e.status as 400);
+  }
+  return c.json({ error: e?.message ?? fallback }, 502);
+}
 
 const env = loadEnv();
 const mcp = makeSeraMcpClient({
@@ -61,7 +76,7 @@ app.get("/rates", async (c) => {
   try {
     return c.json(await handlers.rates(pairs));
   } catch (e: any) {
-    return c.json({ error: e?.message ?? "rates failed" }, 502);
+    return failure(c, e, "rates failed");
   }
 });
 
@@ -69,7 +84,7 @@ app.get("/corridors", async (c) => {
   try {
     return c.json(await handlers.corridors());
   } catch (e: any) {
-    return c.json({ error: e?.message ?? "corridors failed" }, 502);
+    return failure(c, e, "corridors failed");
   }
 });
 
@@ -85,7 +100,7 @@ app.post("/quote", async (c) => {
   try {
     return c.json(await handlers.quote(parsed.data));
   } catch (e: any) {
-    return c.json({ error: e?.message ?? "quote failed" }, 502);
+    return failure(c, e, "quote failed");
   }
 });
 
@@ -101,7 +116,7 @@ app.post("/settle", async (c) => {
   try {
     return c.json(await handlers.settle(parsed.data));
   } catch (e: any) {
-    return c.json({ error: e?.message ?? "settle failed" }, 502);
+    return failure(c, e, "settle failed");
   }
 });
 

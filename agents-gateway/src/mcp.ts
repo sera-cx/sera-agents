@@ -3,6 +3,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { z } from "zod";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Handlers } from "./handlers.js";
+import { GatewayError } from "./errors.js";
 
 const PairsSchema = {
   pairs: z
@@ -28,6 +29,27 @@ function asText<T>(value: T) {
   return { content: [{ type: "text" as const, text: JSON.stringify(value) }] };
 }
 
+/**
+ * Run a tool body and serialize the result. A GatewayError (e.g. an upstream
+ * throttle) is returned as an isError result tagged with its status and a retry
+ * hint, so MCP callers can back off — mirroring the REST 429 + Retry-After.
+ * Other errors propagate to the SDK's default isError handling unchanged.
+ */
+async function run<T>(fn: () => Promise<T> | T) {
+  try {
+    return asText(await fn());
+  } catch (e) {
+    if (e instanceof GatewayError) {
+      const hint = e.retryAfter != null ? ` (retry after ${e.retryAfter}s)` : "";
+      return {
+        isError: true as const,
+        content: [{ type: "text" as const, text: `${e.status}: ${e.message}${hint}` }],
+      };
+    }
+    throw e;
+  }
+}
+
 export function buildMcpServer(handlers: Handlers): McpServer {
   const server = new McpServer({ name: "sera-agents-gateway", version: "0.1.0" });
 
@@ -39,7 +61,7 @@ export function buildMcpServer(handlers: Handlers): McpServer {
     "Get a live FX quote between any pair of supported stablecoins. Returns amount_out, mid_rate, network_cost, and a quote_id that fx_settle consumes.",
     QuoteSchema,
     async (args: { from_token: string; to_token: string; amount: string }) =>
-      asText(await handlers.quote(args)),
+      run(() => handlers.quote(args)),
   );
 
   (server.tool as any)(
@@ -47,27 +69,28 @@ export function buildMcpServer(handlers: Handlers): McpServer {
     "Build an unsigned EIP-712 settlement transaction from a quote. Returns typed_data the caller signs in their wallet.",
     SettleSchema,
     async (args: { quote_id: string; signer: string }) =>
-      asText(await handlers.settle(args)),
+      run(() => handlers.settle(args)),
   );
 
   (server.tool as any)(
     "corridors",
     "List supported FX corridors, currencies, and liquidity depth.",
-    async () => asText(await handlers.corridors()),
+    async () => run(() => handlers.corridors()),
   );
 
   (server.tool as any)(
     "rates",
     "Fetch live reference rates. Pass `pairs` as a comma-separated list, e.g. USDC/BRLA,XSGD/IDRX.",
     PairsSchema,
-    async (args: { pairs?: string }) => {
-      const pairs = (args.pairs ?? "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (pairs.length === 0) throw new Error("rates: at least one pair is required");
-      return asText(await handlers.rates(pairs));
-    },
+    async (args: { pairs?: string }) =>
+      run(() => {
+        const pairs = (args.pairs ?? "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (pairs.length === 0) throw new Error("rates: at least one pair is required");
+        return handlers.rates(pairs);
+      }),
   );
 
   return server;

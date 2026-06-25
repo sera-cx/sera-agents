@@ -105,6 +105,15 @@ agents.sera.cx {
         path /mcp /mcp/* /openapi.json /health /quote /settle /corridors /rates
     }
     handle @gateway {
+        # Per-IP brake so one caller can't burn our shared Sera quota.
+        # Needs the caddy-ratelimit plugin (see deploy/Caddyfile).
+        rate_limit {
+            zone agents_api {
+                key    {remote_host}
+                events 120
+                window 1m
+            }
+        }
         reverse_proxy 127.0.0.1:8787
     }
 
@@ -115,7 +124,27 @@ agents.sera.cx {
 }
 ```
 
-(Adjust the static container's port — `8080` above is a placeholder.)
+(Adjust the static container's port — `8080` above is a placeholder.) A ready-to-build
+version with notes lives at [deploy/Caddyfile](./deploy/Caddyfile).
+
+### Rate limiting & throttle behavior
+
+There is **no auth and no rate limiter inside the gateway** — rate limiting is owned by
+the Sera API (keyed to `SERA_API_KEY`). The per-IP `rate_limit` above is only a
+noisy-neighbor brake at the proxy: from Sera's view the whole gateway is one client, so
+the upstream limit is a shared bucket. The `rate_limit` directive needs the
+[`caddy-ratelimit`](https://github.com/mholt/caddy-ratelimit) plugin (`xcaddy build
+--with github.com/mholt/caddy-ratelimit`); drop the block to run plain reverse proxy.
+
+When Sera throttles, the gateway surfaces it honestly instead of a generic 502:
+
+- **REST** → `429` with a `Retry-After` header.
+- **`/mcp`** → an `isError` tool result tagged `429: … (retry after Ns)`.
+
+Detection is in `src/sera-mcp-client.ts` (`interpretToolResult` /
+`rateLimitFromToolError`): it reads structured `_meta`/`structuredContent` first, then a
+text heuristic. See [docs/sera-mcp-error-contract.md](./docs/sera-mcp-error-contract.md)
+for the upstream sera-mcp change that makes this precise.
 
 ### Push-to-main auto-deploy
 

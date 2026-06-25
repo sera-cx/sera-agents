@@ -1,4 +1,30 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { GatewayError, rateLimitFromToolError } from "./errors.js";
+
+export interface ToolCallResult {
+  isError?: boolean;
+  content?: Array<{ type: string; text?: string }>;
+  structuredContent?: Record<string, unknown>;
+  _meta?: Record<string, unknown>;
+}
+
+/**
+ * Turn a sera-mcp tools/call result into the parsed value, or throw. An upstream
+ * throttle becomes a GatewayError (429 + Retry-After) so callers can back off;
+ * any other tool error stays a plain Error → 502 at the server. Pure and
+ * exported so the throttle path is unit-testable without spawning sera-mcp.
+ */
+export function interpretToolResult<T>(name: string, res: ToolCallResult | undefined): T {
+  if (res?.isError) {
+    const msg = res.content?.[0]?.text ?? `sera-mcp tool ${name} failed`;
+    const throttle = rateLimitFromToolError(res);
+    if (throttle) throw new GatewayError(throttle.status, msg, throttle.retryAfter);
+    throw new Error(msg);
+  }
+  const text = res?.content?.[0]?.text;
+  if (!text) throw new Error(`sera-mcp tool ${name} returned no content`);
+  return JSON.parse(text) as T;
+}
 
 export interface SeraMcpClient {
   callTool<T = unknown>(name: string, args: Record<string, unknown>): Promise<T>;
@@ -99,17 +125,8 @@ export function makeSeraMcpClient(opts: InitOpts): SeraMcpClient {
   return {
     async callTool<T>(name: string, args: Record<string, unknown>): Promise<T> {
       await ensureReady();
-      const res = await rpc<{
-        isError?: boolean;
-        content?: Array<{ type: string; text?: string }>;
-      }>("tools/call", { name, arguments: args });
-      if (res?.isError) {
-        const msg = res.content?.[0]?.text ?? `sera-mcp tool ${name} failed`;
-        throw new Error(msg);
-      }
-      const text = res?.content?.[0]?.text;
-      if (!text) throw new Error(`sera-mcp tool ${name} returned no content`);
-      return JSON.parse(text) as T;
+      const res = await rpc<ToolCallResult>("tools/call", { name, arguments: args });
+      return interpretToolResult<T>(name, res);
     },
     running() {
       return !!proc;
