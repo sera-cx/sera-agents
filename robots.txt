@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+Allow: /openapi.json
+Allow: /corridors
+Allow: /rates
+
+# Block settlement from crawlers — these require a signed intent
+Disallow: /quote
+Disallow: /settle
+Disallow: /mcp
 
 Sitemap: https://agents.sera.cx/sitemap.xml

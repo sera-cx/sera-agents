@@ -1,0 +1,26 @@
+{
+  "name": "sera-agents-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Public HTTP + MCP gateway for agents.sera.cx. Wraps sera-mcp and exposes the four agent-discoverable endpoints (fx_quote, fx_settle, corridors, rates) plus a Streamable-HTTP /mcp.",
+  "scripts": {
+    "start": "node dist/server.js",
+    "dev": "tsx src/server.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "audit": "npm audit --omit=dev --audit-level=high"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "hono": "^4.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.1.9"
+  }
+}

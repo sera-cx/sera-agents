@@ -4,6 +4,7 @@
   "private": true,
   "description": "Agent templates, x402 services, docs, demos, and host integrations built on top of sera-mcp.",
   "workspaces": [
+    "agents-gateway",
     "sera-agent",
     "x402-service",
     "templates/chat-cli",
