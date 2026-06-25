@@ -1,0 +1,45 @@
+# Caddyfile — agents.sera.cx reverse proxy (option b: split at proxy).
+#
+# Dynamic agent routes → this gateway (127.0.0.1:8787, no TLS, no auth).
+# Everything else → the static landing container. Caddy terminates TLS
+# (automatic Let's Encrypt) for the agents.sera.cx host.
+#
+# Adds a per-IP rate limit as a noisy-neighbor brake. The real upstream quota is
+# still owned by the Sera API key — from Sera's view this whole gateway is one
+# client, so without a per-IP cap one caller could exhaust the shared bucket.
+#
+# NOTE: `rate_limit` is NOT in standard Caddy. Build with it:
+#   xcaddy build --with github.com/mholt/caddy-ratelimit
+# or use an image that bundles it. Without the plugin Caddy fails to start on the
+# rate_limit block — delete that block to run plain reverse proxy.
+#
+# The gateway already returns 429 + Retry-After when Sera throttles; reverse_proxy
+# copies upstream response headers, so those backoff hints reach clients intact.
+
+agents.sera.cx {
+	encode zstd gzip
+
+	# Dynamic — the gateway.
+	@gateway path /mcp /mcp/* /openapi.json /health /quote /settle /corridors /rates
+	handle @gateway {
+		rate_limit {
+			zone agents_api {
+				key    {remote_host}
+				events 120
+				window 1m
+			}
+		}
+		reverse_proxy 127.0.0.1:8787 {
+			header_up X-Forwarded-For {remote_host}
+			health_uri      /health
+			health_interval 10s
+			health_timeout  2s
+		}
+	}
+
+	# Everything else — static landing page + /docs/*.
+	# Adjust the port to wherever the static container listens (8080 is a placeholder).
+	handle {
+		reverse_proxy 127.0.0.1:8080
+	}
+}
