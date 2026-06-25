@@ -80,6 +80,14 @@ curl -X POST localhost:8787/quote -H 'content-type: application/json' \
   returns unsigned data only. Bind to localhost and **front with a TLS reverse
   proxy** that owns the `agents.sera.cx` host. Never expose the raw port.
 - **Input validation** at the adapter boundary (symbols, addresses, pair count).
+- **Throttle pass-through.** Rate limiting is owned by the Sera API (keyed to
+  `SERA_API_KEY`), not duplicated here. When Sera throttles, the gateway
+  surfaces it honestly: REST returns **`429`** with a `Retry-After` header, and
+  `/mcp` returns an `isError` result tagged `429: … (retry after Ns)`. Clients
+  should back off rather than retry immediately. From Sera's view the whole
+  gateway is one client, so the limit is a shared bucket — if noisy-neighbor
+  abuse becomes a problem, add per-IP limiting at the reverse proxy (no API key
+  needed at this gateway).
 
 ## Deploy checklist (from the infra hand-off)
 
@@ -92,7 +100,8 @@ curl -X POST localhost:8787/quote -H 'content-type: application/json' \
 - [ ] **DNS TXT** at `_agent.sera.cx` (registrar — not code):
       `"v=agent1; endpoint=https://agents.sera.cx/mcp; openapi=https://agents.sera.cx/openapi.json; card=https://sera.cx/.well-known/agent.json"`
 - [ ] Reverse proxy: TLS + `agents.sera.cx` Host → this gateway; keep GitHub
-      Pages serving the static docs (e.g. proxy only the API paths).
+      Pages serving the static docs (e.g. proxy only the API paths). Optionally
+      add per-IP rate limiting here (no gateway auth — Sera owns the real limit).
 - [ ] Confirm the defensive response-field mappings (`/rates`, `/corridors`,
       `network_cost`) against a **live** sera-mcp — they were reconciled against
       v0.8.3 source, not a live API (build env is egress-restricted).

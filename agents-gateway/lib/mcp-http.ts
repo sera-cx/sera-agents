@@ -111,11 +111,13 @@ export async function handleMcpMessage(msg: any, deps: McpDeps): Promise<unknown
         return result(id, { content: [{ type: "text", text: JSON.stringify(data) }] });
       } catch (e) {
         const status = e instanceof GatewayError ? e.status : 500;
+        const retryAfter = e instanceof GatewayError ? e.retryAfter : undefined;
+        const hint = retryAfter != null ? ` (retry after ${retryAfter}s)` : "";
         // MCP convention: tool-level failures ride in the result with isError,
         // not as a protocol error.
         return result(id, {
           isError: true,
-          content: [{ type: "text", text: `${status}: ${(e as Error).message}` }],
+          content: [{ type: "text", text: `${status}: ${(e as Error).message}${hint}` }],
         });
       }
     }

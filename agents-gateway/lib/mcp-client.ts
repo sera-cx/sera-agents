@@ -6,6 +6,53 @@
  * deterministic; an LLM bridge would only add latency and failure modes.
  */
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { GatewayError } from "./errors.js";
+
+/**
+ * Inspect a sera-mcp tool-error result and, if it represents an upstream
+ * throttle, return the HTTP status to surface plus any Retry-After hint.
+ *
+ * Two channels, checked most-trustworthy first:
+ *  1. Structured — a future sera-mcp emits machine-readable status in `_meta`
+ *     or `structuredContent` (see the upstream error-contract PR). Read a small
+ *     candidate set of keys defensively rather than pinning one name.
+ *  2. Heuristic — today's sera-mcp stringifies the upstream error into the
+ *     human text. Match a 429 / rate-limit signal and parse a Retry-After int.
+ *
+ * Returns null when the error is not a recognizable throttle, so the caller
+ * falls back to a generic error (mapped to 500 by the server).
+ */
+export function rateLimitFromToolError(
+  r: any,
+): { status: number; retryAfter?: number } | null {
+  const num = (v: unknown): number | undefined =>
+    typeof v === "number" && Number.isFinite(v)
+      ? v
+      : typeof v === "string" && /^\d+$/.test(v.trim())
+        ? Number(v.trim())
+        : undefined;
+
+  // (1) Structured metadata, if a newer sera-mcp provides it.
+  const meta = { ...(r?.structuredContent ?? {}), ...(r?._meta ?? {}) } as Record<string, unknown>;
+  const code =
+    num(meta["sera/httpStatus"]) ??
+    num(meta.httpStatus) ??
+    num(meta.status) ??
+    num((meta.error as any)?.code);
+  if (code != null) {
+    const retryAfter =
+      num(meta["sera/retryAfter"]) ?? num(meta.retryAfter) ?? num((meta.error as any)?.retryAfter);
+    return { status: code, retryAfter };
+  }
+
+  // (2) Heuristic on the stringified message.
+  const text = r?.content?.[0]?.text;
+  if (typeof text === "string" && /\b429\b|rate.?limit|too many requests/i.test(text)) {
+    const m = text.match(/retry[-\s]?after["':=\s]+(\d+)/i);
+    return { status: 429, retryAfter: m ? Number(m[1]) : undefined };
+  }
+  return null;
+}
 
 export interface SeraMcpClientOptions {
   mcpPath: string;
@@ -97,7 +144,12 @@ export async function startSeraMcp(opts: SeraMcpClientOptions): Promise<SeraMcpC
     async tool<T>(name: string, args: Record<string, unknown> = {}): Promise<T> {
       const r = await rpc("tools/call", { name, arguments: args });
       if (r?.isError) {
-        throw new Error(`${name}: ${r.content?.[0]?.text ?? "tool error"}`);
+        const msg = `${name}: ${r.content?.[0]?.text ?? "tool error"}`;
+        const throttle = rateLimitFromToolError(r);
+        // Pass an upstream throttle through honestly so callers back off instead
+        // of seeing a generic 500. Everything else stays a plain Error → 500.
+        if (throttle) throw new GatewayError(throttle.status, msg, throttle.retryAfter);
+        throw new Error(msg);
       }
       const text = r?.content?.[0]?.text;
       if (typeof text !== "string") throw new Error(`${name}: no text content`);

@@ -15,17 +15,11 @@
  */
 import type { SeraMcpClient } from "./mcp-client.js";
 import type { QuoteStore } from "./store.js";
+import { GatewayError } from "./errors.js";
 
-/** Carries an HTTP status so the server can map failures to status codes. */
-export class GatewayError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-    this.name = "GatewayError";
-  }
-}
+// Re-exported so existing `import { GatewayError } from "./adapters.js"` sites
+// (server, mcp-http, tests) keep working after the move to ./errors.js.
+export { GatewayError };
 
 const SYMBOL_RE = /^[A-Za-z0-9._-]{1,32}$/;
 const ADDRESS_RE = /^0x[0-9a-fA-F]{40}$/;

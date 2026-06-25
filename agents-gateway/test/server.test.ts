@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { buildApp } from "../server.js";
 import { createQuoteStore } from "../lib/store.js";
+import { GatewayError } from "../lib/errors.js";
 import type { McpDeps } from "../lib/mcp-http.js";
 import type { SeraMcpClient } from "../lib/mcp-client.js";
 
@@ -81,6 +82,37 @@ test("POST /quote → 200; GatewayError maps to its status", async () => {
   // missing pairs → 400
   const bad = await buildApp(deps(), OPENAPI).request("/rates");
   assert.equal(bad.status, 400);
+});
+
+test("upstream throttle → REST 429 carries Retry-After; /mcp surfaces it in isError", async () => {
+  const throttle = () => {
+    throw new GatewayError(429, "sera.get_quote: 429 Too Many Requests", 15);
+  };
+
+  // REST: status + Retry-After header propagate through onError.
+  const app = buildApp(deps({ "sera.get_quote": throttle }), OPENAPI);
+  const res = await app.request("/quote", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ from_token: "USDC", to_token: "BRLA", amount: "100" }),
+  });
+  assert.equal(res.status, 429);
+  assert.equal(res.headers.get("retry-after"), "15");
+
+  // MCP: same throttle rides in the tool result as isError with the hint.
+  const mcp = await buildApp(deps({ "sera.get_quote": throttle }), OPENAPI).request("/mcp", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "tools/call",
+      params: { name: "fx_quote", arguments: { from_token: "USDC", to_token: "BRLA", amount: "100" } },
+    }),
+  });
+  const body = (await mcp.json()) as any;
+  assert.equal(body.result.isError, true);
+  assert.match(body.result.content[0].text, /^429: .*\(retry after 15s\)$/);
 });
 
 test("POST /mcp tools/list returns the 4 curated tools", async () => {

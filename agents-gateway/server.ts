@@ -101,7 +101,11 @@ export function buildApp(deps: McpDeps, openapiDoc: unknown): Hono {
   });
 
   app.onError((err, c) => {
-    if (err instanceof GatewayError) return c.json({ error: err.message }, err.status as 400);
+    if (err instanceof GatewayError) {
+      // Surface the backoff hint so HTTP clients can throttle correctly.
+      if (err.retryAfter != null) c.header("Retry-After", String(err.retryAfter));
+      return c.json({ error: err.message }, err.status as 400);
+    }
     console.error("[gateway] unhandled:", err);
     return c.json({ error: "internal error" }, 500);
   });
