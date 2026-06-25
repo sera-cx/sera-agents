@@ -1,0 +1,158 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sera Protocol API",
+    "version": "1.0.0",
+    "description": "On-chain FX settlement for multi-currency stablecoins. Live quotes, reference rates, supported corridors, and unsigned EIP-712 settlement transactions. Read operations are open; settlement returns unsigned typed data for the caller's wallet to sign.",
+    "contact": { "email": "partnerships@sera.cx" },
+    "license": { "name": "MIT" }
+  },
+  "servers": [
+    { "url": "https://agents.sera.cx", "description": "Agent gateway" }
+  ],
+  "paths": {
+    "/quote": {
+      "post": {
+        "operationId": "fx_quote",
+        "summary": "Get a live FX quote",
+        "description": "Live executable quote between any pair of supported stablecoins.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["from_token", "to_token", "amount"],
+                "properties": {
+                  "from_token": { "type": "string", "example": "XSGD", "description": "Source token symbol." },
+                  "to_token": { "type": "string", "example": "IDRX", "description": "Destination token symbol." },
+                  "amount": { "type": "string", "description": "Amount in from_token units (human, e.g. '100')." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quote result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "amount_out": { "type": "string", "description": "Estimated amount delivered in to_token units." },
+                    "mid_rate": { "type": "string", "description": "Reference mid rate to_token per from_token." },
+                    "network_cost": { "type": "string", "description": "Estimated network/settlement cost." },
+                    "quote_id": { "type": "string", "description": "Opaque quote id; pass to /settle." },
+                    "expires_at": { "type": "string", "format": "date-time", "description": "Quote validity deadline." }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settle": {
+      "post": {
+        "operationId": "fx_settle",
+        "summary": "Build an unsigned settlement transaction from a quote",
+        "description": "Returns EIP-712 typed data for the caller's wallet to sign. The gateway never holds keys or submits; the caller signs and submits the signed intent.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["quote_id", "signer"],
+                "properties": {
+                  "quote_id": { "type": "string", "description": "Quote id returned by /quote." },
+                  "signer": { "type": "string", "description": "Caller wallet address (0x...). Becomes the intent taker." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unsigned EIP-712 transaction",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "typed_data": { "type": "object", "description": "EIP-712 typed data for wallet signing." }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/corridors": {
+      "get": {
+        "operationId": "corridors",
+        "summary": "List supported FX corridors",
+        "description": "Supported source/destination currency pairs and indicative liquidity depth.",
+        "responses": {
+          "200": {
+            "description": "Corridor list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "from_currency": { "type": "string" },
+                      "to_currency": { "type": "string" },
+                      "liquidity_depth": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rates": {
+      "get": {
+        "operationId": "rates",
+        "summary": "Fetch live FX reference rates",
+        "description": "Multi-source reference rates (median across external FX sources) for the requested pairs.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pairs",
+            "schema": { "type": "string" },
+            "description": "Comma-separated currency pairs, e.g. USDC/BRLA,XSGD/IDRX"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rate snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "pair": { "type": "string" },
+                      "mid_rate": { "type": "string" },
+                      "bid": { "type": "string" },
+                      "ask": { "type": "string" },
+                      "timestamp": { "type": "string", "format": "date-time" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
