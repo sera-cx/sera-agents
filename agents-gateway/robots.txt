@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /openapi.json
+Allow: /corridors
+Allow: /rates
+
+# Block settlement + MCP from crawlers — these require a signed intent / are
+# not meaningful to fetch unauthenticated.
+Disallow: /quote
+Disallow: /settle
+Disallow: /mcp

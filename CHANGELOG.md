@@ -4,6 +4,14 @@ All notable changes to `sera-agents` are documented in this file.
 
 ## [Unreleased] — make the maker/taker (deploy-liquidity vs take) paths first-class
 
+### Added — `agents-gateway` (the `agents.sera.cx` agent origin)
+- New Node workspace implementing the public agent surface specified for `agents.sera.cx`: REST (`POST /quote`, `POST /settle`, `GET /corridors`, `GET /rates`), `GET /openapi.json` (OpenAPI 3.1), a **curated Streamable HTTP MCP** at `POST /mcp`, plus `/health`, `/robots.txt`, open CORS, and the agent-discovery `Link:` headers. Built on Hono (matches `x402-service`).
+- **Adapts an embedded `sera-mcp`** (the chosen data source) over stdio: `fx_quote`→`sera.get_quote`, `fx_settle`→`sera.prepare_swap` (returns the unsigned EIP-712 `Intent` — types mirrored from sera-mcp's signer), `corridors`→`sera.get_markets`, `rates`→`sera.get_fx_rate`. The `/quote`→`/settle` handoff carries inputs through a quote store and re-quotes against the caller's real signer.
+- **Security by construction:** boots sera-mcp with `SERA_SIGNER_MODE=readonly` + `SERA_ENABLE_EXECUTION_TOOLS=false`, and `/mcp` re-implements only the 4 public tools — sera-mcp's 50+ tools (`execute_swap`, `convert_and_send`, `withdraw_*`) are never reachable. No key custody; returns unsigned typed data only.
+- Static `openapi.json` + `.nojekyll` at the repo root so the existing GitHub Pages site also serves `agents.sera.cx/openapi.json`.
+- 19 unit tests (adapters, store TTL, curated MCP, Hono routing/headers/error-mapping). Smoke-tested end-to-end against a live-built `sera-mcp` v0.8.x: boots, serves all routes, `tools/list` exposes exactly the 4 tools.
+- Verified the engine itself first: cloned `sera-cx/sera-mcp`, `npm ci && typecheck && build && test` → **109/109 pass**. README documents deploy (reverse proxy + DNS TXT `_agent.sera.cx`) and the remaining live-API field reconciliation.
+
 ### Added — `templates/taker` (the mirror image of `market-maker`)
 - New deterministic-loop template for **consuming** liquidity: `sera.find_deals` (probe `TK_PAIR`, read the directional `good_buy`/`good_sell` bucket) → edge gate → inventory guard (`sera.get_balances`, vault-funded) → take (`sera.convert_and_send`). No LLM in the hot path; shares the maker's stdio `lib/mcp-client.ts` shape.
 - `TK_DRY_RUN=true` by default — logs the take it would fire and changes nothing. Refuses mainnet without `TK_MAINNET_ACK=true`; refuses live execution without `SIGNER_PRIVATE_KEY`. Defensive parsers refuse to act on unparseable tool responses. The `TK_MIN_EDGE_BPS` gate is the slippage guard (`convert_and_send` re-quotes at execution).

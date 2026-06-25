@@ -6,6 +6,7 @@
   "workspaces": [
     "sera-agent",
     "x402-service",
+    "agents-gateway",
     "templates/chat-cli",
     "templates/web-chat",
     "templates/webhook-agent",

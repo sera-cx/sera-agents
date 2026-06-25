@@ -1,0 +1,22 @@
+{
+  "name": "sera-agents-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "agents.sera.cx agent gateway — a thin Node origin that exposes a curated, read-mostly public API (fx_quote / fx_settle / corridors / rates) over REST + a Streamable HTTP MCP endpoint, by adapting an embedded sera-mcp engine. Returns unsigned EIP-712 typed data; never holds keys or executes.",
+  "scripts": {
+    "start": "tsx server.ts",
+    "test": "node --import tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "audit": "npm audit --omit=dev --audit-level=high"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}
