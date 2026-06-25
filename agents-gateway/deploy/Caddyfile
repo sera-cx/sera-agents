@@ -1,0 +1,41 @@
+# Caddyfile — reverse proxy for the agents.sera.cx gateway.
+#
+# Fronts the gateway (which binds 127.0.0.1:8787, no TLS, no auth) with:
+#   - automatic TLS for the agents.sera.cx host (Let's Encrypt, on by default)
+#   - per-IP rate limiting (the noisy-neighbor brake; Sera's API key still owns
+#     the real upstream quota — this only stops one client hogging our shared
+#     bucket). This is the "limit at the reverse proxy, not in the gateway" path.
+#   - honest pass-through of the gateway's 429 + Retry-After (reverse_proxy
+#     copies upstream response headers, so backoff hints reach clients intact).
+#
+# NOTE: the `rate_limit` directive is NOT in standard Caddy. Build with it:
+#   xcaddy build --with github.com/mholt/caddy-ratelimit
+# or use a Caddy image that bundles it. Without the plugin, Caddy will fail to
+# start on the rate_limit block — delete that block to run plain reverse proxy.
+
+agents.sera.cx {
+	encode zstd gzip
+
+	# Per-IP throttle. Tune events/window to taste; 120 req/min/IP is a sane
+	# starting point for an agent API. Caddy emits its own 429 + Retry-After
+	# when a client exceeds this, independent of Sera's upstream limit.
+	rate_limit {
+		zone agents_api {
+			key    {remote_host}
+			events 120
+			window 1m
+		}
+	}
+
+	# Everything on this host is the gateway. (Static docs live on sera.cx /
+	# GitHub Pages — a different host — so no path carve-out is needed here.)
+	reverse_proxy 127.0.0.1:8787 {
+		# Preserve the original Host and client IP for the gateway's logs.
+		header_up Host {host}
+		header_up X-Forwarded-For {remote_host}
+		# Liveness: let Caddy mark the backend down if /health fails.
+		health_uri      /health
+		health_interval 10s
+		health_timeout  2s
+	}
+}

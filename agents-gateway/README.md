@@ -100,8 +100,9 @@ curl -X POST localhost:8787/quote -H 'content-type: application/json' \
 - [ ] **DNS TXT** at `_agent.sera.cx` (registrar — not code):
       `"v=agent1; endpoint=https://agents.sera.cx/mcp; openapi=https://agents.sera.cx/openapi.json; card=https://sera.cx/.well-known/agent.json"`
 - [ ] Reverse proxy: TLS + `agents.sera.cx` Host → this gateway; keep GitHub
-      Pages serving the static docs (e.g. proxy only the API paths). Optionally
-      add per-IP rate limiting here (no gateway auth — Sera owns the real limit).
+      Pages serving the static docs (e.g. proxy only the API paths). Reference
+      Caddyfile at `deploy/Caddyfile` (TLS + per-IP rate limiting; needs the
+      `caddy-ratelimit` plugin — no gateway auth, Sera owns the real limit).
 - [ ] Confirm the defensive response-field mappings (`/rates`, `/corridors`,
       `network_cost`) against a **live** sera-mcp — they were reconciled against
       v0.8.3 source, not a live API (build env is egress-restricted).
