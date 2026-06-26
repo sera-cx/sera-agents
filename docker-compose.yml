@@ -32,8 +32,8 @@ services:
     image: ghcr.io/sera-cx/sera-agents-gateway:${GATEWAY_IMAGE_TAG:-latest}
     pull_policy: always
     restart: unless-stopped
-    expose:
-      - "8787"
+    ports:
+      - "8787:8787"
     networks:
       - edge
     environment:
