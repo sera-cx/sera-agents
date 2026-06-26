@@ -12,12 +12,12 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    expose:
-      - "80"
+    ports:
+      - "8080:80"
     networks:
       - edge
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O-", "http://localhost/"]
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8080/"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -55,29 +55,30 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./agents-gateway/deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - edge
-    depends_on:
-      static:
-        condition: service_started
-      gateway:
-        condition: service_started
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+  # CADDY ON DIfferent Hosts
+  # caddy:
+  #   image: caddy:2-alpine
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #     - "443:443/udp"
+  #   volumes:
+  #     - ./agents-gateway/deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+  #     - caddy_data:/data
+  #     - caddy_config:/config
+  #   networks:
+  #     - edge
+  #   depends_on:
+  #     static:
+  #       condition: service_started
+  #     gateway:
+  #       condition: service_started
+  #   logging:
+  #     driver: json-file
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
 
 networks:
   edge:
