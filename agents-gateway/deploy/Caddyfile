@@ -38,7 +38,7 @@ agents.sera.cx {
 	}
 
 	# Everything else — static landing page + /docs/*.
-	# Adjust the port to wherever the static container listens (8080 is a placeholder).
+	# Port 8080 matches the host mapping in ../../docker-compose-static.yml.
 	handle {
 		reverse_proxy 127.0.0.1:8080
 	}
