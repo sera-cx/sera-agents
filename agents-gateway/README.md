@@ -94,81 +94,22 @@ docker run --rm -p 8787:8787 \
 
 The image is non-root, runs `node dist/server.js`, and includes a `HEALTHCHECK` against `/health`.
 
-## Deploy — VM + Caddy (option b: split at proxy)
+## Deploy
 
-The static landing page is served by the existing root [Dockerfile](../Dockerfile) (nginx). Dynamic agent routes go to this gateway. Recommended Caddy config:
+The full agents.sera.cx stack — Caddy + this gateway + the static landing — is wired up in the repo root [`docker-compose.yml`](../docker-compose.yml), with Caddy config at [`deploy/Caddyfile`](./deploy/Caddyfile). Step-by-step setup, DNS, and rollout instructions live in [`DEPLOY.md`](../DEPLOY.md).
 
-```caddy
-agents.sera.cx {
-    # Dynamic — gateway
-    @gateway {
-        path /mcp /mcp/* /openapi.json /health /quote /settle /corridors /rates
-    }
-    handle @gateway {
-        # Per-IP brake so one caller can't burn our shared Sera quota.
-        # Needs the caddy-ratelimit plugin (see deploy/Caddyfile).
-        rate_limit {
-            zone agents_api {
-                key    {remote_host}
-                events 120
-                window 1m
-            }
-        }
-        reverse_proxy 127.0.0.1:8787
-    }
+The image is published to `ghcr.io/sera-cx/sera-agents-gateway:latest` on every push to main that touches gateway code, via [`.github/workflows/publish-gateway.yml`](../.github/workflows/publish-gateway.yml).
 
-    # Everything else — static landing + /docs/*
-    handle {
-        reverse_proxy 127.0.0.1:8080
-    }
-}
-```
+### Throttle behavior
 
-(Adjust the static container's port — `8080` above is a placeholder.) A ready-to-build
-version with notes lives at [deploy/Caddyfile](./deploy/Caddyfile).
-
-### Rate limiting & throttle behavior
-
-There is **no auth and no rate limiter inside the gateway** — rate limiting is owned by
-the Sera API (keyed to `SERA_API_KEY`). The per-IP `rate_limit` above is only a
-noisy-neighbor brake at the proxy: from Sera's view the whole gateway is one client, so
-the upstream limit is a shared bucket. The `rate_limit` directive needs the
-[`caddy-ratelimit`](https://github.com/mholt/caddy-ratelimit) plugin (`xcaddy build
---with github.com/mholt/caddy-ratelimit`); drop the block to run plain reverse proxy.
-
-When Sera throttles, the gateway surfaces it honestly instead of a generic 502:
+There is **no auth and no rate limiter inside the gateway** — rate limiting is owned by the Sera API (keyed to `SERA_API_KEY`). When Sera throttles, the gateway surfaces it honestly instead of a generic 502:
 
 - **REST** → `429` with a `Retry-After` header.
 - **`/mcp`** → an `isError` tool result tagged `429: … (retry after Ns)`.
 
-Detection is in `src/sera-mcp-client.ts` (`interpretToolResult` /
-`rateLimitFromToolError`): it reads structured `_meta`/`structuredContent` first, then a
-text heuristic. See [docs/sera-mcp-error-contract.md](./docs/sera-mcp-error-contract.md)
-for the upstream sera-mcp change that makes this precise.
+Detection is in `src/sera-mcp-client.ts` (`interpretToolResult` / `rateLimitFromToolError`): it reads structured `_meta`/`structuredContent` first, then a text heuristic. See [docs/sera-mcp-error-contract.md](./docs/sera-mcp-error-contract.md) for the upstream sera-mcp change that makes this precise.
 
-### Push-to-main auto-deploy
-
-The repo's CI workflow should:
-
-1. Build the image: `docker build -f agents-gateway/Dockerfile -t sera-agents-gateway:$(git rev-parse --short HEAD) .`
-2. Push to your registry (GHCR / private registry).
-3. SSH to the VM and `docker compose pull && docker compose up -d` (or your equivalent).
-
-A minimal `docker-compose.yml` snippet for the VM:
-
-```yaml
-services:
-  agents-gateway:
-    image: ghcr.io/sera-cx/sera-agents-gateway:latest
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:8787:8787"
-    environment:
-      SERA_NETWORK: mainnet
-      TRUST_PROXY: "1"
-      # SERA_API_KEY: ${SERA_API_KEY}
-      # SERA_API_SECRET: ${SERA_API_SECRET}
-```
+For an optional per-IP brake at the proxy, see the `rate_limit` template at the bottom of [`deploy/Caddyfile`](./deploy/Caddyfile) — it needs `caddy-ratelimit` via `xcaddy`.
 
 ## OpenAPI
 

@@ -1,0 +1,88 @@
+# Unified stack for agents.sera.cx — Caddy (TLS) + gateway + static landing.
+# Caddy fronts the public 80/443; gateway and static live on the internal
+# `edge` network and are not exposed to the host.
+#
+# Set GATEWAY_IMAGE_TAG in the environment to pin a specific image (defaults
+# to :latest from GHCR). Optional: SERA_API_KEY / SERA_API_SECRET to enable
+# Sera's account-level quota; without them the public tools work keyless.
+
+services:
+  static:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "80"
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  gateway:
+    image: ghcr.io/sera-cx/sera-agents-gateway:${GATEWAY_IMAGE_TAG:-latest}
+    pull_policy: always
+    restart: unless-stopped
+    expose:
+      - "8787"
+    networks:
+      - edge
+    environment:
+      PORT: "8787"
+      HOST: "0.0.0.0"
+      SERA_NETWORK: ${SERA_NETWORK:-mainnet}
+      TRUST_PROXY: "1"
+      SERA_API_KEY: ${SERA_API_KEY:-}
+      SERA_API_SECRET: ${SERA_API_SECRET:-}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://127.0.0.1:8787/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./agents-gateway/deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+    depends_on:
+      static:
+        condition: service_started
+      gateway:
+        condition: service_started
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  edge:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
