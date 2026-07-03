@@ -107,7 +107,7 @@ There is **no auth and no rate limiter inside the gateway** — rate limiting is
 - **REST** → `429` with a `Retry-After` header.
 - **`/mcp`** → an `isError` tool result tagged `429: … (retry after Ns)`.
 
-Detection is in `src/sera-mcp-client.ts` (`interpretToolResult` / `rateLimitFromToolError`): it reads structured `_meta`/`structuredContent` first, then a text heuristic. See [docs/sera-mcp-error-contract.md](./docs/sera-mcp-error-contract.md) for the upstream sera-mcp change that makes this precise.
+Detection lives in `src/errors.ts` (`rateLimitFromToolError`), called from `interpretToolResult` in `src/sera-mcp-client.ts`: it reads structured `_meta`/`structuredContent` first, then a text heuristic. See [docs/sera-mcp-error-contract.md](./docs/sera-mcp-error-contract.md) for the upstream sera-mcp change that makes this precise.
 
 For an optional per-IP brake at the proxy, see the `rate_limit` template at the bottom of [`deploy/Caddyfile`](./deploy/Caddyfile) — it needs `caddy-ratelimit` via `xcaddy`.
 
