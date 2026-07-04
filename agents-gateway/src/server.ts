@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { getRequestListener } from "@hono/node-server";
 import http from "node:http";
 import { z } from "zod";
@@ -55,6 +56,13 @@ app.use("*", async (c, next) => {
 app.get("/health", (c) => c.json({ status: "ok", mcp_running: mcp.running() }));
 app.get("/openapi.json", (c) => c.json(OPENAPI_DOC));
 
+// The JSON bodies these routes accept are tiny; cap them so an unauthenticated
+// client can't stream an oversized payload into memory.
+const jsonBodyLimit = bodyLimit({
+  maxSize: 64 * 1024,
+  onError: (c) => c.json({ error: "request body too large" }, 413),
+});
+
 const QuoteBody = z.object({
   from_token: z.string().min(1),
   to_token: z.string().min(1),
@@ -88,7 +96,7 @@ app.get("/corridors", async (c) => {
   }
 });
 
-app.post("/quote", async (c) => {
+app.post("/quote", jsonBodyLimit, async (c) => {
   let body: unknown;
   try {
     body = await c.req.json();
@@ -104,7 +112,7 @@ app.post("/quote", async (c) => {
   }
 });
 
-app.post("/settle", async (c) => {
+app.post("/settle", jsonBodyLimit, async (c) => {
   let body: unknown;
   try {
     body = await c.req.json();

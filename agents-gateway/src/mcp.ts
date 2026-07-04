@@ -25,6 +25,19 @@ const SettleSchema = {
 
 const CorridorsSchema = {};
 
+/**
+ * Cap on the raw `/mcp` POST body. The transport buffers the whole request into
+ * memory, so without a ceiling an unauthenticated client could OOM the process
+ * with an oversized body. 256 KiB is far above any legitimate JSON-RPC call.
+ */
+const MAX_MCP_BODY_BYTES = 256 * 1024;
+
+function tooLarge(res: ServerResponse): void {
+  res.statusCode = 413;
+  res.setHeader("content-type", "application/json");
+  res.end(JSON.stringify({ error: "request body too large" }));
+}
+
 function asText<T>(value: T) {
   return { content: [{ type: "text" as const, text: JSON.stringify(value) }] };
 }
@@ -103,8 +116,25 @@ export async function handleMcpRequest(
 ): Promise<void> {
   let body: unknown = undefined;
   if (req.method === "POST") {
+    // Fast reject on a declared oversize length, then enforce while streaming
+    // (Content-Length may be absent or wrong on chunked bodies).
+    const declared = Number(req.headers["content-length"]);
+    if (Number.isFinite(declared) && declared > MAX_MCP_BODY_BYTES) {
+      tooLarge(res);
+      req.destroy();
+      return;
+    }
     const chunks: Buffer[] = [];
-    for await (const c of req) chunks.push(c as Buffer);
+    let total = 0;
+    for await (const c of req) {
+      total += (c as Buffer).length;
+      if (total > MAX_MCP_BODY_BYTES) {
+        tooLarge(res);
+        req.destroy();
+        return;
+      }
+      chunks.push(c as Buffer);
+    }
     const raw = Buffer.concat(chunks).toString("utf8");
     if (raw) {
       try {

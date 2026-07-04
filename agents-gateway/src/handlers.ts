@@ -1,5 +1,14 @@
 import type { SeraMcpClient } from "./sera-mcp-client.js";
 import type { QuoteCache } from "./quote-cache.js";
+import { GatewayError } from "./errors.js";
+
+/**
+ * Max currency pairs per `/rates` (and the MCP `rates` tool) request. Each pair
+ * fans out to one upstream sera-mcp call, so an uncapped list on an
+ * unauthenticated endpoint is a request-amplification / DoS vector (one HTTP
+ * request → N upstream RPCs). 20 comfortably covers real agent use.
+ */
+const MAX_PAIRS = 20;
 
 export interface RatesItem {
   pair: string;
@@ -67,8 +76,14 @@ function asString(v: unknown): string {
 
 export function makeHandlers(mcp: SeraMcpClient, cache: QuoteCache) {
   async function rates(pairs: string[]): Promise<RatesItem[]> {
+    // Normalize, drop blanks, and dedupe before we fan out to the upstream.
+    const unique = [...new Set(pairs.map((p) => p.trim()).filter(Boolean))];
+    if (unique.length === 0) throw new GatewayError(400, "at least one pair is required");
+    if (unique.length > MAX_PAIRS) {
+      throw new GatewayError(400, `too many pairs (max ${MAX_PAIRS}); received ${unique.length}`);
+    }
     const out = await Promise.all(
-      pairs.map(async (p) => {
+      unique.map(async (p) => {
         const { base, quote } = parsePair(p);
         const r = await mcp.callTool<SeraFxRate>("sera.get_fx_rate", { base, quote });
         const mid = asString(r.rate);
