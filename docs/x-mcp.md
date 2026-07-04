@@ -10,13 +10,21 @@ very different setup requirements:
 
 | Server (`.mcp.json` key) | URL | Auth | Purpose |
 |---|---|---|---|
-| `x-docs` | `https://docs.x.com/mcp` | **none** | Search and read the X API documentation |
+| `x-docs` | `https://docs.x.com/mcp` | **OAuth (one-time authorization in your client)** | Search and read the X API documentation |
 | `x-api` | `http://127.0.0.1:8000/mcp` | **your X developer OAuth** | 200+ X API operations as tools (post, search, users, …) |
 
-## `x-docs` — works out of the box
+## `x-docs` — one-time authorization
 
-No credentials. It's a read-only documentation server, so it's safe to leave
-enabled. Approve it in your client and you can search/read X API docs directly.
+This is a read-only documentation server (no data written to your X account),
+but it still requires a **one-time OAuth authorization** the first time your
+client connects — approve it interactively via `/mcp` (Claude Code) or your
+client's connector settings, then you can search/read the X API docs. It can't
+be authorized from a non-interactive/headless session.
+
+> This was originally documented as no-auth (X's `docs.x.com/tools/mcp` page is
+> bot-blocked, so that came from secondhand sources). When the config was loaded
+> into a live client, `x-docs` prompted for authorization — so it needs the
+> one-time consent above.
 
 ## `x-api` — needs your credentials (templated)
 
@@ -59,4 +67,5 @@ that docs page.
 
 - Never commit X API keys, OAuth tokens, or `.env` files. Keep them in the local
   `xmcp` process (self-host) or in `xurl`'s local config (hosted bridge).
-- `x-docs` is read-only docs and needs no secrets.
+- `x-docs` is read-only docs — it needs a one-time OAuth authorization but
+  writes nothing to your account and stores no secrets in the repo.
