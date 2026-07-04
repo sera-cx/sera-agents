@@ -63,13 +63,24 @@ SERA_NETWORK=mainnet
 # SERA_API_SECRET=…
 EOF
 
-# 4. Bring the stack up. First boot pulls the gateway image from GHCR, builds the
-#    static container locally, and lets Caddy provision TLS automatically.
-docker compose up -d
+# 4. Bring the stack up. `--build` is REQUIRED: Caddy is built from
+#    agents-gateway/deploy/Dockerfile.caddy (Caddy + caddy-ratelimit plugin, via
+#    xcaddy — a ~2-4 min Go build on first boot, needs outbound to github.com and
+#    the Go module proxy) and the static container is built locally. The gateway
+#    image is pulled from GHCR. Caddy then provisions TLS automatically.
+docker compose up -d --build
 
-# 5. Watch the logs until Caddy reports TLS is ready (~30s on first boot):
+# 5. Watch the logs until Caddy builds, obtains TLS, and loads the rate_limit
+#    directive without error (~1-4 min on first boot):
 docker compose logs -f caddy
 ```
+
+> **If Caddy fails to start on the `rate_limit` / `order` directive** (the plugin
+> config is new): fall back to stock Caddy — set the `caddy` service to
+> `image: caddy:2-alpine` (remove its `build:` block) in `docker-compose.yml`,
+> and delete the top-level `{ order rate_limit … }` block and the `rate_limit { … }`
+> block from `agents-gateway/deploy/Caddyfile`. The gateway still returns honest
+> `429 + Retry-After` without the proxy-level brake.
 
 When you see `certificate obtained successfully` for `agents.sera.cx`, you're live.
 
@@ -154,30 +165,27 @@ Or wire a GitHub Action that SSHes to the VM and runs the same three commands af
 
 ---
 
-## Optional hardening — per-IP rate limit at Caddy
+## Per-IP rate limit at Caddy (now built in)
 
-The default Caddyfile relies on the gateway's honest 429+`Retry-After` to back off bad actors. To also brake at the proxy edge, rebuild Caddy with the `caddy-ratelimit` plugin and drop in the template at the bottom of `agents-gateway/deploy/Caddyfile`:
+As of the deploy-hardening change, the proxy-level per-IP rate limit is **on by
+default** — you don't need to do anything to enable it:
 
-```bash
-# On the VM, build a custom caddy image
-docker build -t caddy-with-ratelimit:2 - <<'EOF'
-FROM caddy:2-builder AS builder
-RUN xcaddy build --with github.com/mholt/caddy-ratelimit
-FROM caddy:2-alpine
-COPY --from=builder /usr/bin/caddy /usr/bin/caddy
-EOF
-```
+- `docker-compose.yml` builds the `caddy` service from
+  [`agents-gateway/deploy/Dockerfile.caddy`](agents-gateway/deploy/Dockerfile.caddy)
+  (Caddy + the `caddy-ratelimit` plugin, via `xcaddy`).
+- `agents-gateway/deploy/Caddyfile` carries an active `rate_limit` block
+  (**120 requests/min/IP** across the API surface) plus the required
+  `{ order rate_limit before basic_auth }` global directive.
 
-Then change `docker-compose.yml`:
+This is defence-in-depth in front of the gateway's own honest `429 + Retry-After`.
 
-```yaml
-  caddy:
-    image: caddy-with-ratelimit:2   # instead of caddy:2-alpine
-```
+**To turn it off** (e.g. if the plugin build is a problem), revert to stock Caddy:
+set the `caddy` service to `image: caddy:2-alpine` (drop its `build:` block) and
+remove both the `{ order rate_limit … }` and `rate_limit { … }` blocks from the
+Caddyfile. The gateway still throttles honestly without it.
 
-And uncomment the `rate_limit { … }` block in the Caddyfile.
-
-Not a launch blocker — the gateway is honest about throttles either way.
+> The rate-limit config shipped un-runtime-tested — on first deploy, confirm
+> Caddy starts cleanly and that hammering `/rates` past 120/min/IP returns `429`.
 
 ---
 
