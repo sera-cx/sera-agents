@@ -25,8 +25,11 @@ jobs:
         run: npm run typecheck
       - name: test (workspaces, if-present)
         run: npm test
-      - name: audit (high+)
-        run: npm audit --audit-level=high
+      - name: audit (production deps, high+)
+        # Gate on what actually ships. Dev-only tooling (vitest/vite/esbuild) has
+        # advisories that only clear via a breaking vitest major; those never
+        # reach production. Runtime deps are audited here and must stay clean.
+        run: npm audit --omit=dev --audit-level=high
 
   secret-scan:
     runs-on: ubuntu-latest
