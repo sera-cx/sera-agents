@@ -14,5 +14,9 @@ The Sera MCP works with any agent host that speaks the Model Context Protocol. T
 | [**OpenClaw**](openclaw/README.md) | Agent runtime + plugin system | Sera as an OpenClaw plugin. |
 | [**Hermes** (Nous Research)](hermes/README.md) | Agent runtime with skills | Sera as a Hermes skill that delegates to the MCP. |
 | [**NanoClaw**](nanoclaw/README.md) | Lightweight Docker-isolated agent runtime | Sera via `.mcp.json` config. |
+| [**Virtuals Protocol**](virtuals/README.md) | Agent economy (GAME SDK + ACP) | Sera as a GAME plugin and an ACP paid service, via the hosted gateway. |
+| [**X (Twitter) agents**](x/README.md) | Agents running on X | Sera via GAME Cloud custom functions, remote MCP, or REST. |
 
 Three of those (OpenClaw, Hermes, NanoClaw) get their own folder because the integration shape is non-standard. Everything else uses the same MCP stdio pattern documented in [`standard-mcp-hosts/`](standard-mcp-hosts/README.md).
+
+**Virtuals** and **X** integrate against the hosted gateway (`agents.sera.cx`) rather than a local sera-mcp — see [`agents-gateway/`](../agents-gateway/README.md) for that surface (REST + remote MCP + OpenAPI).
