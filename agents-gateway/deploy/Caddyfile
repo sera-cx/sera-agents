@@ -1,26 +1,22 @@
-# Caddyfile — agents.sera.cx reverse proxy (option b: split at proxy).
+# Caddyfile — agents.sera.cx public ingress. Caddy terminates TLS (automatic
+# Let's Encrypt) for the agents.sera.cx host and is the only host-published
+# service. It reverse-proxies dynamic agent routes to the gateway container and
+# everything else to the static landing — both reachable only on the internal
+# compose `edge` network (see the project-root docker-compose.yml).
 #
-# Dynamic agent routes → the gateway container (gateway:8787, no TLS, no auth).
-# Everything else → the static landing container (static:80). Caddy terminates
-# TLS (automatic Let's Encrypt) for the agents.sera.cx host.
+# The gateway already returns 429 + Retry-After when Sera throttles; reverse_proxy
+# forwards those upstream headers so backoff hints reach clients intact. The
+# per-IP rate_limit below is a coarse noisy-neighbour brake in front of that.
 #
-# Service names below — `gateway`, `static` — resolve via Docker's embedded DNS
-# because all three containers share the same compose network. See the project
-# root docker-compose.yml.
-#
-# The gateway already returns 429 + Retry-After when Sera throttles. reverse_proxy
-# copies upstream response headers, so those backoff hints reach clients intact.
-#
-# OPTIONAL HARDENING — per-IP rate limit
-# --------------------------------------
-# To add a noisy-neighbor brake at the proxy, add a `rate_limit` block (see the
-# template at the bottom). It requires the caddy-ratelimit plugin, which is NOT
-# in the stock caddy:2-alpine image:
-#
-#   xcaddy build --with github.com/mholt/caddy-ratelimit
-#
-# Or swap the compose `caddy` service to a custom-built image. Without the plugin,
-# Caddy fails to start on the rate_limit block — leave it commented out otherwise.
+# rate_limit needs the caddy-ratelimit plugin, baked into the image built from
+# agents-gateway/deploy/Dockerfile.caddy — stock caddy:2-alpine does NOT include
+# it. If you switch the compose `caddy` service back to a stock image, remove
+# the global `order rate_limit` line and the rate_limit block below, or Caddy
+# will fail to start.
+
+{
+	order rate_limit before basic_auth
+}
 
 agents.sera.cx {
 	encode zstd gzip
@@ -28,6 +24,15 @@ agents.sera.cx {
 	# Dynamic — the gateway.
 	@gateway path /mcp /mcp/* /openapi.json /health /quote /settle /corridors /rates
 	handle @gateway {
+		# Coarse per-IP brake: 120 requests/min/IP across the API surface. This
+		# is defence-in-depth in front of Sera's own account-level limits.
+		rate_limit {
+			zone agents_api {
+				key    {remote_host}
+				events 120
+				window 1m
+			}
+		}
 		reverse_proxy gateway:8787 {
 			header_up X-Forwarded-For {remote_host}
 			health_uri      /health
@@ -41,14 +46,3 @@ agents.sera.cx {
 		reverse_proxy static:80
 	}
 }
-
-# Template — drop into the `handle @gateway` block ABOVE `reverse_proxy` once
-# you've built Caddy with caddy-ratelimit:
-#
-#   rate_limit {
-#       zone agents_api {
-#           key    {remote_host}
-#           events 120
-#           window 1m
-#       }
-#   }

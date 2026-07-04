@@ -1,0 +1,8 @@
+# Caddy with the caddy-ratelimit plugin baked in — required by the per-IP
+# rate_limit block in Caddyfile. Stock caddy:2-alpine does not ship the plugin,
+# so Caddy would fail to start on that block without this image.
+FROM caddy:2-builder-alpine AS builder
+RUN xcaddy build --with github.com/mholt/caddy-ratelimit
+
+FROM caddy:2-alpine
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy

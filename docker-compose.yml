@@ -1,10 +1,17 @@
 # Unified stack for agents.sera.cx — Caddy (TLS) + gateway + static landing.
-# Caddy fronts the public 80/443; gateway and static live on the internal
-# `edge` network and are not exposed to the host.
 #
-# Set GATEWAY_IMAGE_TAG in the environment to pin a specific image (defaults
-# to :latest from GHCR). Optional: SERA_API_KEY / SERA_API_SECRET to enable
-# Sera's account-level quota; without them the public tools work keyless.
+# Caddy is the ONLY service bound to the host (80/443/443udp). The gateway and
+# static landing are reachable only on the internal `edge` network, via Caddy —
+# they use `expose:` (container-network only), never `ports:`, so the plaintext,
+# unauthenticated gateway is not reachable from the internet directly.
+#
+# Set GATEWAY_IMAGE_TAG to pin a gateway image (defaults to :latest from GHCR).
+# Optional: SERA_API_KEY / SERA_API_SECRET to enable Sera's account-level quota;
+# without them the public tools work keyless.
+#
+# NOTE: if you instead run Caddy on a separate host, the gateway/static must be
+# reachable from it — in that case add `ports:` bound to a PRIVATE interface
+# (e.g. "10.0.0.5:8787:8787"), never 0.0.0.0, and firewall them to Caddy's host.
 
 services:
   static:
@@ -12,8 +19,8 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "8080:80"
+    expose:
+      - "80"
     networks:
       - edge
     healthcheck:
@@ -32,8 +39,8 @@ services:
     image: ghcr.io/sera-cx/sera-agents-gateway:${GATEWAY_IMAGE_TAG:-latest}
     pull_policy: always
     restart: unless-stopped
-    ports:
-      - "8787:8787"
+    expose:
+      - "8787"
     networks:
       - edge
     environment:
@@ -55,30 +62,35 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  # CADDY ON DIfferent Hosts
-  # caddy:
-  #   image: caddy:2-alpine
-  #   restart: unless-stopped
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #     - "443:443/udp"
-  #   volumes:
-  #     - ./agents-gateway/deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-  #     - caddy_data:/data
-  #     - caddy_config:/config
-  #   networks:
-  #     - edge
-  #   depends_on:
-  #     static:
-  #       condition: service_started
-  #     gateway:
-  #       condition: service_started
-  #   logging:
-  #     driver: json-file
-  #     options:
-  #       max-size: "10m"
-  #       max-file: "3"
+  # Public ingress. Terminates TLS (automatic Let's Encrypt) and reverse-proxies
+  # to gateway/static over the internal `edge` network. Built from
+  # deploy/Dockerfile.caddy so it includes the caddy-ratelimit plugin that the
+  # Caddyfile's per-IP brake requires.
+  caddy:
+    build:
+      context: .
+      dockerfile: agents-gateway/deploy/Dockerfile.caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./agents-gateway/deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+    depends_on:
+      static:
+        condition: service_started
+      gateway:
+        condition: service_started
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 networks:
   edge:
