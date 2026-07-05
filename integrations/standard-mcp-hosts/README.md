@@ -68,7 +68,13 @@ Fully quit and reopen Claude Desktop. The hammer icon should show `sera` with 32
 
 ## ChatGPT
 
-Settings → Connectors → Add Custom Connector. ChatGPT supports remote MCP servers (HTTP/SSE), not stdio. The Sera MCP is currently stdio only — a hosted SSE endpoint at `mcp.sera.cx` is on the roadmap. Until then, run the MCP through a local SSE bridge (e.g. [`mcp-proxy`](https://github.com/sparfenyuk/mcp-proxy)) and point ChatGPT at the bridge URL.
+Settings → Connectors → Add Custom Connector. ChatGPT supports remote MCP servers, not stdio. Point it at the **hosted gateway** — no bridge needed:
+
+```
+https://agents.sera.cx/mcp
+```
+
+That's the Streamable HTTP endpoint exposing `fx_quote`, `fx_settle`, `corridors`, `rates` (keyless). If instead you want the full 32-tool stdio `sera-mcp` in a remote host, it also supports Streamable HTTP since v0.8.0 (`--transport http`) — self-host and front it with auth; see the [sera-mcp README](https://github.com/sera-cx/sera-mcp).
 
 ---
 

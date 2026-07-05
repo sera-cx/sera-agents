@@ -31,7 +31,7 @@ Two records on `sera.cx`:
 | Type | Name | Value |
 |---|---|---|
 | `A` (or `CNAME`) | `agents` | the VM's public IP / hostname |
-| `TXT` | `_agent` | `v=agent1; endpoint=https://agents.sera.cx/mcp; openapi=https://agents.sera.cx/openapi.json; card=https://sera.cx/.well-known/agent.json` |
+| `TXT` | `_agent` | `v=agent1; endpoint=https://agents.sera.cx/mcp; openapi=https://agents.sera.cx/openapi.json; card=https://agents.sera.cx/.well-known/agent.json` |
 
 The `TXT` record is from [agents-handoff.md §4](../Sera%20v1%20Mainnet/agents-handoff.md) — it lets agent directories and LLM tool registries discover Sera via DNS lookup without crawling.
 

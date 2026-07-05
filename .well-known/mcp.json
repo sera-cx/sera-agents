@@ -1,0 +1,11 @@
+{
+  "description": "MCP catalog for Sera — cross-border stablecoin FX. Keyless, non-custodial, Streamable HTTP transport.",
+  "mcpServers": {
+    "sera": {
+      "type": "http",
+      "url": "https://agents.sera.cx/mcp",
+      "description": "Sera FX gateway: fx_quote, fx_settle, corridors, rates.",
+      "tools": ["fx_quote", "fx_settle", "corridors", "rates"]
+    }
+  }
+}

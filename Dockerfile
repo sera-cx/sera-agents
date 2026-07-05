@@ -22,8 +22,10 @@ COPY docs /usr/share/nginx/html/docs/
 COPY favicon-32.png /usr/share/nginx/html/ 
 COPY favicon-512.png /usr/share/nginx/html/ 
 COPY logo.png /usr/share/nginx/html/ 
-COPY robots.txt /usr/share/nginx/html/ 
-COPY sitemap.xml /usr/share/nginx/html/ 
+COPY robots.txt /usr/share/nginx/html/
+COPY sitemap.xml /usr/share/nginx/html/
+# Discovery manifests: agent card + MCP catalog served at /.well-known/*
+COPY .well-known /usr/share/nginx/html/.well-known/
 # Expose port 80
 EXPOSE 80
 

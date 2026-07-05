@@ -1,0 +1,52 @@
+{
+  "name": "Sera FX",
+  "description": "Cross-border stablecoin FX for autonomous agents: live rates, corridors, quotes, and non-custodial EIP-712 settlement intents. Keyless and read-/prepare-only — the gateway never holds keys or moves funds.",
+  "url": "https://agents.sera.cx",
+  "version": "0.1.0",
+  "provider": {
+    "organization": "Sera",
+    "url": "https://sera.cx"
+  },
+  "documentationUrl": "https://agents.sera.cx/openapi.json",
+  "capabilities": {
+    "authentication": "none",
+    "custody": "non-custodial",
+    "streaming": false
+  },
+  "interfaces": {
+    "mcp": {
+      "transport": "streamable-http",
+      "url": "https://agents.sera.cx/mcp",
+      "tools": ["fx_quote", "fx_settle", "corridors", "rates"]
+    },
+    "openapi": "https://agents.sera.cx/openapi.json",
+    "rest": {
+      "rates": "GET https://agents.sera.cx/rates?pairs=USDC/BRLA,XSGD/IDRX",
+      "corridors": "GET https://agents.sera.cx/corridors",
+      "quote": "POST https://agents.sera.cx/quote",
+      "settle": "POST https://agents.sera.cx/settle"
+    }
+  },
+  "skills": [
+    {
+      "id": "rates",
+      "name": "FX rates",
+      "description": "Live reference rates for one or more BASE/QUOTE stablecoin pairs."
+    },
+    {
+      "id": "corridors",
+      "name": "List corridors",
+      "description": "Supported FX corridors (currency pairs) and their liquidity depth."
+    },
+    {
+      "id": "fx_quote",
+      "name": "FX quote",
+      "description": "Price a conversion between two supported stablecoins; returns amount_out, mid_rate, and a quote_id."
+    },
+    {
+      "id": "fx_settle",
+      "name": "FX settle",
+      "description": "Build an unsigned EIP-712 settlement intent from a quote_id for the caller to sign in their own wallet."
+    }
+  ]
+}

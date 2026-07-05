@@ -40,8 +40,8 @@ const app = new Hono();
 
 const LINK_HEADERS = [
   '<https://agents.sera.cx/openapi.json>; rel="describedby"; type="application/json"',
-  '<https://sera.cx/.well-known/agent.json>; rel="agent"',
-  '<https://sera.cx/.well-known/mcp.json>; rel="mcp-catalog"',
+  '<https://agents.sera.cx/.well-known/agent.json>; rel="agent"',
+  '<https://agents.sera.cx/.well-known/mcp.json>; rel="mcp-catalog"',
 ].join(", ");
 
 app.use("*", async (c, next) => {
