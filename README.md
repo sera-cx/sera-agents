@@ -165,7 +165,7 @@ Honest read of what's solid vs what's still moving:
 
 | Surface | Status | Notes |
 |---|---|---|
-| Docs site ([agents.sera.cx](https://agents.sera.cx)) | **Stable** | Static, served via GitHub Pages |
+| Docs site + gateway ([agents.sera.cx](https://agents.sera.cx)) | **Stable** | Served by Caddy on the VM stack (Cloudflare-fronted): static landing + the agent gateway. See [`DEPLOY.md`](DEPLOY.md). |
 | Integration guides (OpenClaw, Hermes, NanoClaw, standard MCP hosts) | **Stable** | Config snippets verified against current host versions |
 | Templates (`chat-cli`, `web-chat`, `webhook-agent`) | **Demo / starter** | Copy-and-customize; not maintained as products |
 | Examples (`invoice-payer`, `treasury-rebalancer`) | **Demo / starter** | Reference flows; not turnkey services |
