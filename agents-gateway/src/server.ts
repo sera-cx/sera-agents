@@ -13,16 +13,19 @@ import { GatewayError } from "./errors.js";
 import type { Context } from "hono";
 
 /**
- * Render a handler failure. A GatewayError (e.g. an upstream throttle) keeps its
- * own status and, on 429/503, a Retry-After header so clients back off
- * correctly. Everything else is an upstream fault → 502.
+ * Render a handler failure. A GatewayError keeps its own status + message (these
+ * are deliberate, caller-facing: 400 bad input, 404 unknown quote, 429 throttle
+ * with Retry-After). Anything else is an internal/upstream fault: log the detail
+ * server-side and return a generic 502 so we don't leak internals to
+ * unauthenticated clients.
  */
 function failure(c: Context, e: any, fallback: string) {
   if (e instanceof GatewayError) {
     if (e.retryAfter != null) c.header("Retry-After", String(e.retryAfter));
     return c.json({ error: e.message }, e.status as 400);
   }
-  return c.json({ error: e?.message ?? fallback }, 502);
+  process.stderr.write(`[agents-gateway] ${fallback}: ${e?.stack ?? e?.message ?? e}\n`);
+  return c.json({ error: fallback }, 502);
 }
 
 const env = loadEnv();

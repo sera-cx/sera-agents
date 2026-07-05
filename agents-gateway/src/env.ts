@@ -5,7 +5,6 @@ export interface GatewayEnv {
   apiKey?: string;
   apiSecret?: string;
   mcpPath: string;
-  trustProxy: boolean;
 }
 
 export function loadEnv(): GatewayEnv {
@@ -26,6 +25,5 @@ export function loadEnv(): GatewayEnv {
     apiKey: process.env.SERA_API_KEY || undefined,
     apiSecret: process.env.SERA_API_SECRET || undefined,
     mcpPath,
-    trustProxy: process.env.TRUST_PROXY === "1",
   };
 }

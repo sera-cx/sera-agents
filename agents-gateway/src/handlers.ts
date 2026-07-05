@@ -66,12 +66,41 @@ interface SeraQuote {
 
 function parsePair(pair: string): { base: string; quote: string } {
   const [base, quote] = pair.split("/").map((s) => s.trim());
-  if (!base || !quote) throw new Error(`invalid pair "${pair}" — expected BASE/QUOTE`);
+  // A malformed pair is caller input, not an upstream fault → 400, not 502.
+  if (!base || !quote) throw new GatewayError(400, `invalid pair "${pair}" — expected BASE/QUOTE`);
   return { base, quote };
 }
 
 function asString(v: unknown): string {
   return typeof v === "string" ? v : v == null ? "" : String(v);
+}
+
+const DECIMAL = /^-?\d+(\.\d+)?$/;
+
+/**
+ * Exact product of two decimal strings via BigInt — avoids float artifacts like
+ * `0.1 * 3 = 0.30000000000000004` in the quoted amount_out. Inputs must match
+ * DECIMAL; callers validate first.
+ */
+export function mulDecimal(a: string, b: string): string {
+  const parse = (s: string) => {
+    const neg = s.startsWith("-");
+    const [int, frac = ""] = s.replace(/^[+-]/, "").split(".");
+    return { digits: BigInt((int + frac) || "0"), scale: frac.length, neg };
+  };
+  const x = parse(a.trim());
+  const y = parse(b.trim());
+  const product = x.digits * y.digits;
+  const negative = x.neg !== y.neg && product !== 0n;
+  const scale = x.scale + y.scale;
+  let s = product.toString();
+  if (scale > 0) {
+    s = s.padStart(scale + 1, "0");
+    const int = s.slice(0, s.length - scale);
+    const frac = s.slice(s.length - scale).replace(/0+$/, "");
+    s = frac ? `${int}.${frac}` : int;
+  }
+  return (negative ? "-" : "") + s;
 }
 
 export function makeHandlers(mcp: SeraMcpClient, cache: QuoteCache) {
@@ -126,12 +155,15 @@ export function makeHandlers(mcp: SeraMcpClient, cache: QuoteCache) {
       base: from_token,
       quote: to_token,
     });
-    const mid = Number(rate.rate);
-    const amt = Number(amount);
-    if (!Number.isFinite(mid) || !Number.isFinite(amt)) {
-      throw new Error("sera-mcp returned non-numeric rate or amount");
+    const rateStr = asString(rate.rate).trim();
+    // A bad amount is caller input (400); a bad upstream rate is our fault (502).
+    if (!DECIMAL.test(amount.trim())) {
+      throw new GatewayError(400, "amount must be a decimal number");
     }
-    const amount_out = (amt * mid).toString();
+    if (!DECIMAL.test(rateStr)) {
+      throw new Error("sera-mcp returned a non-numeric rate");
+    }
+    const amount_out = mulDecimal(amount.trim(), rateStr);
     const reservation = cache.issue({ from_token, to_token, amount });
     return {
       amount_out,
@@ -145,7 +177,8 @@ export function makeHandlers(mcp: SeraMcpClient, cache: QuoteCache) {
   async function settle(args: { quote_id: string; signer: string }): Promise<SettleResult> {
     const original = cache.lookup(args.quote_id);
     if (!original) {
-      throw new Error(`quote_id ${args.quote_id} unknown or expired — call /quote again`);
+      // Unknown/expired quote is a caller-recoverable condition → 404, not 502.
+      throw new GatewayError(404, `quote_id ${args.quote_id} unknown or expired — call /quote again`);
     }
     const prepared = await mcp.callTool<SeraQuote>("sera.prepare_swap", {
       from: original.from_token,

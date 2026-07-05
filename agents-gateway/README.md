@@ -39,7 +39,6 @@ See [.env.example](./.env.example). All env vars optional except `PORT`.
 | `SERA_API_KEY` | _(unset)_ | Optional. Required only if you want Sera's account-level rate-limit/quota. The 4 public tools work keyless. |
 | `SERA_API_SECRET` | _(unset)_ | Optional, paired with `SERA_API_KEY`. |
 | `SERA_MCP_PATH` | **required** | Path to a built `sera-mcp/dist/index.js`. Baked at `/opt/sera-mcp/dist/index.js` in the Docker image. |
-| `TRUST_PROXY` | `1` | Set when behind Caddy / a reverse proxy. |
 
 ## Run locally
 

@@ -47,7 +47,6 @@ services:
       PORT: "8787"
       HOST: "0.0.0.0"
       SERA_NETWORK: ${SERA_NETWORK:-mainnet}
-      TRUST_PROXY: "1"
       SERA_API_KEY: ${SERA_API_KEY:-}
       SERA_API_SECRET: ${SERA_API_SECRET:-}
     healthcheck:
