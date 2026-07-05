@@ -80,30 +80,62 @@ export function makeSeraMcpClient(opts: InitOpts): SeraMcpClient {
         }
       }
     });
-    p.stderr.on("data", (chunk) => process.stderr.write("[sera-mcp] " + chunk.toString("utf8")));
-    p.on("exit", (code) => {
-      process.stderr.write(`[sera-mcp] exited code=${code}\n`);
-      for (const [, h] of pending) h.reject(new Error("sera-mcp subprocess exited"));
+    function failAll(reason: string) {
+      for (const [, h] of pending) h.reject(new Error(reason));
       pending.clear();
       proc = null;
       initialized = false;
+    }
+
+    p.stderr.on("data", (chunk) => process.stderr.write("[sera-mcp] " + chunk.toString("utf8")));
+    p.on("exit", (code) => {
+      process.stderr.write(`[sera-mcp] exited code=${code}\n`);
+      failAll("sera-mcp subprocess exited");
+    });
+    // A spawn failure (e.g. a bad SERA_MCP_PATH) or any async child error is
+    // otherwise an unhandled 'error' event that crashes the whole gateway.
+    // Handle it like an exit: fail in-flight requests, reset, let the next call
+    // re-spawn.
+    p.on("error", (err) => {
+      process.stderr.write(`[sera-mcp] process error: ${err?.message ?? err}\n`);
+      failAll(`sera-mcp process error: ${err?.message ?? err}`);
+    });
+    // Writing to stdin after the child dies emits EPIPE on the stream; the exit/
+    // error handlers already fail pending requests, so just log and swallow it
+    // rather than let it become an unhandled stream error.
+    p.stdin.on("error", (err) => {
+      process.stderr.write(`[sera-mcp] stdin error: ${err?.message ?? err}\n`);
     });
     return p;
   }
 
   function rpc<T>(method: string, params: unknown): Promise<T> {
     if (!proc) throw new Error("sera-mcp not running");
+    const child = proc;
     const id = ++reqId;
     const payload = JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n";
     return new Promise<T>((resolve, reject) => {
       pending.set(id, { resolve, reject });
-      proc!.stdin.write(payload);
-      setTimeout(() => {
-        if (pending.has(id)) {
-          pending.delete(id);
+      const timer = setTimeout(() => {
+        if (pending.delete(id)) {
           reject(new Error(`sera-mcp ${method} timeout after ${REQUEST_TIMEOUT_MS}ms`));
         }
       }, REQUEST_TIMEOUT_MS);
+      // Guard the write: a dead/closing pipe throws sync or errors async; either
+      // way fail this request cleanly instead of crashing the process.
+      try {
+        child.stdin.write(payload, (err) => {
+          if (err && pending.delete(id)) {
+            clearTimeout(timer);
+            reject(new Error(`sera-mcp write failed: ${err.message}`));
+          }
+        });
+      } catch (err: any) {
+        if (pending.delete(id)) {
+          clearTimeout(timer);
+          reject(new Error(`sera-mcp write failed: ${err?.message ?? err}`));
+        }
+      }
     });
   }
 
