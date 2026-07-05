@@ -48,9 +48,11 @@ interface SeraFxRate {
 
 interface SeraCurrency {
   symbol: string;
+  fiat_currency?: string;
   fiat?: string;
   address?: string;
   decimals?: number;
+  policy_allowed?: boolean;
 }
 
 interface SeraQuote {
@@ -129,12 +131,18 @@ export function makeHandlers(mcp: SeraMcpClient, cache: QuoteCache) {
   }
 
   async function corridors(): Promise<CorridorsItem[]> {
-    const list = await mcp.callTool<{ currencies?: SeraCurrency[] } | SeraCurrency[]>(
+    // sera-mcp `list_currencies` returns
+    //   { count, policy_allowed_symbols, tokens: [{ symbol, fiat_currency, … }] }
+    // — the list is under `tokens`. Read that; fall back to `currencies` / a bare
+    // array defensively so a future shape change doesn't silently empty this out.
+    const list = await mcp.callTool<Record<string, unknown> | SeraCurrency[]>(
       "sera.list_currencies",
       {},
     );
-    const currencies = Array.isArray(list) ? list : (list.currencies ?? []);
-    const symbols = currencies.map((c) => c.symbol).filter(Boolean);
+    const items = (
+      Array.isArray(list) ? list : ((list?.tokens ?? list?.currencies ?? []) as SeraCurrency[])
+    ) as SeraCurrency[];
+    const symbols = [...new Set(items.map((c) => c?.symbol).filter(Boolean))];
     const out: CorridorsItem[] = [];
     for (const from of symbols) {
       for (const to of symbols) {

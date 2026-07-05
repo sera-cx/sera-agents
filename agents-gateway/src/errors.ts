@@ -34,14 +34,16 @@ const numeric = (v: unknown): number | undefined =>
       : undefined;
 
 /**
- * If a sera-mcp tool error represents an upstream throttle, return the HTTP
- * status to surface plus any Retry-After hint; otherwise null.
+ * If a sera-mcp tool error represents a retryable upstream condition — a 429
+ * throttle or a 503 transient outage — return the HTTP status to surface plus
+ * any Retry-After hint; otherwise null.
  *
  *  1. Structured — a future sera-mcp emits machine-readable status in `_meta`
  *     or `structuredContent` (see docs/sera-mcp-error-contract.md). Read a small
- *     candidate set of keys rather than pinning one name.
+ *     candidate set of keys rather than pinning one name; any status is surfaced.
  *  2. Heuristic — today's sera-mcp stringifies the upstream error into the human
- *     text; match a 429 / rate-limit signal and parse a Retry-After integer.
+ *     text; match a 429/rate-limit or 503/unavailable signal and parse a
+ *     Retry-After integer.
  */
 export function rateLimitFromToolError(
   res: ToolResult,
@@ -60,11 +62,17 @@ export function rateLimitFromToolError(
     return { status, retryAfter };
   }
 
-  // (2) Heuristic on the stringified message.
+  // (2) Heuristic on the stringified message: a 429 throttle or a 503 transient
+  //     ("service (temporarily) unavailable"). Both are retryable, so surface the
+  //     status + any Retry-After rather than collapsing to a generic 502.
   const text = res?.content?.[0]?.text;
-  if (typeof text === "string" && /\b429\b|rate.?limit|too many requests/i.test(text)) {
+  if (typeof text === "string") {
     const m = text.match(/retry[-\s]?after["':=\s]+(\d+)/i);
-    return { status: 429, retryAfter: m ? Number(m[1]) : undefined };
+    const retryAfter = m ? Number(m[1]) : undefined;
+    if (/\b429\b|rate.?limit|too many requests/i.test(text)) return { status: 429, retryAfter };
+    if (/\b503\b|service (temporarily )?unavailable|temporarily unavailable/i.test(text)) {
+      return { status: 503, retryAfter };
+    }
   }
   return null;
 }
