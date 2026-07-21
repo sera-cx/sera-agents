@@ -71,7 +71,7 @@ export function buildMcpServer(handlers: Handlers): McpServer {
   // handler param types below stay explicit, so app-level type safety is intact.
   (server.tool as any)(
     "fx_quote",
-    "Get a live FX quote between any pair of supported stablecoins. Returns amount_out, mid_rate, network_cost, and a quote_id that fx_settle consumes.",
+    "Get a live, executable FX quote between any pair of supported stablecoins — the guaranteed output net of fees (fees absorbed into the output token), not a reference mid. Returns amount_out (= min_output), the effective mid_rate, network_cost, and a quote_id that fx_settle consumes.",
     QuoteSchema,
     async (args: { from_token: string; to_token: string; amount: string }) =>
       run(() => handlers.quote(args)),
