@@ -86,7 +86,7 @@
         <a href="../#paths" class="hover:text-chalk-50">Paths</a>
         <a href="../#build" class="hover:text-chalk-50">Build</a>
         <a href="index.html" class="text-chalk-50 font-medium">Docs</a>
-        <a href="https://github.com/Josh-sera/sera-agents" target="_blank" class="hover:text-chalk-50">GitHub</a>
+        <a href="https://github.com/sera-cx/sera-agents" target="_blank" class="hover:text-chalk-50">GitHub</a>
       </nav>
       <a href="../#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
     </div>
@@ -105,8 +105,8 @@
       <div class="group-label">Reference</div>
       <a href="api/">API reference (32)</a>
       <div class="group-label">Resources</div>
-      <a href="https://github.com/Josh-sera/sera-mcp" target="_blank">sera-mcp on GitHub</a>
-      <a href="https://github.com/Josh-sera/sera-agents" target="_blank">sera-agents on GitHub</a>
+      <a href="https://github.com/sera-cx/sera-mcp" target="_blank">sera-mcp on GitHub</a>
+      <a href="https://github.com/sera-cx/sera-agents" target="_blank">sera-agents on GitHub</a>
       <a href="https://docs.sera.cx" target="_blank">Sera Protocol docs</a>
     </aside>
 
@@ -154,7 +154,7 @@
       <p>An open agent-payment standard layered on top of HTTP. The server returns <code>402 Payment Required</code> with payment instructions. The client pays (USDC, on-chain). The client retries with an <code>X-PAYMENT</code> header. The server verifies and returns <code>200 OK</code> with the goods. Idempotent, stateless, cache-friendly.</p>
 
       <h3>Why we expose one</h3>
-      <p>Some agents don't speak MCP — they speak HTTP. The x402 endpoint lets any agent that knows the standard pay USDC and get an FX-converted payout in any of 40+ stablecoins, no Sera SDK required.</p>
+      <p>Some agents don't speak MCP — they speak HTTP. The x402 endpoint lets any agent that knows the standard pay USDC and get an FX-converted payout in any of 40 stablecoins, no Sera SDK required.</p>
 
       <h3>Why this is interesting beyond Sera</h3>
       <p>x402 is the closest thing the agent ecosystem has to "Stripe for agents" without the Stripe. Wrapping <em>any</em> API in the same pattern means agents can pay you per call without contract negotiations, OAuth flows, or pre-funded API keys. See the <a href="tutorials/x402-paid-api.html">x402-paid API tutorial</a>.</p>

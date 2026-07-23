@@ -1,6 +1,6 @@
 # Contributing to sera-agents
 
-Thanks for taking the time. This is the agent suite around the [Sera MCP](https://github.com/Josh-sera/sera-mcp) — landing page, templates, bundled CLI agent, x402 service, integration docs.
+Thanks for taking the time. This is the agent suite around the [Sera MCP](https://github.com/sera-cx/sera-mcp) — landing page, templates, bundled CLI agent, x402 service, integration docs.
 
 ## What kind of contributions help
 
@@ -29,7 +29,7 @@ sera-agents/
 ## Getting set up
 
 ```bash
-git clone https://github.com/Josh-sera/sera-agents
+git clone https://github.com/sera-cx/sera-agents
 cd sera-agents
 
 # Install all workspace packages (sera-agent, x402-service, templates/*, examples/*)
@@ -42,7 +42,7 @@ npm run check
 The MCP server is a separate repo. To work end-to-end you'll need it built locally:
 
 ```bash
-git clone https://github.com/Josh-sera/sera-mcp ~/sera-mcp
+git clone https://github.com/sera-cx/sera-mcp ~/sera-mcp
 cd ~/sera-mcp && npm install && npm run build
 ```
 

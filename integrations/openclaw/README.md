@@ -37,7 +37,7 @@ Verify (depending on which agent UI you use):
 
 OpenClaw's [`clawhub`](https://github.com/openclaw/clawhub) is the public discovery surface for OpenClaw skills. Submit a Sera skill entry there so OpenClaw users can find Sera without needing to know about the MCP. The skill points to the same MCP underneath.
 
-Status: not yet submitted. Open a PR to clawhub once Sera positioning is stable. The skill manifest would point at `Josh-sera/sera-mcp` for installation.
+Status: not yet submitted. Open a PR to clawhub once Sera positioning is stable. The skill manifest would point at `sera-cx/sera-mcp` for installation.
 
 ## Path 3 — full plugin: `@openclaw/sera`
 

@@ -1,5 +1,5 @@
 {
-  "_comment": "Drop the mcpServers block into your existing openclaw.json. Adjust the absolute path to where you cloned Josh-sera/sera-mcp.",
+  "_comment": "Drop the mcpServers block into your existing openclaw.json. Adjust the absolute path to where you cloned sera-cx/sera-mcp.",
   "mcpServers": {
     "sera": {
       "command": "node",

@@ -145,7 +145,7 @@ Public-repo polish: every install starts with "what env vars do I set?". These f
 ### Changed
 - CI workflow rewritten: now runs `npm run typecheck` (was missing entirely — only `npm audit` ran), then audit + gitleaks + CodeQL. Single workspace install instead of per-package matrix.
 - Root `overrides` block forces `qs ^6.15.2` and `ws ^8.21.0` across the dependency tree.
-- README positioning paragraph at top — explicit "Templates, examples, docs, and x402 integrations built on top of [`sera-mcp`](https://github.com/Josh-sera/sera-mcp)".
+- README positioning paragraph at top — explicit "Templates, examples, docs, and x402 integrations built on top of [`sera-mcp`](https://github.com/sera-cx/sera-mcp)".
 - README references `sera-mcp` via GitHub URL instead of local Desktop path.
 
 ### Fixed
