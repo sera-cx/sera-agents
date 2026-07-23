@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>API reference — Sera for Agents</title>
   <meta name="theme-color" content="#06070A" />
-  <meta name="description" content="Full reference for all 32 sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
+  <meta name="description" content="Full reference for all 52 sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
   <meta name="author" content="Sera Protocol" />
   <link rel="canonical" href="https://agents.sera.cx/docs/api/" />
 
@@ -17,7 +17,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Sera for Agents" />
   <meta property="og:title" content="API reference — Sera for Agents" />
-  <meta property="og:description" content="Full reference for all 32 sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
+  <meta property="og:description" content="Full reference for all 52 sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
   <meta property="og:url" content="https://agents.sera.cx/docs/api/" />
   <meta property="og:image" content="https://agents.sera.cx/og-image.png" />
   <meta property="og:image:width" content="1200" />
@@ -27,7 +27,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="API reference — Sera for Agents" />
-  <meta name="twitter:description" content="Full reference for all 32 sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
+  <meta name="twitter:description" content="Full reference for all 52 sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
   <meta name="twitter:image" content="https://agents.sera.cx/og-image.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -106,22 +106,24 @@
       <a href="../recipes.html">Recipes</a>
       <div class="group-label">Reference</div>
       <a href="index.html" class="active">API reference</a>
-      <a href="#discovery" class="tool-link">Discovery (2)</a>
+      <a href="#discovery" class="tool-link">Discovery (3)</a>
       <a href="#pricing" class="tool-link">Pricing &amp; analytics (4)</a>
-      <a href="#liquidity" class="tool-link">Liquidity probing (5)</a>
-      <a href="#quote-execute" class="tool-link">Quote &amp; execute (7)</a>
-      <a href="#maker" class="tool-link">Maker (1)</a>
-      <a href="#treasury" class="tool-link">Treasury (5)</a>
-      <a href="#settlement" class="tool-link">Settlement (1)</a>
+      <a href="#liquidity" class="tool-link">Liquidity probing (9)</a>
+      <a href="#quote-plan" class="tool-link">Quote &amp; plan (6)</a>
+      <a href="#execution" class="tool-link">Execution (2)</a>
+      <a href="#maker" class="tool-link">Maker &amp; orders (9)</a>
+      <a href="#treasury" class="tool-link">Treasury (6)</a>
+      <a href="#account" class="tool-link">Account &amp; funds (5)</a>
+      <a href="#withdraw" class="tool-link">Withdraw (3)</a>
       <a href="#history" class="tool-link">History (3)</a>
-      <a href="#admin" class="tool-link">Admin (1)</a>
+      <a href="#signing" class="tool-link">Signing &amp; debug (2)</a>
       <a href="#resources" class="tool-link">Resources &amp; prompts</a>
     </aside>
 
     <main class="max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Reference</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">API reference.</h1>
-      <p class="text-lg mb-2" style="color:#A4A89C">All 32 tools exposed by <code class="font-mono text-accent-400 text-base">sera-mcp</code>, organized by category. Every tool is callable from any MCP host (Claude, Cursor, ChatGPT, OpenAI Agents SDK, etc.) and from the bundled <code class="font-mono text-accent-400 text-base">sera</code> CLI.</p>
+      <p class="text-lg mb-2" style="color:#A4A89C">All 52 tools exposed by <code class="font-mono text-accent-400 text-base">sera-mcp</code>, organized by category. Every tool is callable from any MCP host (Claude, Cursor, ChatGPT, OpenAI Agents SDK, etc.) and from the bundled <code class="font-mono text-accent-400 text-base">sera</code> CLI.</p>
       <p class="text-sm" style="color:#6B7180">Schema source-of-truth: <code class="font-mono text-accent-400 text-xs">sera-mcp/dist/index.js</code> — these signatures are kept in sync with the running MCP. For Sera Protocol's underlying REST endpoints, see <a href="https://docs.sera.cx" target="_blank" class="text-accent-400 hover:underline">docs.sera.cx</a>.</p>
 
       <!-- ============ DISCOVERY ============ -->
@@ -131,25 +133,31 @@
 
       <div class="tool" id="list_currencies">
         <h3>sera.list_currencies</h3>
-        <p class="summary">Live registry of supported stablecoins. Pulled from Sera's <code>/tokens</code> endpoint, cached 5 min.</p>
+        <p class="summary">List supported stablecoins from Sera's live token registry — symbols, fiat tags, addresses, decimals. Use before any swap. Cached 5 min server-side.</p>
         <div class="label">Params</div>
         <ul class="params">
-          <li><code>chain_id</code> <span class="badge-opt">opt</span> — filter to one chain (default: all)</li>
+          <li><code>fiat</code> — optional 3-letter fiat code filter (e.g. <code>'SGD'</code>)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ tokens: [{ symbol, address, decimals, chain_id, fiat_code }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ count, policy_allowed_symbols, tokens: [{ symbol, fiat_currency, address, decimals, policy_allowed }] }</code></pre></div>
       </div>
 
       <div class="tool" id="get_markets">
         <h3>sera.get_markets</h3>
-        <p class="summary">Catalog of trading pairs (780+ active). Existence ≠ tradeable now — pair with <code>scan_markets</code> for live quotability.</p>
+        <p class="summary">List the active trading-pair catalog from <code>/markets</code>. Pair existence ≠ tradeable now — pair with <code>scan_markets</code> for live quotability. Cached 10 min.</p>
         <div class="label">Params</div>
-        <ul class="params">
-          <li><code>base</code> <span class="badge-opt">opt</span> — filter to pairs starting with this token</li>
-          <li><code>quote</code> <span class="badge-opt">opt</span> — filter to pairs ending with this token</li>
-        </ul>
+        <ul class="params"><li>None</li></ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ markets: [{ pair, base, quote, market_id, status }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ markets: [{ pair, base, quote, ... }] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="doctor">
+        <h3>sera.doctor</h3>
+        <p class="summary">One-call self-check: API health, executor_id, network sanity, contract addresses, VL batch limits, signer mode, policy summary, persistence state.</p>
+        <div class="label">Params</div>
+        <ul class="params"><li>None</li></ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ network_label, base_url, overall_ok, checks: [{ name, ok, detail }] }</code></pre></div>
       </div>
 
       <!-- ============ PRICING ============ -->
@@ -159,22 +167,23 @@
 
       <div class="tool" id="get_fx_rate">
         <h3>sera.get_fx_rate</h3>
-        <p class="summary">Sera's reference FX rate for a fiat pair. Cheap, cached, no liquidity required.</p>
+        <p class="summary">Sera's reference FX rate between two ISO currency codes. Has bid/ask asymmetry — for execution price use <code>get_quote</code>. Cached 60s.</p>
         <div class="label">Params</div>
         <ul class="params">
-          <li><code>base</code> <span class="badge-req">req</span> — base fiat (e.g. <code>'USD'</code>)</li>
-          <li><code>quote</code> <span class="badge-req">req</span> — quote fiat (e.g. <code>'JPY'</code>)</li>
+          <li><code>base</code> <span class="badge-req">req</span> — base ISO fiat (e.g. <code>'GBP'</code>)</li>
+          <li><code>quote</code> <span class="badge-req">req</span> — quote ISO fiat (e.g. <code>'USD'</code>)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ pair, rate, source, fetched_at, change_24h_pct }</code></pre></div>
+        <div class="codeblock"><pre><code>{ pair, rate, as_of, rate_24h_ago, change_pct }</code></pre></div>
       </div>
 
       <div class="tool" id="compare_to_external_fx">
         <h3>sera.compare_to_external_fx</h3>
-        <p class="summary">Diffs Sera's reference rate against Frankfurter (ECB) — surfaces bias.</p>
+        <p class="summary">Diff Sera's <code>/fx/rate</code> against Frankfurter (ECB published mid) to surface systematic pricing bias. Accepts ISO fiat or Sera token symbols.</p>
         <div class="label">Params</div>
         <ul class="params">
-          <li><code>base</code> <span class="badge-req">req</span> · <code>quote</code> <span class="badge-req">req</span></li>
+          <li><code>base</code> <span class="badge-req">req</span> — ISO fiat or token symbol</li>
+          <li><code>quote</code> <span class="badge-req">req</span> — ISO fiat or token symbol</li>
         </ul>
         <div class="label">Returns</div>
         <div class="codeblock"><pre><code>{ sera_rate, external_rate, deviation_bps, external_source }</code></pre></div>
@@ -182,23 +191,28 @@
 
       <div class="tool" id="multi_source_mid">
         <h3>sera.multi_source_mid</h3>
-        <p class="summary">Median across 3 free FX providers. Use as your truth-source for "what's mid really."</p>
+        <p class="summary">Median FX mid across 3 free external sources (Frankfurter / open.er-api / exchangerate.host). Resilient to a single source being down.</p>
         <div class="label">Params</div>
-        <ul class="params"><li><code>base</code> <span class="badge-req">req</span> · <code>quote</code> <span class="badge-req">req</span></li></ul>
+        <ul class="params">
+          <li><code>base</code> <span class="badge-req">req</span> — ISO fiat or token symbol</li>
+          <li><code>quote</code> <span class="badge-req">req</span> — ISO fiat or token symbol</li>
+        </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ median, sources: [{ name, rate }], spread_bps }</code></pre></div>
+        <div class="codeblock"><pre><code>{ median, sources: [{ name, rate }], range_bps }</code></pre></div>
       </div>
 
       <div class="tool" id="spread_radar">
         <h3>sera.spread_radar</h3>
-        <p class="summary">Triangular-arbitrage scan across a fiat basket. Round-trip product across (A,B,C) should equal 1.0; deviation in bps is implied edge. Runs without any liquidity.</p>
+        <p class="summary">Liquidity-free FX consistency monitor across a currency basket. Flags forward/reverse pair asymmetry and triangular drift. Defaults: 150bps thresholds, USD/SGD/MYR/EUR/GBP/JPY basket.</p>
         <div class="label">Params</div>
         <ul class="params">
-          <li><code>currencies</code> <span class="badge-req">req</span> — array of 3+ fiat codes</li>
-          <li><code>min_bps</code> <span class="badge-opt">opt</span> — surface only deviations &gt; this (default 50)</li>
+          <li><code>currencies</code> — array of ISO fiat codes (default USD/SGD/MYR/EUR/GBP/JPY)</li>
+          <li><code>spread_alert_bps</code> — flag forward×reverse deviation ≥ this (default 50)</li>
+          <li><code>triangular_alert_bps</code> — flag triangle round-trip deviation ≥ this (default 50)</li>
+          <li><code>include_triangles</code> — skip triangular checks when false (default true)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ triangles: [{ a, b, c, edge_bps, direction }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ pair_alerts: [...], triangle_alerts: [...] }</code></pre></div>
       </div>
 
       <!-- ============ LIQUIDITY ============ -->
@@ -208,213 +222,650 @@
 
       <div class="tool" id="scan_markets">
         <h3>sera.scan_markets</h3>
-        <p class="summary">Probes every market in parallel for executable quotes at a probe size. Surfaces what's actually quotable now.</p>
+        <p class="summary">Fan out parallel <code>/swap/quote</code> probes across many pairs — the deal-scanner pattern in one call. Default: 50 pairs, 8 concurrent, $100 notional.</p>
         <div class="label">Params</div>
         <ul class="params">
-          <li><code>probe_notional</code> <span class="badge-opt">opt</span> — default $1,000</li>
-          <li><code>limit</code> <span class="badge-opt">opt</span> — max markets to probe (default 100)</li>
+          <li><code>pairs</code> — explicit <code>[{ base, quote }]</code>; else enumerated from <code>/markets</code></li>
+          <li><code>notional_per_quote</code> — probe size in <code>from</code> units (default 100)</li>
+          <li><code>max_pairs</code> — cap when enumerating (default 50)</li>
+          <li><code>max_concurrency</code> — bounded parallelism (default 8)</li>
+          <li><code>only_policy_allowed</code> — restrict to POLICY_ALLOWED_SYMBOLS (default true)</li>
+          <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
         </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ scanned, quotable: [{ pair, rate }], skipped: [{ pair, reason }] }</code></pre></div>
       </div>
 
       <div class="tool" id="find_deals">
         <h3>sera.find_deals</h3>
-        <p class="summary">The headline analytical tool. Probes markets, diffs each against external mid, ranks the deals.</p>
+        <p class="summary">End-to-end deal scanner: scan_markets + per-pair external mid comparison, filtered ≥ min_deviation_bps. Returns ranked good_sell / good_buy / fair lists.</p>
         <div class="label">Params</div>
         <ul class="params">
-          <li><code>min_bps</code> <span class="badge-opt">opt</span> — minimum edge (default 25)</li>
-          <li><code>notional_usd</code> <span class="badge-opt">opt</span> — probe size (default $1k)</li>
+          <li><code>pairs</code> — explicit pair list; else enumerated from <code>/markets</code></li>
+          <li><code>notional_per_quote</code> · <code>max_pairs</code> · <code>max_concurrency</code></li>
+          <li><code>only_policy_allowed</code> — restrict to allowed symbols</li>
+          <li><code>min_deviation_bps</code> — minimum edge to count as a deal (default 25)</li>
+          <li><code>use_multi_source</code> — benchmark = median of 3 sources (default true)</li>
+          <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ deals: [{ pair, edge_bps, sera_rate, external_mid, notional }] }</code></pre></div>
-      </div>
-
-      <div class="tool" id="probe_depth">
-        <h3>sera.probe_depth</h3>
-        <p class="summary">Characterizes price impact at a size ladder for a single pair.</p>
-        <div class="label">Params</div>
-        <ul class="params">
-          <li><code>pair</code> <span class="badge-req">req</span></li>
-          <li><code>sizes</code> <span class="badge-opt">opt</span> — default <code>[1k, 10k, 50k, 100k]</code></li>
-        </ul>
-      </div>
-
-      <div class="tool" id="round_trip_cost">
-        <h3>sera.round_trip_cost</h3>
-        <p class="summary">Cost of going A→B→A at a given size. Reveals the maker hedge floor for a pair.</p>
-      </div>
-
-      <div class="tool" id="infer_book">
-        <h3>sera.infer_book</h3>
-        <p class="summary">Reconstructs a synthetic order book that isn't published as a primitive, by binary-searching executable sizes.</p>
-      </div>
-
-      <!-- ============ QUOTE & EXECUTE ============ -->
-      <div id="quote-execute" class="group-header">
-        <span class="num">04</span><h2>Quote &amp; execute</h2>
-      </div>
-
-      <div class="tool" id="get_quote">
-        <h3>sera.get_quote</h3>
-        <p class="summary">Single-use quote + EIP-712 typed data ready for the wallet to sign. Pass <code>simulate:true</code> to probe with no wallet.</p>
-        <div class="label">Params</div>
-        <ul class="params">
-          <li><code>from</code> <span class="badge-req">req</span> — source token symbol</li>
-          <li><code>to</code> <span class="badge-req">req</span> — target token symbol</li>
-          <li><code>amount</code> <span class="badge-req">req</span> — in <code>from</code>-token units</li>
-          <li><code>simulate</code> <span class="badge-opt">opt</span> — read-only probe (default false)</li>
-        </ul>
-        <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ uuid, typed_data, expected_out, expiry, route_params }</code></pre></div>
-      </div>
-
-      <div class="tool" id="prepare_swap">
-        <h3>sera.prepare_swap</h3>
-        <p class="summary">Returns the unsigned route_params + signing payload — for advanced flows that want to inspect before signing.</p>
-      </div>
-
-      <div class="tool" id="execute_swap">
-        <h3>sera.execute_swap</h3>
-        <p class="summary">Submits a signed quote. Enforces uuid binding + server-derived USD notional caps.</p>
-        <div class="label">Params</div>
-        <ul class="params">
-          <li><code>quote_id</code> <span class="badge-req">req</span> — uuid from <code>get_quote</code></li>
-          <li><code>signature</code> <span class="badge-req">req</span> — EIP-712 signature</li>
-        </ul>
-        <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ trade_id, tx_hash, delivered, status }</code></pre></div>
-      </div>
-
-      <div class="tool" id="convert_and_send">
-        <h3>sera.convert_and_send</h3>
-        <p class="summary">Quote-sign-execute-transfer in one tool call. Recipient gets the target asset directly.</p>
-      </div>
-
-      <div class="tool" id="quote_recipient_amount">
-        <h3>sera.quote_recipient_amount</h3>
-        <p class="summary">"How much source to deliver exactly N of target?" — solves the recipient-amount problem.</p>
-      </div>
-
-      <div class="tool" id="find_cheapest_settlement_path">
-        <h3>sera.find_cheapest_settlement_path</h3>
-        <p class="summary">If multiple source assets could fund a target payout, returns the cheapest by all-in cost.</p>
-      </div>
-
-      <div class="tool" id="limit_watcher">
-        <h3>sera.limit_watcher</h3>
-        <p class="summary">Patient-quote pattern: polls until target rate hits or budget runs out. Returns a ready-to-execute quote.</p>
-        <div class="label">Params</div>
-        <ul class="params">
-          <li><code>from</code> · <code>to</code> · <code>amount</code> <span class="badge-req">req</span></li>
-          <li><code>trigger_rate</code> <span class="badge-req">req</span> — execute when rate ≥ (or ≤) this</li>
-          <li><code>max_polls</code> <span class="badge-opt">opt</span> · <code>interval_s</code> <span class="badge-opt">opt</span></li>
-        </ul>
-      </div>
-
-      <!-- ============ MAKER ============ -->
-      <div id="maker" class="group-header">
-        <span class="num">05</span><h2>Maker</h2>
+        <div class="codeblock"><pre><code>{ good_sell: [...], good_buy: [...], fair: [...] }</code></pre></div>
       </div>
 
       <div class="tool" id="maker_quote_ladder">
         <h3>sera.maker_quote_ladder</h3>
-        <p class="summary">Spread-ladder calculator. Returns earnings at 5/10/15/25/50/100/200 bps for a pair + size. Mid auto-fetched from multi-source median by default.</p>
+        <p class="summary">Spread-ladder calculator for makers. Returns earnings at 5/10/15/25/50/100/200 bps for a pair + notional. Mid auto-fetched from multi-source median by default.</p>
         <div class="label">Params</div>
         <ul class="params">
-          <li><code>pair</code> <span class="badge-req">req</span></li>
-          <li><code>notional_usd</code> <span class="badge-req">req</span></li>
-          <li><code>mid</code> <span class="badge-opt">opt</span> — override the mid</li>
+          <li><code>base</code> <span class="badge-req">req</span> · <code>quote</code> <span class="badge-req">req</span></li>
+          <li><code>notional</code> <span class="badge-req">req</span> — amount in the SELL leg</li>
+          <li><code>role</code> — <code>maker_sell_base</code> | <code>maker_buy_base</code> (default sell)</li>
+          <li><code>mid</code> — override the mid</li>
+          <li><code>mid_source</code> — <code>multi_source</code> (default) | <code>sera</code></li>
+          <li><code>spreads_bps</code> — spreads to ladder (default [5,10,15,25,50,100,200])</li>
         </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ pair, mid, ladder: [{ spread_bps, earnings }] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="probe_depth">
+        <h3>sera.probe_depth</h3>
+        <p class="summary">Quote one corridor at a ladder of sizes to characterize price impact (bps relative to the smallest probe). Default sizes [100, 1000, 10000, 100000].</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> · <code>to</code> <span class="badge-req">req</span></li>
+          <li><code>sizes</code> — human sizes to probe (default [100, 1k, 10k, 100k])</li>
+          <li><code>gas_mode</code> · <code>max_concurrency</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ from, to, points: [{ size, rate, impact_bps }] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="round_trip_cost">
+        <h3>sera.round_trip_cost</h3>
+        <p class="summary">Cost of A→B→A in bps — the spread floor a maker needs to cover their hedge. Returns absolute loss + bps interpretation.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> · <code>to</code> <span class="badge-req">req</span></li>
+          <li><code>amount</code> <span class="badge-req">req</span> — human amount in <code>from</code> units</li>
+          <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ from, to, loss, round_trip_bps }</code></pre></div>
+      </div>
+
+      <div class="tool" id="infer_book">
+        <h3>sera.infer_book</h3>
+        <p class="summary">Synthetic order book for a pair Sera doesn't publish a book for. Probes both directions at log-spaced sizes to construct bid/ask ladders. For visualizing depth, not execution.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>base</code> <span class="badge-req">req</span> · <code>quote</code> <span class="badge-req">req</span></li>
+          <li><code>sizes</code> — probe sizes (default log-spaced 100→1M)</li>
+          <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ pair, bids: [...], asks: [...], synthetic_spread_bps }</code></pre></div>
+      </div>
+
+      <div class="tool" id="market_health">
+        <h3>sera.market_health</h3>
+        <p class="summary">Quick yes/no on whether a corridor is quotable right now. Fires a single $1 simulate quote — cheaper than burning a full quote for pre-flight gating.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> · <code>to</code> <span class="badge-req">req</span></li>
+          <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ pair, status: 'quotable' | 'no_liquidity' | 'unknown_pair' | 'error', detail }</code></pre></div>
+      </div>
+
+      <div class="tool" id="fx_quote_diff">
+        <h3>sera.fx_quote_diff</h3>
+        <p class="summary">Compare Sera's reference <code>/fx/rate</code> against the executable rate from a real quote at a chosen notional. Returns deviation in bps.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> · <code>to</code> <span class="badge-req">req</span></li>
+          <li><code>notional</code> — amount for the executable probe (default 100)</li>
+          <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ pair, reference_rate, executable_rate, deviation_bps }</code></pre></div>
+      </div>
+
+      <div class="tool" id="compare_corridors">
+        <h3>sera.compare_corridors</h3>
+        <p class="summary">Given a target output (currency + amount), rank candidate source currencies by USD-equivalent cost. "I need 5,000 SGD — which source does it cheapest?"</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>target</code> <span class="badge-req">req</span> — output currency or token to deliver</li>
+          <li><code>target_amount</code> <span class="badge-req">req</span> — exact amount of <code>target</code></li>
+          <li><code>sources</code> <span class="badge-req">req</span> — candidate source token symbols</li>
+          <li><code>max_concurrency</code> · <code>gas_mode</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ target, ranked: [{ source, usd_cost, rate }] }</code></pre></div>
+      </div>
+
+      <!-- ============ QUOTE & PLAN ============ -->
+      <div id="quote-plan" class="group-header">
+        <span class="num">04</span><h2>Quote &amp; plan</h2>
+      </div>
+
+      <div class="tool" id="get_quote">
+        <h3>sera.get_quote</h3>
+        <p class="summary">Single-use Sera swap quote. Returns route_params (EIP-712 Intent) to sign + uuid + fee breakdown. Pass <code>simulate:true</code> to probe with the burn address (no execution).</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> — source symbol, address, or fiat</li>
+          <li><code>to</code> <span class="badge-req">req</span> — target symbol, address, or fiat</li>
+          <li><code>amount</code> <span class="badge-req">req</span> — human amount in <code>from</code> units</li>
+          <li><code>owner_address</code> — funding wallet (required unless simulate=true)</li>
+          <li><code>recipient</code> — where output lands (defaults to owner_address)</li>
+          <li><code>gas_mode</code> — <code>receive_less</code> (default) | <code>pay_more</code></li>
+          <li><code>expiration_seconds</code> — quote validity window</li>
+          <li><code>simulate</code> — read-only probe with burn address (default false)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ uuid, route_params, expected_out, fees, expiry }</code></pre></div>
+      </div>
+
+      <div class="tool" id="prepare_swap">
+        <h3>sera.prepare_swap</h3>
+        <p class="summary">Alias of <code>get_quote</code> intended for execution-track flows. Same params and policy gates — use this name when intent is clearly "about to execute."</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> · <code>to</code> <span class="badge-req">req</span> · <code>amount</code> <span class="badge-req">req</span></li>
+          <li><code>owner_address</code> · <code>recipient</code> · <code>gas_mode</code> · <code>expiration_seconds</code> · <code>simulate</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ uuid, route_params, expected_out, fees, expiry }</code></pre></div>
+      </div>
+
+      <div class="tool" id="quote_recipient_amount">
+        <h3>sera.quote_recipient_amount</h3>
+        <p class="summary">Inverse quote: "I want them to receive exactly X of currency B — what do I send of A?" Uses <code>/fx/rate</code> then two real quotes to tighten. Does NOT execute.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> — token you're paying with</li>
+          <li><code>to</code> <span class="badge-req">req</span> — currency the recipient receives</li>
+          <li><code>recipient_amount</code> <span class="badge-req">req</span> — amount recipient ends up with</li>
+          <li><code>owner_address</code> <span class="badge-req">req</span></li>
+          <li><code>recipient</code> — destination address</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ required_input, quote, effective_rate }</code></pre></div>
+      </div>
+
+      <div class="tool" id="find_cheapest_settlement_path">
+        <h3>sera.find_cheapest_settlement_path</h3>
+        <p class="summary">Compare gas-mode candidates (receive_less vs pay_more) for one A→B and rank by min_output. For planning; each candidate consumes its own UUID.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> · <code>to</code> <span class="badge-req">req</span></li>
+          <li><code>amount</code> <span class="badge-req">req</span></li>
+          <li><code>owner_address</code> <span class="badge-req">req</span></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ candidates: [{ gas_mode, min_output, uuid }], cheapest }</code></pre></div>
+      </div>
+
+      <div class="tool" id="batch_quote">
+        <h3>sera.batch_quote</h3>
+        <p class="summary">Submit 1–50 quote requests in one round-trip via Sera's <code>POST /swap/quote/batch</code>. Each gets its own uuid and signed Intent; per-item errors don't fail the batch.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>quotes</code> <span class="badge-req">req</span> — array of 1–50 <code>{ from, to, amount, owner_address?, recipient?, gas_mode?, expiration_seconds?, simulate? }</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ results: [{ ok, uuid, route_params, ... } | { ok:false, error }] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="limit_watcher">
+        <h3>sera.limit_watcher</h3>
+        <p class="summary">Patient quote: poll <code>/swap/quote</code> on a fixed budget until target_rate hits (or budget exhausted). Default 5 attempts × 6s ≈ 30s blocking.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> · <code>to</code> <span class="badge-req">req</span> · <code>amount</code> <span class="badge-req">req</span></li>
+          <li><code>target_rate</code> <span class="badge-req">req</span> — output_per_input threshold to fire at</li>
+          <li><code>side</code> <span class="badge-req">req</span> — <code>sell_from</code> (rate ≥ target) | <code>buy_from</code> (rate ≤ target)</li>
+          <li><code>max_attempts</code> — default 5, capped 30</li>
+          <li><code>interval_seconds</code> — default 6, capped 60</li>
+          <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ hit, quote?, probes: [{ attempt, rate }] }</code></pre></div>
+      </div>
+
+      <!-- ============ EXECUTION ============ -->
+      <div id="execution" class="group-header">
+        <span class="num">05</span><h2>Execution</h2>
+      </div>
+
+      <div class="tool" id="execute_swap">
+        <h3>sera.execute_swap</h3>
+        <p class="summary">Submit a signed swap quote (uuid + EIP-712 signature) to Sera. Destructive — money moves. Quotes are single-use; re-quote on QUOTE_STALE/410. Gated by POLICY_DRY_RUN + daily cap.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>uuid</code> <span class="badge-req">req</span> — quote UUID from get_quote / prepare_swap</li>
+          <li><code>signature</code> — EIP-712 sig over route_params (required in external signer mode)</li>
+          <li><code>route_params</code> — optional; must exactly match what was returned for the uuid</li>
+          <li><code>permit_signature</code> — EIP-2612 permit sig (required if quote carried a permit envelope)</li>
+          <li><code>permit_deadline</code> — permit deadline (required iff permit_signature given)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ trade_id, tx_hash, status, delivered }</code></pre></div>
+      </div>
+
+      <div class="tool" id="convert_and_send">
+        <h3>sera.convert_and_send</h3>
+        <p class="summary">High-level: quote A→B and deliver to recipient in one call. Destructive — requires SERA_SIGNER_MODE=local. For external signer, use get_quote → sign → execute_swap.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>from</code> <span class="badge-req">req</span> · <code>to</code> <span class="badge-req">req</span> · <code>amount</code> <span class="badge-req">req</span></li>
+          <li><code>owner_address</code> <span class="badge-req">req</span></li>
+          <li><code>recipient</code> <span class="badge-req">req</span> — final destination for the output token</li>
+          <li><code>gas_mode</code> — <code>receive_less</code> (default) | <code>pay_more</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ trade_id, tx_hash, delivered, recipient }</code></pre></div>
+      </div>
+
+      <!-- ============ MAKER & ORDERS ============ -->
+      <div id="maker" class="group-header">
+        <span class="num">06</span><h2>Maker &amp; orders</h2>
+      </div>
+
+      <div class="tool" id="place_order">
+        <h3>sera.place_order</h3>
+        <p class="summary">Submit a signed limit order. Destructive — agent-signed. Agent picks order_id (UUID4), signs the Order struct under the Sera EIP-712 domain. Idempotent on order_id.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_address</code> <span class="badge-req">req</span></li>
+          <li><code>side</code> <span class="badge-req">req</span> — <code>bid</code> | <code>ask</code></li>
+          <li><code>amount</code> <span class="badge-req">req</span> — quantity in base-token units</li>
+          <li><code>price</code> <span class="badge-req">req</span> — quote per base</li>
+          <li><code>order_type</code> <span class="badge-req">req</span> — <code>'limit'</code></li>
+          <li><code>from_address</code> <span class="badge-req">req</span> — market BASE token address</li>
+          <li><code>to_address</code> <span class="badge-req">req</span> — market QUOTE token address</li>
+          <li><code>order_id</code> <span class="badge-req">req</span> — client-picked UUID4</li>
+          <li><code>uuid_int</code> <span class="badge-req">req</span> · <code>signature</code> <span class="badge-req">req</span> · <code>expiration</code> <span class="badge-req">req</span></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ order_id, status }</code></pre></div>
+      </div>
+
+      <div class="tool" id="cancel_order">
+        <h3>sera.cancel_order</h3>
+        <p class="summary">Cancel an order by signing a CancelOrder struct (owner + uuid_int). Destructive. 5-min per-order cooldown (repeat → 429). In-flight fills may still settle.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_address</code> <span class="badge-req">req</span></li>
+          <li><code>order_id</code> <span class="badge-req">req</span></li>
+          <li><code>uuid_int</code> <span class="badge-req">req</span></li>
+          <li><code>signature</code> <span class="badge-req">req</span></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ order_id, status }</code></pre></div>
+      </div>
+
+      <div class="tool" id="cancel_all_orders">
+        <h3>sera.cancel_all_orders</h3>
+        <p class="summary">Bulk-cancel every open order for the authenticated wallet. Destructive. Kill-switch / pause-trading workflow. Requires SERA_API_KEY.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_address</code> <span class="badge-req">req</span> — must match the authenticated API-key owner</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ cancelled: [...], failed: [...], skipped_cooldown: [...] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="place_vl_batch">
+        <h3>sera.place_vl_batch</h3>
+        <p class="summary">Submit 2–50 signed limit orders sharing one collateral pool. Destructive. Engine freezes only the largest single-leg cost. Siblings share owner_address, fromToken, and a VL group_id.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>orders</code> <span class="badge-req">req</span> — array of 2–50 signed orders (same owner_address + fromToken; shared VL group_id; sequential leg_id 0,1,2…)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ vl_batch_id, orders: [{ order_id, status }] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="cancel_vl_batch">
+        <h3>sera.cancel_vl_batch</h3>
+        <p class="summary">Cancel an entire Virtual Liquidity batch by signing a CancelVLBatch struct against the batch's vl_batch_id. Destructive.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_address</code> <span class="badge-req">req</span></li>
+          <li><code>vl_batch_id</code> <span class="badge-req">req</span> — primary_id of the first leg</li>
+          <li><code>signature</code> <span class="badge-req">req</span></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ vl_batch_id, status }</code></pre></div>
+      </div>
+
+      <div class="tool" id="get_order">
+        <h3>sera.get_order</h3>
+        <p class="summary">Full order record including settlement_summary (per-fill aggregation) and settlement_economics. Use to track fills or recover a lost uuid_int. Requires SERA_API_KEY.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>order_id</code> <span class="badge-req">req</span></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ order, settlement_summary, settlement_economics }</code></pre></div>
+      </div>
+
+      <div class="tool" id="list_orders">
+        <h3>sera.list_orders</h3>
+        <p class="summary">Rich filtering over the wallet's order history: status, type, symbol, side, price/amount/notional ranges, time bounds, sort. Filters apply before pagination. Requires SERA_API_KEY.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_address</code> <span class="badge-req">req</span></li>
+          <li><code>status</code> · <code>type</code> · <code>symbol</code> · <code>side</code> — filters</li>
+          <li><code>from_token</code> · <code>to_token</code> · <code>base_token</code> · <code>quote_token</code> · <code>has_error</code></li>
+          <li><code>created_after</code> · <code>created_before</code> · <code>sort_by</code> · <code>order</code></li>
+          <li><code>limit</code> (max 500) · <code>offset</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ total, orders: [...] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="get_fills">
+        <h3>sera.get_fills</h3>
+        <p class="summary">Per-fill list (maker/taker order ids, quantity, price, settlement_status, tx_hash, settlement_economics) filterable by order_status / settlement_status. Requires SERA_API_KEY.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_address</code> <span class="badge-req">req</span></li>
+          <li><code>order_status</code> · <code>settlement_status</code> — filters</li>
+          <li><code>limit</code> (max 500) · <code>offset</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ fills: [{ maker_order_id, taker_order_id, quantity, price, settlement_status, tx_hash, settlement_economics }] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="get_fills_for_order">
+        <h3>sera.get_fills_for_order</h3>
+        <p class="summary">All fills against a specific order_id with per-fill settlement_economics. Requires SERA_API_KEY.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>order_id</code> <span class="badge-req">req</span></li>
+          <li><code>limit</code> (max 500) · <code>offset</code></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ fills: [{ quantity, price, settlement_status, settlement_economics }] }</code></pre></div>
       </div>
 
       <!-- ============ TREASURY ============ -->
       <div id="treasury" class="group-header">
-        <span class="num">06</span><h2>Treasury</h2>
+        <span class="num">07</span><h2>Treasury</h2>
         <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Requires SERA_API_KEY</span>
       </div>
 
       <div class="tool" id="get_balances">
         <h3>sera.get_balances</h3>
-        <p class="summary">Token balances across N wallets, in raw units.</p>
+        <p class="summary">Wallet + Vault balances for a wallet, normalized to human amounts. Requires SERA_API_KEY / SERA_API_SECRET.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_address</code> <span class="badge-req">req</span> — wallet to query</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ owner_address, wallet: [...], vault: [...] }</code></pre></div>
       </div>
 
       <div class="tool" id="treasury_value">
         <h3>sera.treasury_value</h3>
-        <p class="summary">Total value across wallets in any reporting currency. Uses Sera's reference rate for FX conversions.</p>
+        <p class="summary">Aggregate balances across one or more wallets and value the portfolio in target_currency. Returns per-wallet rows + currency exposure breakdown.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_addresses</code> <span class="badge-req">req</span> — one or more 0x… wallets</li>
+          <li><code>target_currency</code> — ISO fiat to value in (default USD)</li>
+          <li><code>include_zero</code> — include zero-balance lines (default false)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ total_value, target_currency, wallets: [...], exposure: [...] }</code></pre></div>
       </div>
 
       <div class="tool" id="exposure_report">
         <h3>sera.exposure_report</h3>
-        <p class="summary">Currency exposure breakdown. Shows what % of treasury sits in each fiat denomination.</p>
+        <p class="summary">Slimmer cousin of treasury_value: just the currency mix and total. Use pre-trade ("am I over-exposed to MYR?").</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_addresses</code> <span class="badge-req">req</span></li>
+          <li><code>target_currency</code> — ISO fiat to value in (default USD)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ total_value, exposure: [{ currency, value, pct }] }</code></pre></div>
       </div>
 
       <div class="tool" id="rebalance_plan">
         <h3>sera.rebalance_plan</h3>
-        <p class="summary">Computes drift from target weights, emits the swap plan that brings drift to zero. Read-only — does not execute.</p>
+        <p class="summary">Given target weights (by fiat code) and current balances, emit suggested swaps to rebalance. Pure planner — does not execute. Feed each trade into get_quote.</p>
         <div class="label">Params</div>
         <ul class="params">
-          <li><code>wallets</code> <span class="badge-req">req</span> — array of addresses</li>
-          <li><code>targets</code> <span class="badge-req">req</span> — <code>{ USDC: 0.5, EURC: 0.3, ... }</code></li>
-          <li><code>reporting_currency</code> <span class="badge-opt">opt</span> — default USD</li>
+          <li><code>owner_addresses</code> <span class="badge-req">req</span></li>
+          <li><code>target_weights</code> <span class="badge-req">req</span> — <code>{ USD: 50, SGD: 30, MYR: 20 }</code> (normalized)</li>
+          <li><code>target_currency</code> — default USD</li>
+          <li><code>min_trade_value</code> — skip trades below this (default 10)</li>
         </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ current_weights, trades: [{ from, to, amount }] }</code></pre></div>
       </div>
 
       <div class="tool" id="pay_invoice">
         <h3>sera.pay_invoice</h3>
-        <p class="summary">"I owe X in currency Y, what's the cheapest source asset?" Identifies cheapest source, generates quote, returns ready-to-sign Intent.</p>
-      </div>
-
-      <!-- ============ SETTLEMENT ============ -->
-      <div id="settlement" class="group-header">
-        <span class="num">07</span><h2>Settlement</h2>
-        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Requires SERA_API_KEY</span>
+        <p class="summary">"I owe X of currency Y to address Z — given my source assets, what's the cheapest path?" Fans out across each candidate source and ranks by USD-equivalent cost.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_address</code> <span class="badge-req">req</span> · <code>recipient</code> <span class="badge-req">req</span></li>
+          <li><code>amount</code> <span class="badge-req">req</span> — recipient receives this in target_currency units</li>
+          <li><code>target_currency</code> <span class="badge-req">req</span> — ISO fiat the recipient wants</li>
+          <li><code>source_symbols</code> <span class="badge-req">req</span> — stablecoins available to spend</li>
+          <li><code>target_symbol</code> — specific output token</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ cheapest: { source, usd_cost, quote }, ranked: [...] }</code></pre></div>
       </div>
 
       <div class="tool" id="settlement_status">
         <h3>sera.settlement_status</h3>
-        <p class="summary">Query Sera's <code>/orders</code> for trade history or a specific trade. Filter by <code>trade_id</code>, <code>uuid</code>, or <code>owner_address</code>.</p>
+        <p class="summary">Query Sera <code>/orders</code> for trade history or a specific trade. Filter by trade_id, uuid, owner_address, status, limit. Requires SERA_API_KEY / SERA_API_SECRET.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>trade_id</code> · <code>uuid</code> · <code>owner_address</code> · <code>status</code> · <code>limit</code> — all optional filters</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ orders: [{ trade_id, uuid, status, ... }] }</code></pre></div>
+      </div>
+
+      <!-- ============ ACCOUNT & FUNDS ============ -->
+      <div id="account" class="group-header">
+        <span class="num">08</span><h2>Account &amp; funds</h2>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Requires SERA_API_KEY</span>
+      </div>
+
+      <div class="tool" id="build_approve">
+        <h3>sera.build_approve</h3>
+        <p class="summary">Build an unsigned EIP-1559 ERC-20 <code>approve()</code> tx. Sign locally with the owner wallet, then broadcast via <code>send_tx</code>. Spender must be the live vault_address or sor_address.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>token</code> <span class="badge-req">req</span> — ERC-20 token address</li>
+          <li><code>owner</code> <span class="badge-req">req</span> — owner wallet (matches API-key owner)</li>
+          <li><code>spender</code> <span class="badge-req">req</span> — vault or SOR address</li>
+          <li><code>amount</code> <span class="badge-req">req</span> — raw uint256 allowance</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ tx }</code></pre></div>
+      </div>
+
+      <div class="tool" id="build_deposit">
+        <h3>sera.build_deposit</h3>
+        <p class="summary">Build an unsigned deposit tx. Omit permit_* for the standard depositFund flow (needs prior approve); include them to combine approval + deposit via depositFundWithPermit.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>token</code> <span class="badge-req">req</span> · <code>owner</code> <span class="badge-req">req</span></li>
+          <li><code>amount</code> <span class="badge-req">req</span> — raw uint256 deposit amount</li>
+          <li><code>permit_signature</code> · <code>permit_deadline</code> · <code>permit_amount</code> — optional EIP-2612 permit</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ tx }</code></pre></div>
+      </div>
+
+      <div class="tool" id="build_transfer">
+        <h3>sera.build_transfer</h3>
+        <p class="summary">Build an unsigned ERC-20 <code>transfer()</code> tx. Sign locally, broadcast via <code>send_transfer</code>.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>token</code> <span class="badge-req">req</span></li>
+          <li><code>to</code> <span class="badge-req">req</span> — recipient address</li>
+          <li><code>amount</code> <span class="badge-req">req</span> — raw uint256 amount</li>
+          <li><code>from_address</code> <span class="badge-req">req</span> — sender wallet</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ tx }</code></pre></div>
+      </div>
+
+      <div class="tool" id="send_tx">
+        <h3>sera.send_tx</h3>
+        <p class="summary">Broadcast a locally-signed raw_tx from <code>build_approve</code> or <code>build_deposit</code>. Destructive. Sera validates the selector-to-target pairing.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>raw_tx</code> <span class="badge-req">req</span> — locally-signed raw transaction hex</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ tx_hash }</code></pre></div>
+      </div>
+
+      <div class="tool" id="send_transfer">
+        <h3>sera.send_transfer</h3>
+        <p class="summary">Broadcast a locally-signed raw_tx from <code>build_transfer</code>. Destructive.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>raw_tx</code> <span class="badge-req">req</span> — locally-signed raw transaction hex</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ tx_hash }</code></pre></div>
+      </div>
+
+      <!-- ============ WITHDRAW ============ -->
+      <div id="withdraw" class="group-header">
+        <span class="num">09</span><h2>Withdraw</h2>
+        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Dual-signature flow</span>
+      </div>
+
+      <div class="tool" id="withdraw_request">
+        <h3>sera.withdraw_request</h3>
+        <p class="summary">Step 1 of the dual-signature instant-withdrawal flow. User pre-signs a WithdrawIntent under the Sera EIP-712 domain; returns the executor co-signature.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>intent</code> <span class="badge-req">req</span> — WithdrawIntent <code>{ user, tokens[], amounts[], recipient, deadline, uuid }</code></li>
+          <li><code>user_signature</code> <span class="badge-req">req</span> — EIP-712 sig over the intent</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ executor, executor_signature }</code></pre></div>
+      </div>
+
+      <div class="tool" id="withdraw_build">
+        <h3>sera.withdraw_build</h3>
+        <p class="summary">Step 2 of dual-sig withdraw. Given the WithdrawIntent + user signature + executor co-signature, returns the unsigned executeInstantWithdrawDualSig transaction.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>intent</code> <span class="badge-req">req</span> · <code>user_signature</code> <span class="badge-req">req</span></li>
+          <li><code>executor</code> <span class="badge-req">req</span> — co-signing executor address</li>
+          <li><code>executor_signature</code> <span class="badge-req">req</span></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ tx }</code></pre></div>
+      </div>
+
+      <div class="tool" id="withdraw_send">
+        <h3>sera.withdraw_send</h3>
+        <p class="summary">Step 4 of dual-sig withdraw. Broadcast the locally-signed executeInstantWithdrawDualSig raw_tx. Destructive. Only accepts calls targeting the live Sera contract.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>raw_tx</code> <span class="badge-req">req</span> — locally-signed raw transaction hex</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ tx_hash }</code></pre></div>
       </div>
 
       <!-- ============ HISTORY ============ -->
       <div id="history" class="group-header">
-        <span class="num">08</span><h2>History</h2>
+        <span class="num">10</span><h2>History</h2>
         <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Requires SERA_HISTORY_DB</span>
       </div>
 
       <div class="tool" id="fx_history">
         <h3>sera.fx_history</h3>
-        <p class="summary">Time-series of fx_rate / quote results that this MCP install has logged. OHLC isn't published as a primitive; this turns your install into its own price feed.</p>
+        <p class="summary">Sera <code>/fx/rate</code> observations logged by THIS MCP since since_hours_ago. Sera doesn't publish OHLC — over time the MCP becomes its own price feed.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>base</code> <span class="badge-req">req</span> · <code>quote</code> <span class="badge-req">req</span></li>
+          <li><code>since_hours_ago</code> — lookback window (default 24)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ pair, observations: [{ rate, at }] }</code></pre></div>
       </div>
 
       <div class="tool" id="fx_volatility">
         <h3>sera.fx_volatility</h3>
-        <p class="summary">Annualized volatility computed over a window from logged history.</p>
+        <p class="summary">Stats over the fx_history window: mean, stdev, range_bps, annualized vol estimate.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>base</code> <span class="badge-req">req</span> · <code>quote</code> <span class="badge-req">req</span></li>
+          <li><code>since_hours_ago</code> — lookback window (default 24)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ pair, mean, stdev, range_bps, annualized_vol }</code></pre></div>
       </div>
 
       <div class="tool" id="corridor_pnl">
         <h3>sera.corridor_pnl</h3>
-        <p class="summary">Mark-to-market PnL on a notional position in a pair, using logged history as the price series.</p>
-      </div>
-
-      <!-- ============ ADMIN ============ -->
-      <div id="admin" class="group-header">
-        <span class="num">09</span><h2>Admin</h2>
-      </div>
-
-      <div class="tool" id="doctor">
-        <h3>sera.doctor</h3>
-        <p class="summary">One-call self-check. API health, network sanity, signer mode, policy summary, persistence state. Run this first whenever something looks off.</p>
+        <p class="summary">What would holding the long side of this pair have realized over the window? Mark-to-market on logged <code>/fx/rate</code>; excludes swap costs.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>base</code> <span class="badge-req">req</span> · <code>quote</code> <span class="badge-req">req</span></li>
+          <li><code>since_hours_ago</code> — lookback window (default 24)</li>
+        </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{
-  overall_ok: boolean,
-  checks: { sera_health, network_sanity, tokens_registry, signer_mode, policy },
-  policy: { preset, daily_volume_cap_usd, dry_run },
-  persistence: { history_db_present, path }
-}</code></pre></div>
+        <div class="codeblock"><pre><code>{ pair, pnl_pct, start_rate, end_rate }</code></pre></div>
+      </div>
+
+      <!-- ============ SIGNING & DEBUG ============ -->
+      <div id="signing" class="group-header">
+        <span class="num">11</span><h2>Signing &amp; debug</h2>
+      </div>
+
+      <div class="tool" id="verify_signature">
+        <h3>sera.verify_signature</h3>
+        <p class="summary">Round-trip a signed payload through Sera's <code>/verify-signature</code> endpoint — diagnose wallet-side signing issues (wrong domain, malformed typed-data, mismatched uuid_int) before burning a quote.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>owner_address</code> <span class="badge-req">req</span> · <code>side</code> <span class="badge-req">req</span> (<code>bid</code>|<code>ask</code>)</li>
+          <li><code>amount</code> <span class="badge-req">req</span> · <code>price</code> <span class="badge-req">req</span></li>
+          <li><code>from_address</code> <span class="badge-req">req</span> — base token · <code>to_address</code> <span class="badge-req">req</span> — quote token</li>
+          <li><code>order_id</code> <span class="badge-req">req</span> · <code>uuid_int</code> <span class="badge-req">req</span></li>
+          <li><code>signature</code> <span class="badge-req">req</span> · <code>expiration</code> <span class="badge-req">req</span></li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ valid, recovered_address, detail }</code></pre></div>
+      </div>
+
+      <div class="tool" id="permit_metadata">
+        <h3>sera.permit_metadata</h3>
+        <p class="summary">Whether a token supports EIP-2612 (<code>permit_supported</code>), the current owner→spender allowance, and — if supported — the EIP-2612 domain + next nonce.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>token</code> <span class="badge-req">req</span> — ERC-20 to check</li>
+          <li><code>owner</code> <span class="badge-req">req</span> — wallet that may sign permit</li>
+          <li><code>spender</code> <span class="badge-req">req</span> — allowance target (vault/sor)</li>
+          <li><code>amount</code> — raw amount to compare against allowance (adds <code>required</code>)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ permit_supported, allowance, domain?, nonce? }</code></pre></div>
       </div>
 
       <!-- ============ RESOURCES & PROMPTS ============ -->
       <div id="resources" class="group-header">
-        <span class="num">10</span><h2>MCP resources &amp; prompts</h2>
+        <span class="num">12</span><h2>MCP resources &amp; prompts</h2>
       </div>
 
       <div class="tool">
@@ -440,14 +891,14 @@
         </ul>
       </div>
 
-      <p class="mt-12 text-sm text-chalk-500">Source: <a href="https://github.com/sera-cx/sera-mcp" target="_blank" class="text-accent-400 hover:underline">github.com/sera-cx/sera-mcp</a>. Schema-validated against the running MCP. Last sync: v0.4.0.</p>
+      <p class="mt-12 text-sm text-chalk-500">Source: <a href="https://github.com/sera-cx/sera-mcp" target="_blank" class="text-accent-400 hover:underline">github.com/sera-cx/sera-mcp</a>. Schema-validated against the running MCP. Last sync: v0.8.3.</p>
 
     </main>
   </div>
 
   <footer class="border-t border-white/5 py-10">
     <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
-      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div class="font-mono">v0.8.3 · MIT · 52 tools live</div>
       <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
     </div>
   </footer>

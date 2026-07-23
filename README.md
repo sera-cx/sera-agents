@@ -59,7 +59,7 @@ sera-agents/
 
 Plus repo-root files: `LICENSE` (MIT), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.github/` (issue + PR templates).
 
-The MCP server itself lives in a separate repo: [sera-cx/sera-mcp](https://github.com/sera-cx/sera-mcp) — distributed independently. v0.5.0, 32 tools.
+The MCP server itself lives in a separate repo: [sera-cx/sera-mcp](https://github.com/sera-cx/sera-mcp) — distributed independently. v0.8.3, 52 tools.
 
 ## Path A — install the MCP
 

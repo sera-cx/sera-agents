@@ -129,7 +129,7 @@
                   │                           │
        ┌──────────▼──────────┐    ┌───────────▼──────────┐
        │  sera-mcp           │    │  x402-service         │
-       │  32 tools, stdio    │    │  Express, /x402/swap  │
+       │  52 tools, stdio    │    │  Express, /x402/swap  │
        │  JSON-RPC.          │    │  402 → pay → 200      │
        │  Policy + caps +    │    │  Wraps sera-mcp.      │
        │  signer + dry-run.  │    │                       │
@@ -161,7 +161,7 @@
       <p>The canonical interface to Sera Protocol state. Token registry, market catalog, FX rates, quote generation, execute. Every higher layer routes through this.</p>
 
       <h3>3. <code>sera-mcp</code> (the MCP)</h3>
-      <p>32 tools exposed over the Model Context Protocol — stdio JSON-RPC. Wraps the REST API with policy gates, daily volume caps, dry-run kill switch, EIP-712 quote→sign→execute flow, server-derived USD notional, uuid-route_params binding. Self-contained: no SDK, no signer, no key handling.</p>
+      <p>52 tools exposed over the Model Context Protocol — stdio JSON-RPC. Wraps the REST API with policy gates, daily volume caps, dry-run kill switch, EIP-712 quote→sign→execute flow, server-derived USD notional, uuid-route_params binding. Self-contained: no SDK, no signer, no key handling.</p>
       <p><strong>Why an MCP?</strong> Because every modern agent host (Claude, Cursor, ChatGPT, OpenClaw, Hermes, NanoClaw) speaks MCP natively. Three lines of config and your agent has 32 FX tools.</p>
 
       <h3>4. <code>x402-service</code> (HTTP wrapper)</h3>
@@ -225,7 +225,7 @@
       <h2 class="gradient-text">Repository layout</h2>
 
       <div class="codeblock my-6">
-<pre><code><span style="color:#7DF9C2">sera-mcp/</span>            <span style="color:#6B7180">— the MCP server itself (32 tools, CLI)</span>
+<pre><code><span style="color:#7DF9C2">sera-mcp/</span>            <span style="color:#6B7180">— the MCP server itself (52 tools, CLI)</span>
 <span style="color:#7DF9C2">sera-agents/</span>
 ├── <span style="color:#A4A89C">integrations/</span>     <span style="color:#6B7180">— per-host install snippets (11 hosts)</span>
 ├── <span style="color:#A4A89C">templates/</span>        <span style="color:#6B7180">— chat-cli · web-chat · webhook starters</span>
@@ -244,7 +244,7 @@
 
   <footer class="border-t border-white/5 py-10">
     <div class="max-w-7xl mx-auto px-5 lg:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-chalk-500">
-      <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+      <div class="font-mono">v0.8.3 · MIT · 52 tools live</div>
       <div>Built on <a href="https://docs.sera.cx" target="_blank" class="hover:text-chalk-300">Sera Protocol</a>.</div>
     </div>
   </footer>

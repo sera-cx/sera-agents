@@ -17,7 +17,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Sera for Agents" />
   <meta property="og:title" content="Sera for Agents — multi-currency settlement for AI agents" />
-  <meta property="og:description" content="Quote, convert, and settle across 40 stablecoins and 22 fiat currencies from any agent host. Open MCP, x402 endpoint, working templates. 32 tools live." />
+  <meta property="og:description" content="Quote, convert, and settle across 40 stablecoins and 22 fiat currencies from any agent host. Open MCP, x402 endpoint, working templates. 52 tools live." />
   <meta property="og:url" content="https://agents.sera.cx/" />
   <meta property="og:image" content="https://agents.sera.cx/og-image.png" />
   <meta property="og:image:width" content="1200" />
@@ -27,7 +27,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Sera for Agents — multi-currency settlement for AI agents" />
-  <meta name="twitter:description" content="Quote, convert, and settle across 40 stablecoins and 22 fiat currencies from any agent host. Open MCP, x402 endpoint, 32 tools live." />
+  <meta name="twitter:description" content="Quote, convert, and settle across 40 stablecoins and 22 fiat currencies from any agent host. Open MCP, x402 endpoint, 52 tools live." />
   <meta name="twitter:image" content="https://agents.sera.cx/og-image.png" />
   <meta name="twitter:image:alt" content="Sera for Agents — multi-currency settlement for AI agents" />
 
@@ -300,7 +300,7 @@
       <div class="max-w-4xl">
         <div class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-accent-400 bg-accent-500/5 border border-accent-500/20 rounded-full px-3 py-1.5 mb-7">
           <span class="w-1.5 h-1.5 rounded-full bg-accent-500 animate-pulse"></span>
-          v0.4.0 · open MCP · 32 tools live
+          v0.8.3 · open MCP · 52 tools live
         </div>
 
         <h1 class="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] gradient-text">
@@ -601,8 +601,8 @@
               <a href="docs/tutorials/ai-agent.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
                 <div class="flex items-center justify-between mb-4"><span class="num-badge">06</span><span class="cost-pill">15-min install</span></div>
                 <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">AI agent (any host)</h3>
-                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">The classic — an MCP-powered agent with the full 32-tool surface. Use the bundled Sera Agent or wire the MCP into Claude Code, Cursor, Hermes, OpenClaw, or your own host.</p>
-                <div class="logo-chain mb-4"><span class="logo-pill">MCP</span><span class="logo-pill">Claude / GPT</span><span class="logo-pill">32 tools</span></div>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">The classic — an MCP-powered agent with the full 52-tool surface. Use the bundled Sera Agent or wire the MCP into Claude Code, Cursor, Hermes, OpenClaw, or your own host.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">MCP</span><span class="logo-pill">Claude / GPT</span><span class="logo-pill">52 tools</span></div>
                 <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
               </a>
 
@@ -682,7 +682,7 @@
 
       <div class="mt-10 flex flex-wrap gap-3">
         <a href="docs/" class="border border-accent-500/40 text-accent-400 hover:text-accent-500 px-5 py-2.5 rounded-lg hover:border-accent-500/60 transition text-sm font-medium">Full docs →</a>
-        <a href="docs/api/" class="border border-white/10 text-chalk-300 hover:text-chalk-50 px-5 py-2.5 rounded-lg hover:border-white/30 transition text-sm font-medium">API reference (32 tools)</a>
+        <a href="docs/api/" class="border border-white/10 text-chalk-300 hover:text-chalk-50 px-5 py-2.5 rounded-lg hover:border-white/30 transition text-sm font-medium">API reference (52 tools)</a>
         <a href="docs/recipes.html" class="border border-white/10 text-chalk-300 hover:text-chalk-50 px-5 py-2.5 rounded-lg hover:border-white/30 transition text-sm font-medium">Copy-paste recipes</a>
       </div>
     </div>
@@ -940,7 +940,7 @@
   <section id="tools" class="py-20 sm:py-24 border-t border-white/5">
     <div class="max-w-7xl mx-auto px-5 lg:px-6">
       <div class="max-w-3xl mb-10">
-        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">32 tools, organized</div>
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">52 tools, organized</div>
         <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
           Every primitive an<br/>FX-native agent needs.
         </h2>
@@ -954,12 +954,12 @@
           <summary>
             <div>
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Discovery</span>
-              <span class="acc-title font-medium text-chalk-300">2 tools — list_currencies · get_markets</span>
+              <span class="acc-title font-medium text-chalk-300">3 tools — list_currencies · get_markets · doctor</span>
             </div>
             <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
-            Live token registry from Sera's <code class="font-mono text-accent-400">/tokens</code> (40 stablecoins) and the active trading-pair catalog (780+ pairs). Pair existence ≠ tradeable now — use <code class="font-mono text-accent-400">scan_markets</code> to find what's actually quotable.
+            Live token registry from Sera's <code class="font-mono text-accent-400">/tokens</code> (40 stablecoins) and the active-market catalog. Pair existence ≠ tradeable now — use <code class="font-mono text-accent-400">scan_markets</code> to find what's actually quotable. <code class="font-mono text-accent-400">doctor</code> is a one-call self-check — API health, network sanity, signer mode, policy summary.
           </div>
         </details>
 
@@ -980,38 +980,51 @@
           <summary>
             <div>
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Liquidity probing</span>
-              <span class="acc-title font-medium text-chalk-300">5 tools — scan_markets · find_deals · probe_depth · round_trip_cost · infer_book</span>
+              <span class="acc-title font-medium text-chalk-300">9 tools — scan_markets · find_deals · maker_quote_ladder · probe_depth · round_trip_cost · infer_book · market_health · fx_quote_diff · compare_corridors</span>
             </div>
             <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
-            <code class="font-mono text-accent-400">find_deals</code> is the headline: scans markets in parallel, diffs each against external mid, ranks the deals. <code class="font-mono text-accent-400">probe_depth</code> characterizes price impact at a size ladder. <code class="font-mono text-accent-400">round_trip_cost</code> reveals the maker hedge floor. <code class="font-mono text-accent-400">infer_book</code> reconstructs a synthetic order book that isn't published as a primitive.
+            <code class="font-mono text-accent-400">find_deals</code> is the headline: scans markets in parallel, diffs each against external mid, ranks the deals. <code class="font-mono text-accent-400">probe_depth</code> characterizes price impact at a size ladder; <code class="font-mono text-accent-400">round_trip_cost</code> reveals the maker hedge floor; <code class="font-mono text-accent-400">infer_book</code> reconstructs a synthetic order book. <code class="font-mono text-accent-400">market_health</code> checks corridor quotability, <code class="font-mono text-accent-400">fx_quote_diff</code> shows the reference-vs-executable gap, <code class="font-mono text-accent-400">compare_corridors</code> ranks source corridors for a target output, and <code class="font-mono text-accent-400">maker_quote_ladder</code> projects maker earnings across a 5→200 bps ladder.
           </div>
         </details>
 
         <details class="acc">
           <summary>
             <div>
-              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Quote &amp; execute</span>
-              <span class="acc-title font-medium text-chalk-300">7 tools — get_quote · prepare_swap · execute_swap · convert_and_send · quote_recipient_amount · find_cheapest_settlement_path · limit_watcher</span>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Quote &amp; plan</span>
+              <span class="acc-title font-medium text-chalk-300">6 tools — get_quote · prepare_swap · quote_recipient_amount · find_cheapest_settlement_path · batch_quote · limit_watcher</span>
             </div>
             <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
-            Single-use quote + EIP-712 Intent. Pass <code class="font-mono text-accent-400">simulate:true</code> on <code class="font-mono text-accent-400">get_quote</code> to probe with no wallet. <code class="font-mono text-accent-400">execute_swap</code> enforces uuid binding + server-derived USD notional caps. <code class="font-mono text-accent-400">limit_watcher</code> polls until target rate hits — patient quote pattern.
+            Single-use quote + EIP-712 Intent (<code class="font-mono text-accent-400">get_quote</code> / <code class="font-mono text-accent-400">prepare_swap</code>) — pass <code class="font-mono text-accent-400">simulate:true</code> to probe with no wallet. <code class="font-mono text-accent-400">quote_recipient_amount</code> inverts it — the input required for an exact target output. <code class="font-mono text-accent-400">find_cheapest_settlement_path</code> picks the cheapest source; <code class="font-mono text-accent-400">batch_quote</code> fetches up to 50 in one round-trip; <code class="font-mono text-accent-400">limit_watcher</code> polls until a target rate hits.
           </div>
         </details>
 
         <details class="acc">
           <summary>
             <div>
-              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Maker</span>
-              <span class="acc-title font-medium text-chalk-300">1 tool — maker_quote_ladder</span>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Execution</span>
+              <span class="acc-title font-medium text-chalk-300">2 tools — execute_swap · convert_and_send</span>
             </div>
             <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
-            Spread-ladder calculator. Given a pair + notional + (optional) mid, returns earnings at 5/10/15/25/50/100/200 bps with notes on each tier. Mid auto-fetched from multi-source median by default.
+            <code class="font-mono text-accent-400">execute_swap</code> submits the signed swap (destructive) with uuid binding + server-derived USD notional caps. <code class="font-mono text-accent-400">convert_and_send</code> quotes, executes, and delivers in one call — local-signer mode only. Both are gated behind <code class="font-mono text-accent-400">SERA_ENABLE_EXECUTION_TOOLS</code> and enforce the policy caps.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Maker &amp; orders</span>
+              <span class="acc-title font-medium text-chalk-300">9 tools — place_order · cancel_order · cancel_all_orders · place_vl_batch · cancel_vl_batch · get_order · list_orders · get_fills · get_fills_for_order</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            Full CLOB order lifecycle. <code class="font-mono text-accent-400">place_order</code> submits an agent-signed limit order; <code class="font-mono text-accent-400">place_vl_batch</code> posts a capital-efficient multi-pair Virtual Liquidity batch. <code class="font-mono text-accent-400">cancel_order</code> / <code class="font-mono text-accent-400">cancel_all_orders</code> / <code class="font-mono text-accent-400">cancel_vl_batch</code> retire them. <code class="font-mono text-accent-400">get_order</code>, <code class="font-mono text-accent-400">list_orders</code>, <code class="font-mono text-accent-400">get_fills</code>, <code class="font-mono text-accent-400">get_fills_for_order</code> read status and fills. Requires <code class="font-mono text-accent-400">SERA_API_KEY</code>.
           </div>
         </details>
 
@@ -1019,25 +1032,38 @@
           <summary>
             <div>
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Treasury</span>
-              <span class="acc-title font-medium text-chalk-300">5 tools — get_balances · treasury_value · exposure_report · rebalance_plan · pay_invoice</span>
+              <span class="acc-title font-medium text-chalk-300">6 tools — get_balances · treasury_value · exposure_report · rebalance_plan · pay_invoice · settlement_status</span>
             </div>
             <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
-            Multi-wallet aggregation, currency exposure breakdown, target-weight rebalance planner, and <code class="font-mono text-accent-400">pay_invoice</code> — "I owe X in currency Y, what's the cheapest source asset?" Requires <code class="font-mono text-accent-400">SERA_API_KEY</code>.
+            Multi-wallet aggregation (<code class="font-mono text-accent-400">get_balances</code>, <code class="font-mono text-accent-400">treasury_value</code>), currency <code class="font-mono text-accent-400">exposure_report</code>, target-weight <code class="font-mono text-accent-400">rebalance_plan</code>, and <code class="font-mono text-accent-400">pay_invoice</code> — "I owe X in currency Y, what's the cheapest source asset?" <code class="font-mono text-accent-400">settlement_status</code> tracks a trade through Sera's <code class="font-mono text-accent-400">/orders</code>. Requires <code class="font-mono text-accent-400">SERA_API_KEY</code>.
           </div>
         </details>
 
         <details class="acc">
           <summary>
             <div>
-              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Settlement</span>
-              <span class="acc-title font-medium text-chalk-300">1 tool — settlement_status</span>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Account &amp; funds</span>
+              <span class="acc-title font-medium text-chalk-300">5 tools — build_approve · build_deposit · build_transfer · send_tx · send_transfer</span>
             </div>
             <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
-            Query Sera's <code class="font-mono text-accent-400">/orders</code> for trade history or a specific trade. Filter by <code class="font-mono text-accent-400">trade_id</code>, <code class="font-mono text-accent-400">uuid</code>, <code class="font-mono text-accent-400">owner_address</code>. Requires <code class="font-mono text-accent-400">SERA_API_KEY</code>.
+            Build the unsigned transactions for the on-chain leg — ERC-20 <code class="font-mono text-accent-400">build_approve</code>, vault <code class="font-mono text-accent-400">build_deposit</code> (optionally with an EIP-2612 permit), and <code class="font-mono text-accent-400">build_transfer</code> — then broadcast the signed result with <code class="font-mono text-accent-400">send_tx</code> / <code class="font-mono text-accent-400">send_transfer</code>. The agent signs; nothing is custodial.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Withdraw</span>
+              <span class="acc-title font-medium text-chalk-300">3 tools — withdraw_request · withdraw_build · withdraw_send</span>
+            </div>
+            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            The staged non-custodial withdrawal flow — <code class="font-mono text-accent-400">withdraw_request</code> gets an executor co-signature, <code class="font-mono text-accent-400">withdraw_build</code> constructs the unsigned tx, and <code class="font-mono text-accent-400">withdraw_send</code> broadcasts the signed one. Funds leave the Vault only under a signature you produce.
           </div>
         </details>
 
@@ -1057,13 +1083,13 @@
         <details class="acc">
           <summary>
             <div>
-              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Admin</span>
-              <span class="acc-title font-medium text-chalk-300">1 tool — doctor</span>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Signing &amp; debug</span>
+              <span class="acc-title font-medium text-chalk-300">2 tools — verify_signature · permit_metadata</span>
             </div>
             <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
-            One-call self-check. API health, network sanity, signer mode, policy summary, persistence state. Run this first whenever something looks off.
+            <code class="font-mono text-accent-400">verify_signature</code> tests an EIP-712 signature without placing an order; <code class="font-mono text-accent-400">permit_metadata</code> checks EIP-2612 permit support for a token before you build a gasless deposit. Dry-run helpers for wiring up signing.
           </div>
         </details>
       </div>
@@ -1198,7 +1224,7 @@
         Multi-currency settlement,<br/><span class="accent-text">made native.</span>
       </h2>
       <p class="mt-5 text-base sm:text-lg text-chalk-300 max-w-2xl mx-auto">
-        32 tools. Every major agent host. The MCP is open source. Sera Protocol charges only on actual swap settlement, on-chain.
+        52 tools. Every major agent host. The MCP is open source. Sera Protocol charges only on actual swap settlement, on-chain.
       </p>
       <div class="mt-9 flex flex-wrap gap-3 justify-center">
         <a href="#paths" class="bg-accent-500 text-ink-950 font-semibold px-7 py-3 rounded-lg hover:bg-accent-400 transition">
@@ -1260,7 +1286,7 @@
       </div>
 
       <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-chalk-500">
-        <div class="font-mono">v0.4.0 · MIT · 32 tools live</div>
+        <div class="font-mono">v0.8.3 · MIT · 52 tools live</div>
         <div>Built on <a href="https://docs.sera.cx" target="_blank" rel="noopener" class="hover:text-chalk-300">Sera Protocol</a>.</div>
       </div>
     </div>
