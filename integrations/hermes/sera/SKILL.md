@@ -1,6 +1,6 @@
 ---
 name: sera
-description: Multi-currency settlement skill — quote, swap, and settle across 40+ stablecoins via Sera Protocol.
+description: Multi-currency settlement skill — quote, swap, and settle across 40 stablecoins via Sera Protocol.
 version: 0.4.0
 author: Sera Protocol
 mcp_server:
@@ -13,7 +13,7 @@ mcp_server:
 
 # Sera — multi-currency settlement skill
 
-This skill gives Hermes the ability to quote and execute stablecoin FX across 40+ tokens and 20+ fiat currencies via the Sera Protocol.
+This skill gives Hermes the ability to quote and execute stablecoin FX across 40 tokens and 22 fiat currencies via the Sera Protocol.
 
 ## When to use this skill
 

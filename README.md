@@ -6,7 +6,7 @@
 
 **Who this is for:** developers integrating Sera into an existing agent product, picking up a template to ship fast, or wiring up a protocol-level x402 endpoint for agent-to-agent FX delivery.
 
-Multi-currency settlement infrastructure for AI agents. Quote, convert, and settle across 40+ stablecoins and 20+ fiat currencies — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more — through an open Model Context Protocol server, three starter templates, a complete bundled agent, and a protocol-level x402 endpoint.
+Multi-currency settlement infrastructure for AI agents. Quote, convert, and settle across 40 stablecoins and 22 fiat currencies — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more — through an open Model Context Protocol server, three starter templates, a complete bundled agent, and a protocol-level x402 endpoint.
 
 For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.md`](SECURITY-MODEL.md), and [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -153,7 +153,7 @@ Sera complements single-currency agent rails rather than replacing them. Use any
 
 | | Single-currency rails | Sera for Agents |
 |---|---|---|
-| Stablecoins | Typically one | 40+ across 20+ fiats |
+| Stablecoins | Typically one | 40 across 22 fiats |
 | FX | Not supported | Atomic, smart-routed |
 | Recipient settles in | Issuer's currency only | Any supported currency |
 | Integration | Hosted SDK / API | Open MCP, four paths above |

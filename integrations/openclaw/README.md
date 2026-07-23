@@ -62,7 +62,7 @@ Skeleton:
 {
   "id": "sera",
   "name": "Sera Multi-Currency Settlement",
-  "description": "Quote, swap, treasury, FX analytics across 40+ stablecoins.",
+  "description": "Quote, swap, treasury, FX analytics across 40 stablecoins.",
   "version": "0.4.0",
   "channel": { "id": "sera" },
   "install": { "npmSpec": "@openclaw/sera" },

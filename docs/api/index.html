@@ -148,7 +148,7 @@
         <div class="label">Params</div>
         <ul class="params"><li>None</li></ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ markets: [{ pair, base, quote, ... }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ count, markets: [{ pair, base, quote, ... }] }</code></pre></div>
       </div>
 
       <div class="tool" id="doctor">
@@ -186,7 +186,7 @@
           <li><code>quote</code> <span class="badge-req">req</span> — ISO fiat or token symbol</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ sera_rate, external_rate, deviation_bps, external_source }</code></pre></div>
+        <div class="codeblock"><pre><code>{ pair, sera_rate, external: { source, rate, as_of }, deviation_bps, direction, ... }</code></pre></div>
       </div>
 
       <div class="tool" id="multi_source_mid">
@@ -198,7 +198,7 @@
           <li><code>quote</code> <span class="badge-req">req</span> — ISO fiat or token symbol</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ median, sources: [{ name, rate }], range_bps }</code></pre></div>
+        <div class="codeblock"><pre><code>{ base, quote, sources: [{ source, rate, as_of }], median, range_bps }</code></pre></div>
       </div>
 
       <div class="tool" id="spread_radar">
@@ -212,7 +212,7 @@
           <li><code>include_triangles</code> — skip triangular checks when false (default true)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ pair_alerts: [...], triangle_alerts: [...] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ currencies, thresholds, summary, spreads, triangles, alerts, errors }</code></pre></div>
       </div>
 
       <!-- ============ LIQUIDITY ============ -->
@@ -233,7 +233,7 @@
           <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ scanned, quotable: [{ pair, rate }], skipped: [{ pair, reason }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ summary: { pairs_tried, quotable_count, skipped_count, ... }, quotable, skipped }</code></pre></div>
       </div>
 
       <div class="tool" id="find_deals">
@@ -249,7 +249,7 @@
           <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ good_sell: [...], good_buy: [...], fair: [...] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ summary, good_sell: [...], good_buy: [...], fair: [...], skipped, note }</code></pre></div>
       </div>
 
       <div class="tool" id="maker_quote_ladder">
@@ -265,7 +265,7 @@
           <li><code>spreads_bps</code> — spreads to ladder (default [5,10,15,25,50,100,200])</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ pair, mid, ladder: [{ spread_bps, earnings }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ pair, base_fiat, quote_fiat, role, notional, mid, mid_source, ladder: [{ spread_bps, quote_price, earned, ... }], reference, interpretation }</code></pre></div>
       </div>
 
       <div class="tool" id="probe_depth">
@@ -278,7 +278,7 @@
           <li><code>gas_mode</code> · <code>max_concurrency</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ from, to, points: [{ size, rate, impact_bps }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ pair, gas_mode, quotes: [{ size, output, rate }], price_impact: [{ size, impact_bps }], notes }</code></pre></div>
       </div>
 
       <div class="tool" id="round_trip_cost">
@@ -291,7 +291,7 @@
           <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ from, to, loss, round_trip_bps }</code></pre></div>
+        <div class="codeblock"><pre><code>{ pair, gas_mode, outbound, return, round_trip_loss_human, round_trip_loss_bps, interpretation }</code></pre></div>
       </div>
 
       <div class="tool" id="infer_book">
@@ -304,7 +304,7 @@
           <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ pair, bids: [...], asks: [...], synthetic_spread_bps }</code></pre></div>
+        <div class="codeblock"><pre><code>{ pair, best_bid, best_ask, spread_bps, bids: [...], asks: [...], notes }</code></pre></div>
       </div>
 
       <div class="tool" id="market_health">
@@ -329,7 +329,7 @@
           <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ pair, reference_rate, executable_rate, deviation_bps }</code></pre></div>
+        <div class="codeblock"><pre><code>{ pair, fiat_pair, notional, reference_rate, executable_rate, executable_output, deviation_bps, gas_mode, interpretation }</code></pre></div>
       </div>
 
       <div class="tool" id="compare_corridors">
@@ -343,7 +343,7 @@
           <li><code>max_concurrency</code> · <code>gas_mode</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ target, ranked: [{ source, usd_cost, rate }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ target, gas_mode, ranked, failed, cheapest, summary }</code></pre></div>
       </div>
 
       <!-- ============ QUOTE & PLAN ============ -->
@@ -366,7 +366,7 @@
           <li><code>simulate</code> — read-only probe with burn address (default false)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ uuid, route_params, expected_out, fees, expiry }</code></pre></div>
+        <div class="codeblock"><pre><code>{ uuid, route_params, fee_breakdown, expires_at, permit, from, to, human, estimated_usd_notional, ... }</code></pre></div>
       </div>
 
       <div class="tool" id="prepare_swap">
@@ -378,7 +378,7 @@
           <li><code>owner_address</code> · <code>recipient</code> · <code>gas_mode</code> · <code>expiration_seconds</code> · <code>simulate</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ uuid, route_params, expected_out, fees, expiry }</code></pre></div>
+        <div class="codeblock"><pre><code>{ uuid, route_params, fee_breakdown, expires_at, permit, from, to, human, estimated_usd_notional, ... }</code></pre></div>
       </div>
 
       <div class="tool" id="quote_recipient_amount">
@@ -393,7 +393,7 @@
           <li><code>recipient</code> — destination address</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ required_input, quote, effective_rate }</code></pre></div>
+        <div class="codeblock"><pre><code>{ estimated_input_human, quote, target_recipient_amount }</code></pre></div>
       </div>
 
       <div class="tool" id="find_cheapest_settlement_path">
@@ -406,7 +406,7 @@
           <li><code>owner_address</code> <span class="badge-req">req</span></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ candidates: [{ gas_mode, min_output, uuid }], cheapest }</code></pre></div>
+        <div class="codeblock"><pre><code>{ ranked: [{ label, uuid, input, min_output, fee_breakdown }] }</code></pre></div>
       </div>
 
       <div class="tool" id="batch_quote">
@@ -417,7 +417,7 @@
           <li><code>quotes</code> <span class="badge-req">req</span> — array of 1–50 <code>{ from, to, amount, owner_address?, recipient?, gas_mode?, expiration_seconds?, simulate? }</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ results: [{ ok, uuid, route_params, ... } | { ok:false, error }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ items: [{ ok, quote, error }] }</code></pre></div>
       </div>
 
       <div class="tool" id="limit_watcher">
@@ -433,7 +433,7 @@
           <li><code>gas_mode</code> — <code>receive_less</code> | <code>pay_more</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ hit, quote?, probes: [{ attempt, rate }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ pair, side, target_rate, amount, attempts, hit, last_rate, hit_probe, probes, next_step }</code></pre></div>
       </div>
 
       <!-- ============ EXECUTION ============ -->
@@ -453,7 +453,7 @@
           <li><code>permit_deadline</code> — permit deadline (required iff permit_signature given)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ trade_id, tx_hash, status, delivered }</code></pre></div>
+        <div class="codeblock"><pre><code>{ success, trade_id, server_estimated_usd_notional, ...upstream Sera /swap response }</code></pre></div>
       </div>
 
       <div class="tool" id="convert_and_send">
@@ -467,7 +467,7 @@
           <li><code>gas_mode</code> — <code>receive_less</code> (default) | <code>pay_more</code></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ trade_id, tx_hash, delivered, recipient }</code></pre></div>
+        <div class="codeblock"><pre><code>{ quote, execution }</code></pre></div>
       </div>
 
       <!-- ============ MAKER & ORDERS ============ -->
@@ -491,7 +491,7 @@
           <li><code>uuid_int</code> <span class="badge-req">req</span> · <code>signature</code> <span class="badge-req">req</span> · <code>expiration</code> <span class="badge-req">req</span></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ order_id, status }</code></pre></div>
+        <div class="codeblock"><pre><code>{ order_id }</code></pre></div>
       </div>
 
       <div class="tool" id="cancel_order">
@@ -505,7 +505,7 @@
           <li><code>signature</code> <span class="badge-req">req</span></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ order_id, status }</code></pre></div>
+        <div class="codeblock"><pre><code>{ status }</code></pre></div>
       </div>
 
       <div class="tool" id="cancel_all_orders">
@@ -516,7 +516,7 @@
           <li><code>owner_address</code> <span class="badge-req">req</span> — must match the authenticated API-key owner</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ cancelled: [...], failed: [...], skipped_cooldown: [...] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ cancelled: [...], failed: [...], skipped_cooldown: [...], total }</code></pre></div>
       </div>
 
       <div class="tool" id="place_vl_batch">
@@ -527,7 +527,7 @@
           <li><code>orders</code> <span class="badge-req">req</span> — array of 2–50 signed orders (same owner_address + fromToken; shared VL group_id; sequential leg_id 0,1,2…)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ vl_batch_id, orders: [{ order_id, status }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ order_ids, amendments, cancelled, fills, vl_group }</code></pre></div>
       </div>
 
       <div class="tool" id="cancel_vl_batch">
@@ -540,7 +540,7 @@
           <li><code>signature</code> <span class="badge-req">req</span></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ vl_batch_id, status }</code></pre></div>
+        <div class="codeblock"><pre><code>{ status }</code></pre></div>
       </div>
 
       <div class="tool" id="get_order">
@@ -551,7 +551,7 @@
           <li><code>order_id</code> <span class="badge-req">req</span></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ order, settlement_summary, settlement_economics }</code></pre></div>
+        <div class="codeblock"><pre><code>{ ...upstream Sera GET /orders/{order_id} record }</code></pre></div>
       </div>
 
       <div class="tool" id="list_orders">
@@ -608,7 +608,7 @@
           <li><code>owner_address</code> <span class="badge-req">req</span> — wallet to query</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ owner_address, wallet: [...], vault: [...] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ owner_address, balances: [{ symbol, wallet, vault_available, vault_frozen, raw }] }</code></pre></div>
       </div>
 
       <div class="tool" id="treasury_value">
@@ -621,7 +621,7 @@
           <li><code>include_zero</code> — include zero-balance lines (default false)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ total_value, target_currency, wallets: [...], exposure: [...] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ target_currency, total_value, wallets: [...], exposure_breakdown: [...] }</code></pre></div>
       </div>
 
       <div class="tool" id="exposure_report">
@@ -633,7 +633,7 @@
           <li><code>target_currency</code> — ISO fiat to value in (default USD)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ total_value, exposure: [{ currency, value, pct }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ target_currency, total_value, exposure: [{ fiat, value_in_target, pct }] }</code></pre></div>
       </div>
 
       <div class="tool" id="rebalance_plan">
@@ -647,7 +647,7 @@
           <li><code>min_trade_value</code> — skip trades below this (default 10)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ current_weights, trades: [{ from, to, amount }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ target_currency, total_value, target_weights_normalized, drift, trades: [{ from_fiat, to_fiat, value_in_target, note }], next_step }</code></pre></div>
       </div>
 
       <div class="tool" id="pay_invoice">
@@ -662,7 +662,7 @@
           <li><code>target_symbol</code> — specific output token</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ cheapest: { source, usd_cost, quote }, ranked: [...] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ invoice, ranked, failed, cheapest }</code></pre></div>
       </div>
 
       <div class="tool" id="settlement_status">
@@ -673,7 +673,7 @@
           <li><code>trade_id</code> · <code>uuid</code> · <code>owner_address</code> · <code>status</code> · <code>limit</code> — all optional filters</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ orders: [{ trade_id, uuid, status, ... }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ filters_used, result, note }</code></pre></div>
       </div>
 
       <!-- ============ ACCOUNT & FUNDS ============ -->
@@ -760,7 +760,7 @@
           <li><code>user_signature</code> <span class="badge-req">req</span> — EIP-712 sig over the intent</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ executor, executor_signature }</code></pre></div>
+        <div class="codeblock"><pre><code>{ success, executor_address, executor_signature, error }</code></pre></div>
       </div>
 
       <div class="tool" id="withdraw_build">
@@ -802,7 +802,7 @@
           <li><code>since_hours_ago</code> — lookback window (default 24)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ pair, observations: [{ rate, at }] }</code></pre></div>
+        <div class="codeblock"><pre><code>{ enabled, pair, since_hours_ago, observation_count, observations }</code></pre></div>
       </div>
 
       <div class="tool" id="fx_volatility">
@@ -814,7 +814,7 @@
           <li><code>since_hours_ago</code> — lookback window (default 24)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ pair, mean, stdev, range_bps, annualized_vol }</code></pre></div>
+        <div class="codeblock"><pre><code>{ enabled, pair, window_hours, observation_count, stats: { mean, stdev, min, max, range_bps, annualized_volatility_estimate }, note }</code></pre></div>
       </div>
 
       <div class="tool" id="corridor_pnl">
@@ -826,7 +826,7 @@
           <li><code>since_hours_ago</code> — lookback window (default 24)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ pair, pnl_pct, start_rate, end_rate }</code></pre></div>
+        <div class="codeblock"><pre><code>{ enabled, pair, window_hours, first_rate, last_rate, drift_absolute, drift_bps, quote_observation_count, ... }</code></pre></div>
       </div>
 
       <!-- ============ SIGNING & DEBUG ============ -->
@@ -846,7 +846,7 @@
           <li><code>signature</code> <span class="badge-req">req</span> · <code>expiration</code> <span class="badge-req">req</span></li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ valid, recovered_address, detail }</code></pre></div>
+        <div class="codeblock"><pre><code>{ valid, recovered_address, expected_address, error }</code></pre></div>
       </div>
 
       <div class="tool" id="permit_metadata">
@@ -860,7 +860,7 @@
           <li><code>amount</code> — raw amount to compare against allowance (adds <code>required</code>)</li>
         </ul>
         <div class="label">Returns</div>
-        <div class="codeblock"><pre><code>{ permit_supported, allowance, domain?, nonce? }</code></pre></div>
+        <div class="codeblock"><pre><code>{ permit_supported, token, owner, spender, current_allowance_raw, nonce?, domain? }</code></pre></div>
       </div>
 
       <!-- ============ RESOURCES & PROMPTS ============ -->
