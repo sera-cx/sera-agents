@@ -1,4 +1,11 @@
-export const OPENAPI_DOC = {
+import { PROXY_TOOLS } from "./proxy-tools.js";
+
+export const OPENAPI_DOC: {
+  openapi: string;
+  info: unknown;
+  servers: unknown;
+  paths: Record<string, unknown>;
+} = {
   openapi: "3.1.0",
   info: {
     title: "Sera Protocol API",
@@ -152,4 +159,35 @@ export const OPENAPI_DOC = {
       },
     },
   },
-} as const;
+};
+
+// Keyless read/analytics tools (proxy-tools.ts). Their exact input fields are
+// validated upstream by sera-mcp and advertised in full on the MCP endpoint's
+// inputSchema; here each gets a POST path with a permissive object body so the
+// OpenAPI doc stays a faithful (if lighter) mirror of what's callable.
+for (const t of PROXY_TOOLS) {
+  const properties = Object.fromEntries(Object.keys(t.shape).map((k) => [k, {}]));
+  OPENAPI_DOC.paths[`/${t.name}`] = {
+    post: {
+      operationId: t.name,
+      summary: t.summary,
+      description: `Keyless. Forwards to sera-mcp ${t.upstream}; see the /mcp inputSchema for full field types.`,
+      ...(Object.keys(properties).length > 0
+        ? {
+            requestBody: {
+              required: true,
+              content: {
+                "application/json": { schema: { type: "object", properties } },
+              },
+            },
+          }
+        : {}),
+      responses: {
+        "200": {
+          description: "Tool result (shape mirrors the sera-mcp tool).",
+          content: { "application/json": { schema: { type: "object" } } },
+        },
+      },
+    },
+  };
+}

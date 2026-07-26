@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Handlers } from "./handlers.js";
 import { GatewayError } from "./errors.js";
+import { PROXY_TOOLS } from "./proxy-tools.js";
 
 const PairsSchema = {
   pairs: z
@@ -90,6 +91,22 @@ export function buildMcpServer(handlers: Handlers): McpServer {
     "List supported FX corridors, currencies, and liquidity depth.",
     async () => run(() => handlers.corridors()),
   );
+
+  // Keyless read/analytics tools mirrored from sera-mcp (see proxy-tools.ts).
+  // No-input tools register with the 3-arg overload; the rest pass their shape.
+  for (const t of PROXY_TOOLS) {
+    const hasInput = Object.keys(t.shape).length > 0;
+    if (hasInput) {
+      (server.tool as any)(
+        t.name,
+        t.summary,
+        t.shape,
+        async (args: Record<string, unknown>) => run(() => handlers.proxy(t.upstream, args ?? {})),
+      );
+    } else {
+      (server.tool as any)(t.name, t.summary, async () => run(() => handlers.proxy(t.upstream, {})));
+    }
+  }
 
   (server.tool as any)(
     "rates",

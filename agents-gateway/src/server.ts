@@ -9,6 +9,7 @@ import { makeQuoteCache } from "./quote-cache.js";
 import { makeHandlers } from "./handlers.js";
 import { OPENAPI_DOC } from "./openapi.js";
 import { buildMcpServer, handleMcpRequest } from "./mcp.js";
+import { PROXY_TOOLS } from "./proxy-tools.js";
 import { GatewayError } from "./errors.js";
 import type { Context } from "hono";
 
@@ -130,6 +131,30 @@ app.post("/settle", jsonBodyLimit, async (c) => {
     return failure(c, e, "settle failed");
   }
 });
+
+// Keyless read/analytics tools (proxy-tools.ts) as POST /<name>. Body is
+// validated against the tool's Zod shape, then forwarded to sera-mcp. Structured
+// inputs (arrays, numbers) make POST+JSON the right fit over query params.
+for (const t of PROXY_TOOLS) {
+  const schema = z.object(t.shape);
+  app.post(`/${t.name}`, jsonBodyLimit, async (c) => {
+    let body: unknown = {};
+    if (Object.keys(t.shape).length > 0) {
+      try {
+        body = await c.req.json();
+      } catch {
+        return c.json({ error: "invalid JSON body" }, 400);
+      }
+    }
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) return c.json({ error: parsed.error.message }, 400);
+    try {
+      return c.json((await handlers.proxy(t.upstream, parsed.data)) as object);
+    } catch (e: any) {
+      return failure(c, e, `${t.name} failed`);
+    }
+  });
+}
 
 app.notFound((c) => c.json({ error: "not found" }, 404));
 

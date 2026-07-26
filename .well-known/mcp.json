@@ -4,8 +4,14 @@
     "sera": {
       "type": "http",
       "url": "https://agents.sera.cx/mcp",
-      "description": "Sera FX gateway: fx_quote, fx_settle, corridors, rates.",
-      "tools": ["fx_quote", "fx_settle", "corridors", "rates"]
+      "description": "Sera FX gateway (keyless): quote + settlement-intent, plus reference rates, corridors, and the read/analytics suite (deals, spread radar, depth, corridor comparison).",
+      "tools": [
+        "fx_quote", "fx_settle", "corridors", "rates",
+        "markets", "mid", "compare_fx", "market_health", "spread_radar",
+        "find_deals", "scan_markets", "probe_depth", "round_trip_cost",
+        "fx_quote_diff", "compare_corridors", "maker_quote_ladder",
+        "quote_recipient_amount"
+      ]
     }
   }
 }

@@ -198,7 +198,18 @@ export function makeHandlers(mcp: SeraMcpClient, cache: QuoteCache) {
     return { typed_data: prepared.route_params };
   }
 
-  return { rates, corridors, quote, settle };
+  /**
+   * Generic passthrough for the keyless read/analytics tools declared in
+   * proxy-tools.ts. Validation happened at the edge (Zod shape) for both the
+   * REST route and the MCP tool; here we just forward to the upstream sera-mcp
+   * tool. Upstream errors surface exactly like the bespoke handlers (429 throttle
+   * → GatewayError, anything else → 502).
+   */
+  async function proxy(upstream: string, args: Record<string, unknown>): Promise<unknown> {
+    return mcp.callTool(upstream, args);
+  }
+
+  return { rates, corridors, quote, settle, proxy };
 }
 
 export type Handlers = ReturnType<typeof makeHandlers>;
