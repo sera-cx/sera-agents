@@ -12,6 +12,12 @@
         "fx_quote_diff", "compare_corridors", "maker_quote_ladder",
         "quote_recipient_amount"
       ]
+    },
+    "sera-local": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "sera-mcp"],
+      "description": "Full Sera MCP (~55 tools incl. treasury, orders, execution) run locally via npx. Node 18+. Uses your own signer/API key."
     }
   }
 }

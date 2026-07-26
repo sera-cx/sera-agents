@@ -63,6 +63,17 @@ The MCP server itself lives in a separate repo: [sera-cx/sera-mcp](https://githu
 
 ## Path A — install the MCP
 
+[![Add to Cursor](https://img.shields.io/badge/Add_to-Cursor-000?style=flat-square&logo=cursor)](cursor://anysphere.cursor-deeplink/mcp/install?name=sera&config=eyJ1cmwiOiJodHRwczovL2FnZW50cy5zZXJhLmN4L21jcCJ9)
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](vscode:mcp/install?%7B%22name%22%3A%22sera%22%2C%22url%22%3A%22https%3A//agents.sera.cx/mcp%22%7D)
+
+**Fastest — remote, keyless (17 tools: quote/settle-intent, rates, corridors, deal-scanning + analytics).** No install:
+
+```bash
+claude mcp add --transport http sera https://agents.sera.cx/mcp
+```
+
+**Full server — local stdio (~55 tools incl. treasury, orders, execution; your own signer/key):**
+
 ```bash
 git clone https://github.com/sera-cx/sera-mcp
 cd sera-mcp
@@ -74,7 +85,7 @@ claude mcp add sera --scope user \
   -- node $(pwd)/dist/index.js
 ```
 
-Verify in any agent session: `Call sera.doctor`.
+Verify in any agent session: `Call sera.doctor`. For other hosts and agent frameworks see [`integrations/frameworks.md`](integrations/frameworks.md) and [`DISTRIBUTION.md`](DISTRIBUTION.md).
 
 ## Path B — build from a template
 

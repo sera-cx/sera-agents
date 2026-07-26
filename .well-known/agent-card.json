@@ -1,0 +1,59 @@
+{
+  "protocolVersion": "1.0",
+  "name": "Sera FX",
+  "description": "Cross-border stablecoin FX for autonomous agents: live rates, corridors, deal scanning, quotes, and non-custodial EIP-712 settlement intents. Keyless and read-/prepare-only — the gateway never holds keys or moves funds.",
+  "url": "https://agents.sera.cx",
+  "preferredTransport": "HTTP+JSON",
+  "additionalInterfaces": [
+    { "transport": "HTTP+JSON", "url": "https://agents.sera.cx" }
+  ],
+  "version": "0.8.3",
+  "documentationUrl": "https://agents.sera.cx/openapi.json",
+  "provider": {
+    "organization": "Sera",
+    "url": "https://sera.cx"
+  },
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false
+  },
+  "defaultInputModes": ["application/json"],
+  "defaultOutputModes": ["application/json"],
+  "skills": [
+    {
+      "id": "rates",
+      "name": "FX rates",
+      "description": "Live reference rates for one or more BASE/QUOTE stablecoin pairs.",
+      "tags": ["fx", "rates", "stablecoin"],
+      "examples": ["Get the USDC/BRLA and XSGD/IDRX rates."]
+    },
+    {
+      "id": "corridors",
+      "name": "List corridors",
+      "description": "Supported FX corridors (currency pairs) and their liquidity depth.",
+      "tags": ["fx", "corridors", "liquidity"],
+      "examples": ["Which stablecoin corridors are supported?"]
+    },
+    {
+      "id": "find_deals",
+      "name": "FX deal scanner",
+      "description": "Scan markets in parallel, diff each against external mid, and rank the best-priced corridors.",
+      "tags": ["fx", "deals", "analytics", "arbitrage"],
+      "examples": ["Find FX deals better than 25 bps across the majors."]
+    },
+    {
+      "id": "fx_quote",
+      "name": "FX quote",
+      "description": "Price a conversion between two supported stablecoins; returns amount_out, mid_rate, and a quote_id.",
+      "tags": ["fx", "quote", "pricing"],
+      "examples": ["Quote converting 1000 USDC to BRLA."]
+    },
+    {
+      "id": "fx_settle",
+      "name": "FX settle",
+      "description": "Build an unsigned EIP-712 settlement intent from a quote_id for the caller to sign in their own wallet.",
+      "tags": ["fx", "settlement", "eip-712", "non-custodial"],
+      "examples": ["Prepare a settlement intent for quote_id abc123."]
+    }
+  ]
+}
