@@ -15,7 +15,7 @@ For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.m
 | Path | For | Artifact |
 |---|---|---|
 | **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | [`sera-mcp`](https://github.com/sera-cx/sera-mcp) (the MCP) |
-| **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent}` |
+| **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent, slack-agent}` |
 | **C — Run** | Want it ready out of the box | `sera-agent/` (interactive CLI) |
 | **D — Protocol** | Agent doesn't know what Sera is, only x402 | `x402-service/` |
 
@@ -37,7 +37,8 @@ sera-agents/
 │   ├── README.md
 │   ├── chat-cli/                 Terminal REPL.
 │   ├── web-chat/                 Express + browser chat UI.
-│   └── webhook-agent/            HTTP endpoint that triggers an agent task.
+│   ├── webhook-agent/            HTTP endpoint that triggers an agent task.
+│   └── slack-agent/              Slack bot worker (Bolt, Socket/HTTP).
 │
 ├── x402-service/                 PATH D — protocol-level service.
 │   ├── server.ts                 Hono server. Implements 402 → pay → 200.
@@ -90,7 +91,7 @@ Verify in any agent session: `Call sera.doctor`. For other hosts and agent frame
 ## Path B — build from a template
 
 ```bash
-# Pick chat-cli, web-chat, or webhook-agent
+# Pick chat-cli, web-chat, webhook-agent, or slack-agent
 cp -r templates/web-chat ~/my-sera-agent
 cd ~/my-sera-agent
 npm install
@@ -178,7 +179,7 @@ Honest read of what's solid vs what's still moving:
 |---|---|---|
 | Docs site + gateway ([agents.sera.cx](https://agents.sera.cx)) | **Stable** | Served by Caddy on the VM stack (Cloudflare-fronted): static landing + the agent gateway. See [`DEPLOY.md`](DEPLOY.md). |
 | Integration guides (OpenClaw, Hermes, NanoClaw, standard MCP hosts) | **Stable** | Config snippets verified against current host versions |
-| Templates (`chat-cli`, `web-chat`, `webhook-agent`) | **Demo / starter** | Copy-and-customize; not maintained as products |
+| Templates (`chat-cli`, `web-chat`, `webhook-agent`, `slack-agent`) | **Demo / starter** | Copy-and-customize; not maintained as products |
 | Examples (`invoice-payer`, `treasury-rebalancer`) | **Demo / starter** | Reference flows; not turnkey services |
 | `sera-agent/` bundled CLI | **Demo / starter** | Interactive REPL for quick exploration |
 | `x402-service/` demo mode | **Experimental** | Self-contained; no facilitator needed; safe to run locally |

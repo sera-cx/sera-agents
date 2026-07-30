@@ -10,6 +10,7 @@
     "templates/chat-cli",
     "templates/web-chat",
     "templates/webhook-agent",
+    "templates/slack-agent",
     "templates/market-maker",
     "templates/withdraw-cli",
     "examples/invoice-payer",

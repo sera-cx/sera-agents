@@ -483,16 +483,17 @@
         <div id="path-b" class="ring-soft ring-soft-hover bento bg-ink-900/60 p-6 rounded-2xl flex flex-col border border-accent-500/30">
           <div class="flex items-center justify-between mb-4">
             <div class="text-xs font-mono uppercase tracking-wider text-accent-400">Path B · Build</div>
-            <div class="text-xs font-mono text-chalk-500">3 templates</div>
+            <div class="text-xs font-mono text-chalk-500">4 templates</div>
           </div>
           <h3 class="text-lg font-semibold mb-2">Build an agent</h3>
           <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
-            Copy a starter — terminal chat, browser chat UI, or webhook responder — wired to the MCP. TypeScript, OpenAI Agents SDK by default.
+            Copy a starter — terminal chat, browser chat, webhook responder, or Slack bot — wired to the MCP. TypeScript, OpenAI Agents SDK by default.
           </p>
           <div class="logo-chain mb-4">
             <span class="logo-pill">chat-cli</span>
             <span class="logo-pill">web-chat</span>
             <span class="logo-pill">webhook</span>
+            <span class="logo-pill">slack-bot</span>
           </div>
           <a href="#install" class="text-accent-400 text-sm font-medium hover:underline">Use a template →</a>
         </div>
@@ -887,7 +888,7 @@
       <div class="tab-panel" data-panel="b">
         <div class="codeblock p-5 sm:p-6">
           <div class="text-xs text-chalk-500 mb-3 font-mono">PICK A TEMPLATE, COPY, RUN</div>
-          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-chalk-500"># Pick chat-cli, web-chat, or webhook-agent</span>
+          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-chalk-500"># Pick chat-cli, web-chat, webhook-agent, or slack-agent</span>
 <span class="text-accent-400">git clone</span> https://github.com/sera-cx/sera-agents
 <span class="text-accent-400">cp -r</span> sera-agents/templates/web-chat ~/my-sera-agent
 <span class="text-accent-400">cd</span> ~/my-sera-agent &amp;&amp; <span class="text-accent-400">npm install</span>
