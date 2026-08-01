@@ -1,0 +1,20 @@
+{
+  "name": "sera-template-discord-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Template: Discord bot AI Agent over the Sera MCP.",
+  "scripts": {
+    "start": "tsx agent.ts",
+    "typecheck": "tsc --noEmit",
+    "audit": "npm audit --omit=dev --audit-level=high"
+  },
+  "dependencies": {
+    "@openai/agents": "^0.3.0",
+    "discord.js": "^14.15.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}
