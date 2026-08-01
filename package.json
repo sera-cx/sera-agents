@@ -12,6 +12,7 @@
     "templates/webhook-agent",
     "templates/market-maker",
     "templates/withdraw-cli",
+    "templates/discord-agent",
     "examples/invoice-payer",
     "examples/treasury-rebalancer"
   ],

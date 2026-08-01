@@ -7,6 +7,7 @@ Three starters for common shapes. Copy whichever matches what you're building, c
 | [`chat-cli/`](chat-cli) | Interactive terminal chat | You want a CLI assistant for your team's treasury / FX work. |
 | [`web-chat/`](web-chat) | Browser chat (Express + HTML, SSE streaming) | You want non-engineers to use a Sera agent through a web page. |
 | [`webhook-agent/`](webhook-agent) | HTTP webhook responder | You want an agent that runs in response to external events (Stripe, cron, GitHub, etc.). |
+| [`discord-agent/`](discord-agent) | Conversational Discord bot | You want a collaborative team assistant on Discord to handle FX settlement and balances. |
 
 ## Common scaffolding
 
