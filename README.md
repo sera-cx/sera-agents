@@ -15,7 +15,7 @@ For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.m
 | Path | For | Artifact |
 |---|---|---|
 | **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | [`sera-mcp`](https://github.com/sera-cx/sera-mcp) (the MCP) |
-| **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent}` |
+| **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent, discord-agent}` |
 | **C — Run** | Want it ready out of the box | `sera-agent/` (interactive CLI) |
 | **D — Protocol** | Agent doesn't know what Sera is, only x402 | `x402-service/` |
 
@@ -37,7 +37,8 @@ sera-agents/
 │   ├── README.md
 │   ├── chat-cli/                 Terminal REPL.
 │   ├── web-chat/                 Express + browser chat UI.
-│   └── webhook-agent/            HTTP endpoint that triggers an agent task.
+│   ├── webhook-agent/            HTTP endpoint that triggers an agent task.
+│   └── discord-agent/            Discord bot AI Agent.
 │
 ├── x402-service/                 PATH D — protocol-level service.
 │   ├── server.ts                 Hono server. Implements 402 → pay → 200.
