@@ -124,7 +124,7 @@ Selected vars (full list in `.env.example`):
 | `X402_CONFIRMATION_DEPTH` | `3` | Confirmation depth before release. Boot refuses < 3 in live mode. |
 | `X402_STATE_DB` | — | SQLite path for payment state (recommended for live; memory-only otherwise) |
 | `X402_ADMIN_TOKEN` | — | Bearer token gating `/admin/refundables` |
-| `SERA_MCP_DIST` | `~/Desktop/SERA MCP and AGENT/sera-mcp/dist/index.js` | Path to the built Sera MCP |
+| `SERA_MCP_DIST` | _(required)_ | Path to the built Sera MCP (`…/sera-mcp/dist/index.js`) |
 | `SERA_NETWORK` | `mainnet` | Passed to the MCP |
 | `SERA_SIGNER_MODE` | (none) | Pass `local` for live mode; the embedded MCP signs Sera Intents |
 | `SIGNER_PRIVATE_KEY` | — | Vault private key (live mode only) |

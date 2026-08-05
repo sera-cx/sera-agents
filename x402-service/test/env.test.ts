@@ -18,6 +18,8 @@ beforeEach(() => {
       delete process.env[k];
     }
   }
+  // SERA_MCP_DIST is required (no Desktop path fallback).
+  process.env.SERA_MCP_DIST = "/tmp/dummy-sera-mcp.js";
 });
 
 afterEach(() => {
@@ -35,10 +37,27 @@ describe("loadConfig — defaults", () => {
     expect(cfg.mode).toBe("demo");
     expect(cfg.host).toBe("127.0.0.1");
     expect(cfg.port).toBe(8402);
+    expect(cfg.seraMcpPath).toBe("/tmp/dummy-sera-mcp.js");
   });
 
   it("demo on 127.0.0.1 boots without ack", () => {
     expect(() => loadConfig()).not.toThrow();
+  });
+
+  it("refuses to start without SERA_MCP_DIST", () => {
+    delete process.env.SERA_MCP_DIST;
+    const spyExit = vi.spyOn(process, "exit").mockImplementation(((code?: number) => {
+      throw new Error(`process.exit(${code})`);
+    }) as any);
+    const spyErr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    try {
+      expect(() => loadConfig()).toThrow(/process\.exit/);
+      const msg = spyErr.mock.calls.map((c) => String(c[0])).join("");
+      expect(msg).toMatch(/SERA_MCP_DIST/);
+    } finally {
+      spyExit.mockRestore();
+      spyErr.mockRestore();
+    }
   });
 });
 
