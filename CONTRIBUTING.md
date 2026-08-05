@@ -17,8 +17,8 @@ Thanks for taking the time. This is the agent suite around the [Sera MCP](https:
 sera-agents/
 ├── index.html              Landing page (single-file static)
 ├── README.md
-├── PLAN.md                 Active delivery plan
-├── LAUNCH.md               Public + internal launch copy
+├── ARCHITECTURE.md
+├── agents-gateway/         Public HTTP + MCP gateway (agents.sera.cx)
 ├── sera-agent/             Path C — bundled CLI
 ├── templates/              Path B — starter templates
 ├── x402-service/           Path D — protocol-level service

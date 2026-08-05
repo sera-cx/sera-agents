@@ -1,9 +1,9 @@
 # ── stage 1: build sera-mcp from source ────────────────────────────────
-ARG SERA_MCP_REF=v0.8.2
+ARG SERA_MCP_REF=v0.8.3
 FROM node:20-alpine AS sera-mcp-build
 RUN apk add --no-cache git python3 make g++
 WORKDIR /opt
-RUN git clone --depth 1 --branch ${SERA_MCP_REF:-v0.8.2} https://github.com/sera-cx/sera-mcp.git sera-mcp
+RUN git clone --depth 1 --branch ${SERA_MCP_REF:-v0.8.3} https://github.com/sera-cx/sera-mcp.git sera-mcp
 WORKDIR /opt/sera-mcp
 RUN npm ci --no-audit --no-fund
 RUN npm run build

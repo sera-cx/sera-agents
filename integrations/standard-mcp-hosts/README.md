@@ -74,7 +74,7 @@ Settings → Connectors → Add Custom Connector. ChatGPT supports remote MCP se
 https://agents.sera.cx/mcp
 ```
 
-That's the Streamable HTTP endpoint exposing `fx_quote`, `fx_settle`, `corridors`, `rates` (keyless). If instead you want the full 52-tool stdio `sera-mcp` in a remote host, it also supports Streamable HTTP since v0.8.0 (`--transport http`) — self-host and front it with auth; see the [sera-mcp README](https://github.com/sera-cx/sera-mcp).
+That's the Streamable HTTP endpoint exposing **17 keyless tools** (`fx_quote`, `fx_settle`, `corridors`, `rates`, plus analytics such as `find_deals`, `spread_radar`, `probe_depth`, … — see [`.well-known/mcp.json`](../../.well-known/mcp.json)). If instead you want the full ~52–55-tool stdio `sera-mcp` in a remote host, it also supports Streamable HTTP since v0.8.0 (`--transport http`) — self-host and front it with auth; see the [sera-mcp README](https://github.com/sera-cx/sera-mcp).
 
 ---
 

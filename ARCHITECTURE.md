@@ -11,10 +11,11 @@ This repo is the public companion to `sera-mcp`. It contains everything someone 
 │  sera-agents     │                       │   sera-mcp      │
 │  (this repo)     │  consumes via stdio   │  (engine, npm)  │
 │                  │ ────────────────────▶ │                 │
-│  site + docs     │                       │  32 MCP tools   │
-│  templates       │                       │  signer + policy│
-│  examples        │                       │  Sera REST      │
-│  x402-service    │                       │                 │
+│  site + docs     │                       │  ~52–55 MCP     │
+│  templates       │                       │  tools          │
+│  examples        │                       │  signer + policy│
+│  x402-service    │                       │  Sera REST      │
+│  agents-gateway  │                       │                 │
 │  integrations    │                       │                 │
 └──────────────────┘                       └─────────────────┘
 ```
@@ -55,6 +56,11 @@ sera-agents/
 │       ├── treasury-rebalancer.html
 │       └── x402-paid-api.html
 │
+├── agents-gateway/             Public HTTP + MCP gateway (agents.sera.cx)
+│   ├── src/
+│   ├── Dockerfile
+│   └── README.md
+│
 ├── sera-agent/                 PATH C — bundled CLI agent
 │   ├── agent.ts                Single-file interactive REPL
 │   ├── package.json
@@ -65,7 +71,9 @@ sera-agents/
 │   ├── README.md
 │   ├── chat-cli/               Terminal REPL template
 │   ├── web-chat/               Express + browser chat UI
-│   └── webhook-agent/          HTTP endpoint that triggers an agent task
+│   ├── webhook-agent/          HTTP endpoint that triggers an agent task
+│   ├── market-maker/           Deterministic two-sided spread bot
+│   └── withdraw-cli/           Dual-sig instant-withdrawal walkthrough
 │
 ├── examples/                   Reference flows (programmatic, single-task)
 │   ├── invoice-payer/          Cross-currency invoice settlement
@@ -93,14 +101,17 @@ sera-agents/
 
 ## Workspaces
 
-This repo is an `npm` workspace. Root `package.json` declares 7 packages:
+This repo is an `npm` workspace. Root `package.json` declares 10 packages:
 
 ```
+agents-gateway
 sera-agent
 x402-service
 templates/chat-cli
 templates/web-chat
 templates/webhook-agent
+templates/market-maker
+templates/withdraw-cli
 examples/invoice-payer
 examples/treasury-rebalancer
 ```
@@ -122,7 +133,7 @@ External — uses `sera-mcp` directly, no code in this repo. See `README.md` Pat
 
 ## Path B — build from a template
 
-`templates/{chat-cli, web-chat, webhook-agent}` are each:
+`templates/{chat-cli, web-chat, webhook-agent, market-maker, withdraw-cli}` are each:
 
 - A single-file `agent.ts` or `server.ts` (the entire template body).
 - Uses [`@openai/agents`](https://www.npmjs.com/package/@openai/agents) (the OpenAI Agents SDK for JS/TS).
@@ -134,8 +145,10 @@ Each template exposes one shape:
 | Template | Shape | Auth |
 |---|---|---|
 | `chat-cli` | Terminal REPL | none |
-| `web-chat` | Express + plain-HTML chat UI | none (intended for local dev) |
+| `web-chat` | Express + plain-HTML chat UI | bearer (required off-loopback) |
 | `webhook-agent` | HTTP `POST /webhook` → run agent → return result | HMAC (Stripe / GitHub / generic) |
+| `market-maker` | Deterministic cancel-before-place spread loop | Sepolia-safe; `MM_DRY_RUN` default |
+| `withdraw-cli` | Interactive dual-sig withdraw walkthrough | none |
 
 Templates do not bundle production-grade auth, rate limiting, or persistence. They are starters.
 
