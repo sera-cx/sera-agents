@@ -168,7 +168,7 @@
       <p>A thin Express server that wraps <code>sera-mcp</code> behind the <code>x402</code> payment protocol. The calling agent pays USDC over plain HTTP, the service performs the FX swap on Sera, the recipient gets the target currency. No MCP host required, no SDK to import.</p>
 
       <h3>5. Templates &amp; bundled agent</h3>
-      <p>Pre-wired starter projects (terminal chat, web chat, webhook responder) and a complete bundled <em>Sera Agent</em> — useful when you want one-command-to-run rather than configure-from-scratch.</p>
+      <p>Pre-wired starter projects (terminal chat, web chat, webhook responder) and a complete bundled <em>Sera Agent</em> — useful when you want one-command-to-run rather than configure-from-scratch. The three starters use a local stdio MCP by default; set <code>SERA_MCP_URL</code> to connect them to a Streamable HTTP MCP instead.</p>
 
       <h2 class="gradient-text">Two execution paths</h2>
 
@@ -182,6 +182,8 @@
         <li>Agent calls <code>sera.execute_swap</code> with the signature; sera-mcp submits to Sera REST.</li>
         <li>On-chain settlement; agent polls <code>sera.settlement_status</code> for confirmation.</li>
       </ul>
+
+      <p>For Path B starters, <code>SERA_MCP_URL=https://agents.sera.cx/mcp</code> selects the hosted keyless gateway. To access account-scoped or execution tools over HTTP, self-host <code>sera-mcp</code> behind authentication and point the same variable at that deployment.</p>
 
       <h3>Path 2 — x402 (skip MCP)</h3>
       <ul>

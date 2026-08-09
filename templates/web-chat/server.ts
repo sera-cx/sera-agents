@@ -16,7 +16,7 @@
  *   - Edit public/index.html for UI tweaks.
  *   - Add more MCPs to the agent's mcpServers array if you need other tools.
  */
-import { Agent, run, MCPServerStdio, user } from "@openai/agents";
+import { Agent, run, MCPServerStdio, MCPServerStreamableHttp, user } from "@openai/agents";
 import express from "express";
 import helmet from "helmet";
 import { resolve } from "node:path";
@@ -117,21 +117,26 @@ async function withSlot<T>(fn: () => Promise<T>): Promise<T | null> {
 }
 
 async function main() {
+  // Set SERA_MCP_URL to use a hosted or self-hosted Streamable HTTP MCP
+  // endpoint. Without it, this starter retains its full local stdio MCP setup.
+  const seraMcpUrl = process.env.SERA_MCP_URL;
   const seraMcpPath =
     process.env.SERA_MCP_DIST ?? resolve(process.env.HOME!, "Desktop/sera-mcp/dist/index.js");
 
-  const sera = new MCPServerStdio({
-    command: "node",
-    args: [seraMcpPath],
-    env: {
-      SERA_NETWORK: process.env.SERA_NETWORK ?? "mainnet",
-      POLICY_PRESET: process.env.POLICY_PRESET ?? "standard",
-      LOG_LEVEL: process.env.LOG_LEVEL ?? "warn",
-      ...(process.env.SERA_API_KEY ? { SERA_API_KEY: process.env.SERA_API_KEY } : {}),
-      ...(process.env.SERA_API_SECRET ? { SERA_API_SECRET: process.env.SERA_API_SECRET } : {}),
-    },
-    name: "sera",
-  });
+  const sera = seraMcpUrl
+    ? new MCPServerStreamableHttp({ url: seraMcpUrl, name: "sera" })
+    : new MCPServerStdio({
+        command: "node",
+        args: [seraMcpPath],
+        env: {
+          SERA_NETWORK: process.env.SERA_NETWORK ?? "mainnet",
+          POLICY_PRESET: process.env.POLICY_PRESET ?? "standard",
+          LOG_LEVEL: process.env.LOG_LEVEL ?? "warn",
+          ...(process.env.SERA_API_KEY ? { SERA_API_KEY: process.env.SERA_API_KEY } : {}),
+          ...(process.env.SERA_API_SECRET ? { SERA_API_SECRET: process.env.SERA_API_SECRET } : {}),
+        },
+        name: "sera",
+      });
   await sera.connect();
 
   const agent = new Agent({

@@ -16,6 +16,16 @@ npm start
 # open http://localhost:3000 — UI will prompt once for the token, caches in localStorage
 ```
 
+To connect to a Streamable HTTP MCP instead of spawning a local process, set:
+
+```bash
+export SERA_MCP_URL=https://agents.sera.cx/mcp
+```
+
+The hosted endpoint is keyless and exposes the public gateway tool set. Use an
+authenticated self-hosted `sera-mcp` endpoint when your application needs the
+full account-scoped or execution surface.
+
 For pure local development with no auth (loopback only):
 
 ```bash
@@ -52,3 +62,4 @@ The server refuses to start in unsafe configurations (no token + non-loopback) w
 - **Auth** — wrap `/api/chat` in your own session middleware before going public.
 - **Persistence** — sessions are in-memory; swap for a real store before scaling.
 - **UI** — `public/index.html` is intentionally one file. Replace with your framework of choice.
+- **MCP transport** — `SERA_MCP_URL` selects Streamable HTTP and takes precedence over the local stdio configuration.

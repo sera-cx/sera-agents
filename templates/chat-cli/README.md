@@ -10,8 +10,20 @@ export OPENAI_API_KEY=sk-...
 npm start
 ```
 
+To use the hosted keyless MCP over Streamable HTTP instead of spawning a local
+MCP process:
+
+```bash
+export SERA_MCP_URL=https://agents.sera.cx/mcp
+npm start
+```
+
+For the full account-scoped or execution tool surface, point `SERA_MCP_URL` at
+your own authenticated `sera-mcp` deployment.
+
 ## Customize
 
 - **What the agent does** — edit `SYSTEM_PROMPT` in `agent.ts`.
 - **MCP env** — change `SERA_NETWORK`, `POLICY_PRESET`, etc. in the `MCPServerStdio` env block.
+- **MCP transport** — set `SERA_MCP_URL` to use `MCPServerStreamableHttp`; when it is set, it takes precedence over the local stdio configuration.
 - **Add more MCPs** — pass additional `MCPServerStdio` instances into the agent's `mcpServers` array.

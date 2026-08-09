@@ -13,7 +13,7 @@ Three starters for common shapes. Copy whichever matches what you're building, c
 Every template is:
 - **TypeScript** + ES modules.
 - Uses **`@openai/agents`** (the OpenAI Agents SDK) — speaks MCP natively. Swap to `@anthropic-ai/sdk` if you prefer Claude; the MCP tool surface is identical.
-- Spawns the **Sera MCP** as a subprocess. No service to host.
+- Defaults to a local **Sera MCP** subprocess, or connects to a Streamable HTTP MCP endpoint when `SERA_MCP_URL` is set.
 - Reads `OPENAI_API_KEY` from env.
 
 ## How to use
@@ -28,6 +28,11 @@ npm install
 export OPENAI_API_KEY=sk-...
 # Optional: SERA_API_KEY + SERA_API_SECRET to unlock balances + treasury tools
 
+# Optional: use the hosted keyless MCP instead of a local subprocess.
+# It exposes the public gateway tool set; self-host a full MCP endpoint for
+# account-scoped or execution tools.
+export SERA_MCP_URL=https://agents.sera.cx/mcp
+
 # Run
 npm start
 ```
@@ -36,6 +41,15 @@ Then customize:
 - **System prompt** in `agent.ts` — change what the agent does.
 - **Triggers** — add HTTP endpoints, cron jobs, webhook routes as needed.
 - **Tools** — add your own non-Sera MCP servers alongside `sera`. Each template wires Sera by default but accepts an array.
+
+## MCP transport
+
+The starters use stdio by default, spawning a local full `sera-mcp` process. Set
+`SERA_MCP_URL` to select Streamable HTTP instead. The hosted
+`https://agents.sera.cx/mcp` gateway is keyless and exposes its public tool set;
+for the full account-scoped or execution surface, self-host `sera-mcp` over
+Streamable HTTP and protect that endpoint appropriately. SSE is intentionally
+not used.
 
 ## Why no `npx create-sera-agent` yet
 

@@ -16,6 +16,16 @@ npm start
 # server listens on 127.0.0.1:4000 by default
 ```
 
+To connect to a Streamable HTTP MCP instead of spawning a local process, set:
+
+```bash
+export SERA_MCP_URL=https://agents.sera.cx/mcp
+```
+
+The hosted endpoint is keyless and exposes the public gateway tool set. Use an
+authenticated self-hosted `sera-mcp` endpoint when your webhook needs the full
+account-scoped or execution surface.
+
 For exposing publicly behind a proxy (Cloudflare Tunnel, Fly, etc.):
 
 ```bash
@@ -48,3 +58,4 @@ The agent runs the task and returns its summary in the response.
 - **Mapping events to tasks** — edit `TASK_BUILDER` in `server.ts`. Examples included for Stripe `invoice.paid`, GitHub release events, cron ticks.
 - **Auth** — `WEBHOOK_SECRET` env enables a bearer-token gate. For production add IP allowlisting or HMAC verification per upstream provider.
 - **Long-running tasks** — if your tasks take >30s, return a 202 + run async, then deliver the result via your own callback URL.
+- **MCP transport** — `SERA_MCP_URL` selects Streamable HTTP and takes precedence over the local stdio configuration.

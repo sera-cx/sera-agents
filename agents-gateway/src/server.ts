@@ -8,7 +8,7 @@ import { makeSeraMcpClient } from "./sera-mcp-client.js";
 import { makeQuoteCache } from "./quote-cache.js";
 import { makeHandlers } from "./handlers.js";
 import { OPENAPI_DOC } from "./openapi.js";
-import { buildMcpServer, handleMcpRequest } from "./mcp.js";
+import { handleMcpRequest } from "./mcp.js";
 import { PROXY_TOOLS } from "./proxy-tools.js";
 import { GatewayError } from "./errors.js";
 import type { Context } from "hono";
@@ -38,7 +38,6 @@ const mcp = makeSeraMcpClient({
 });
 const cache = makeQuoteCache();
 const handlers = makeHandlers(mcp, cache);
-const mcpServer = buildMcpServer(handlers);
 
 const app = new Hono();
 
@@ -163,7 +162,7 @@ const honoListener = getRequestListener(app.fetch);
 const server = http.createServer(async (req, res) => {
   if (req.url && req.url.split("?")[0] === "/mcp") {
     try {
-      await handleMcpRequest(mcpServer, req, res);
+      await handleMcpRequest(handlers, req, res);
     } catch (e: any) {
       if (!res.headersSent) {
         res.statusCode = 500;
