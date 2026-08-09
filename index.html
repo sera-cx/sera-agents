@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sera for Agents — multi-currency settlement infrastructure for AI agents</title>
-  <meta name="description" content="Sera gives AI agents and apps the ability to quote, convert, and settle across 40 stablecoins and 22 fiat currencies. Open MCP for any host, plus templates, a bundled agent, a working x402 endpoint, and reference apps for trading, treasury, prediction markets, and cross-border payments." />
+  <meta name="description" content="Sera gives AI agents and apps the ability to quote, convert, and settle across 40 stablecoins and 22 fiat currencies. Open MCP for any host, plus templates, a bundled agent, a self-hosted x402 service, and reference apps for trading, treasury, prediction markets, and cross-border payments." />
   <meta name="theme-color" content="#06070A" />
   <meta name="author" content="Sera Protocol" />
   <link rel="canonical" href="https://agents.sera.cx/" />
@@ -17,7 +17,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Sera for Agents" />
   <meta property="og:title" content="Sera for Agents — multi-currency settlement for AI agents" />
-  <meta property="og:description" content="Quote, convert, and settle across 40 stablecoins and 22 fiat currencies from any agent host. Open MCP, x402 endpoint, working templates. 52 tools live." />
+  <meta property="og:description" content="Quote, convert, and settle across 40 stablecoins and 22 fiat currencies from any agent host. Open MCP, self-hosted x402 service, working templates. 52 tools live." />
   <meta property="og:url" content="https://agents.sera.cx/" />
   <meta property="og:image" content="https://agents.sera.cx/og-image.png" />
   <meta property="og:image:width" content="1200" />
@@ -27,7 +27,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Sera for Agents — multi-currency settlement for AI agents" />
-  <meta name="twitter:description" content="Quote, convert, and settle across 40 stablecoins and 22 fiat currencies from any agent host. Open MCP, x402 endpoint, 52 tools live." />
+  <meta name="twitter:description" content="Quote, convert, and settle across 40 stablecoins and 22 fiat currencies from any agent host. Open MCP, self-hosted x402 service, 52 tools live." />
   <meta name="twitter:image" content="https://agents.sera.cx/og-image.png" />
   <meta name="twitter:image:alt" content="Sera for Agents — multi-currency settlement for AI agents" />
 
@@ -443,7 +443,7 @@
           Four ways to ship a<br/>Sera-powered integration.
         </h2>
         <p class="mt-5 text-base sm:text-lg text-chalk-300">
-          Already have an agent stack? Install the MCP. Building one from scratch? Start from a template. Want it ready out of the box? Run the bundled agent. Or skip MCP entirely and call the protocol-level x402 endpoint.
+          Already have an agent stack? Install the MCP. Building one from scratch? Start from a template. Want it ready out of the box? Run the bundled agent. Need HTTP payments? Self-host the x402 service.
         </p>
       </div>
 
@@ -521,9 +521,9 @@
             <div class="text-xs font-mono uppercase tracking-wider text-accent-400">Path D · Protocol</div>
             <div class="text-xs font-mono text-chalk-500">x402 HTTP</div>
           </div>
-          <h3 class="text-lg font-semibold mb-2">Skip MCP entirely</h3>
+          <h3 class="text-lg font-semibold mb-2">Self-host the x402 service</h3>
           <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
-            x402 endpoint. Pay USDC, deliver any of 40 stablecoins. Standard <code class="font-mono text-accent-400 text-xs">402 → pay → 200</code> flow. Drops Sera into any agent that already speaks x402.
+            Run it at <code class="font-mono text-accent-400 text-xs">localhost:8402</code> for the demo, or deploy it to infrastructure you operate. Standard <code class="font-mono text-accent-400 text-xs">402 → pay → 200</code> flow for agents that speak x402.
           </p>
           <div class="logo-chain mb-4">
             <span class="logo-pill">HTTP</span>
@@ -531,7 +531,7 @@
             <span class="logo-pill">USDC</span>
             <span class="logo-pill">EIP-3009</span>
           </div>
-          <a href="#x402" class="text-accent-400 text-sm font-medium hover:underline">See the endpoint →</a>
+          <a href="#x402" class="text-accent-400 text-sm font-medium hover:underline">See self-hosting details →</a>
         </div>
 
       </div>
@@ -1104,12 +1104,12 @@
   <section id="x402" class="py-20 sm:py-24 border-t border-white/5 bg-ink-900/30">
     <div class="max-w-7xl mx-auto px-5 lg:px-6">
       <div class="max-w-3xl mb-10">
-        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">x402 endpoint — Path D</div>
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Self-hosted x402 service — Path D</div>
         <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
-          Sera as an<br/>x402 endpoint.
+          Sera as a<br/>self-hosted x402 service.
         </h2>
         <p class="mt-5 text-base sm:text-lg text-chalk-300 leading-relaxed">
-          A native HTTP interface to <span class="text-chalk-50 font-medium">the full Sera multi-currency settlement engine</span>, served over standard <span class="font-mono text-accent-400">x402</span>. The calling agent doesn't need an MCP host, doesn't import a Sera SDK, doesn't sign EIP-712 Intents — it just speaks HTTP <span class="font-mono text-accent-400">402 → pay → 200</span>. Underneath, every swap routes through Sera Protocol and settles on-chain.
+          Run <code class="font-mono text-accent-400">x402-service</code> locally at <code class="font-mono text-accent-400">localhost:8402</code> for the demo, or deploy it to infrastructure you operate. It provides a native HTTP interface to <span class="text-chalk-50 font-medium">the Sera multi-currency settlement engine</span> over standard <span class="font-mono text-accent-400">x402</span>. <strong>agents.sera.cx does not provide a managed x402 endpoint.</strong>
         </p>
         <div class="mt-5 grid sm:grid-cols-3 gap-3 text-sm">
           <div class="ring-soft bg-ink-900/40 p-3.5 rounded-lg">
@@ -1129,7 +1129,7 @@
 
       <div class="grid sm:grid-cols-2 gap-4 mb-8">
         <div class="ring-soft bg-ink-900/60 p-6 rounded-2xl">
-          <h3 class="text-base font-semibold mb-4">Endpoints</h3>
+          <h3 class="text-base font-semibold mb-4">Your service endpoints</h3>
           <ul class="space-y-2.5 text-sm font-mono">
             <li><span class="text-accent-400">POST /x402/swap</span> <span class="text-chalk-500">— main flow (402 → pay → 200)</span></li>
             <li><span class="text-accent-400">POST /x402/quote</span> <span class="text-chalk-500">— quote-only, no payment</span></li>
@@ -1145,8 +1145,8 @@
               <span class="text-chalk-300">Mocks the payment verification AND the swap leg. Lets you test the protocol round-trip locally without a wallet or any real Sera transaction. Useful for first integration. <span class="text-chalk-500">Does not actually use Sera.</span></span>
             </li>
             <li>
-              <span class="font-mono text-accent-400">live</span> <span class="text-chalk-500">— production</span><br/>
-              <span class="text-chalk-300">Real EIP-3009 USDC payment verification, real Sera Protocol swap from a vault wallet, real on-chain settlement to recipient. Needs <code class="font-mono text-accent-400 text-xs">SIGNER_PRIVATE_KEY</code> + <code class="font-mono text-accent-400 text-xs">RPC_URL</code>. <span class="text-chalk-50">Every swap routes through Sera.</span></span>
+              <span class="font-mono text-accent-400">live</span> <span class="text-chalk-500">— operator-gated</span><br/>
+              <span class="text-chalk-300">Requires your own deployment, Base Sepolia end-to-end verification, and explicit operator approval before handling real settlement. Review the <a href="x402-service/README.md" class="text-accent-400 hover:underline">service README</a> and <a href="SECURITY-MODEL.md" class="text-accent-400 hover:underline">security model</a> before enabling it.</span>
             </li>
           </ul>
         </div>
@@ -1174,7 +1174,7 @@
       </div>
 
       <div class="mt-5 text-sm text-chalk-500">
-        Source at <a href="https://github.com/sera-cx/sera-agents/tree/main/x402-service" target="_blank" rel="noopener" class="underline hover:text-accent-400 font-mono">x402-service/</a>. Production needs a vault wallet + RPC URL + facilitator integration.
+        The demo is local-only. Source and deployment prerequisites: <a href="x402-service/README.md" class="underline hover:text-accent-400 font-mono">x402-service/README.md</a> · <a href="SECURITY-MODEL.md" class="underline hover:text-accent-400">SECURITY-MODEL.md</a>. Live operation needs a self-hosted deployment, vault wallet, RPC URL, facilitator integration, Base Sepolia E2E verification, and explicit operator approval.
       </div>
     </div>
   </section>

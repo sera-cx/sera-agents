@@ -4,9 +4,9 @@
 
 **Live site: [agents.sera.cx](https://agents.sera.cx)** · **Core MCP: [sera-cx/sera-mcp](https://github.com/sera-cx/sera-mcp)**
 
-**Who this is for:** developers integrating Sera into an existing agent product, picking up a template to ship fast, or wiring up a protocol-level x402 endpoint for agent-to-agent FX delivery.
+**Who this is for:** developers integrating Sera into an existing agent product, picking up a template to ship fast, or self-hosting an x402 service for agent-to-agent FX delivery.
 
-Multi-currency settlement infrastructure for AI agents. Quote, convert, and settle across 40 stablecoins and 22 fiat currencies — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more — through an open Model Context Protocol server, three starter templates, a complete bundled agent, and a protocol-level x402 endpoint.
+Multi-currency settlement infrastructure for AI agents. Quote, convert, and settle across 40 stablecoins and 22 fiat currencies — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more — through an open Model Context Protocol server, three starter templates, a complete bundled agent, and a self-hosted x402 service.
 
 For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.md`](SECURITY-MODEL.md), and [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -17,9 +17,9 @@ For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.m
 | **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | [`sera-mcp`](https://github.com/sera-cx/sera-mcp) (the MCP) |
 | **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent}` |
 | **C — Run** | Want it ready out of the box | `sera-agent/` (interactive CLI) |
-| **D — Protocol** | Agent doesn't know what Sera is, only x402 | `x402-service/` |
+| **D — Self-host** | Agent speaks x402 HTTP | `x402-service/` (run locally or deploy yourself) |
 
-All four work today. Templates are copy-and-customize. The x402 service has a self-contained demo mode (no external deps); production mode requires a vault wallet.
+Paths A–C are available through their listed artifacts. Path D provides a self-contained, localhost demo; `agents.sera.cx` does not offer a public x402 URL. Live mode is self-hosted and requires Base Sepolia E2E verification plus explicit operator approval. See [`x402-service/README.md`](x402-service/README.md) and [`SECURITY-MODEL.md`](SECURITY-MODEL.md).
 
 ## Repository contents
 
@@ -114,7 +114,7 @@ Interactive terminal chat. Try:
 - "How much USDC to deliver exactly 5,000 MYR?"
 - "Run sera.find_deals at 25 bps and rank the results."
 
-## Path D — run the x402 service
+## Path D — self-host the x402 service
 
 ```bash
 cd x402-service
@@ -137,7 +137,7 @@ curl -X POST http://localhost:8402/x402/swap \
   -d '{"from_currency":"USD","to_currency":"MYR","amount":100,"recipient":"0xVendor"}'
 ```
 
-Production mode (`X402_MODE=live`) needs a funded vault wallet, an RPC URL, and an x402 facilitator integration. See [`x402-service/README.md`](x402-service/README.md).
+This demo is local-only; it is not hosted at `agents.sera.cx`. Live mode (`X402_MODE=live`) needs your own deployment, a funded vault wallet, RPC URL, facilitator integration, completed Base Sepolia E2E, and explicit operator approval. See [`x402-service/README.md`](x402-service/README.md) and [`SECURITY-MODEL.md`](SECURITY-MODEL.md).
 
 ## Reference flows (programmatic, not interactive)
 
