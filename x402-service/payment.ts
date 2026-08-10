@@ -33,9 +33,10 @@ export interface VerifyOutcome {
 
 export interface SettleOutcome {
   ok: boolean;
-  txHash?: string;
-  networkId?: string;
+  transaction?: string;
+  network?: string;
   reason?: string;
+  unknown?: boolean;
 }
 
 export interface ExecuteOutcome {
@@ -53,8 +54,6 @@ function makeFacilitatorConfig(cfg: X402Config): FacilitatorConfig {
     url: cfg.facilitatorUrl!,
     apiKeyId: cfg.cdpApiKeyId!,
     apiKeySecret: cfg.cdpApiKeySecret!,
-    network: cfg.cdpNetwork,
-    confirmationDepth: cfg.confirmationDepth,
   };
 }
 
@@ -65,13 +64,13 @@ function paymentRequirements(
   return {
     scheme: "exact",
     network: cfg.cdpNetwork,
-    maxAmountRequired: String(Math.ceil(pending.amount_usdc * 1e6)), // USDC base units
-    resource: `https://${cfg.host}:${cfg.port}/x402/swap`,
+    maxAmountRequired: pending.amount_usdc,
+    resource: `${cfg.publicUrl ?? `http://${cfg.host}:${cfg.port}`}/x402/swap`,
     description: `Sera FX delivery: ${pending.swap_request.amount} ${pending.swap_request.to_currency} → ${pending.swap_request.recipient}`,
     mimeType: "application/json",
     payTo: pending.pay_to,
     maxTimeoutSeconds: cfg.pendingTtlSeconds,
-    asset: cfg.cdpUsdcAddress ?? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // Base mainnet USDC
+    asset: cfg.cdpUsdcAddress,
     extra: { name: "USD Coin", version: "2" },
   };
 }
@@ -107,7 +106,7 @@ export async function settlePayment(
   paymentHeader: string,
 ): Promise<SettleOutcome> {
   if (cfg.mode === "demo") {
-    return { ok: true, txHash: undefined, networkId: "demo" };
+    return { ok: true, network: "demo" };
   }
   const result = await facilitatorSettle(
     makeFacilitatorConfig(cfg),
@@ -115,9 +114,9 @@ export async function settlePayment(
     paymentRequirements(cfg, pending),
   );
   if (!result.success) {
-    return { ok: false, reason: result.error ?? "settle failed" };
+    return { ok: false, unknown: result.unknown, reason: result.errorReason ?? "settle failed" };
   }
-  return { ok: true, txHash: result.txHash, networkId: result.networkId };
+  return { ok: true, transaction: result.transaction, network: result.network };
 }
 
 // ── Execute Sera swap ────────────────────────────────────────────────────
@@ -143,7 +142,7 @@ export async function executeSwap(
       arguments: {
         from: "USDC",
         to: pending.swap_request.to_currency,
-        amount: pending.amount_usdc,
+        amount: Number(pending.amount_usdc) / 1e6,
         owner_address: cfg.vaultAddress,
         recipient: pending.swap_request.recipient,
         gas_mode: "pay_more",
@@ -202,4 +201,11 @@ export function transitionToFailedRefundable(
   return store.cas(pending.payment_id, "executing", "failed_refundable", {
     last_error: error,
   });
+}
+
+export function transitionToSettlementUnknown(store: StateStore, pending: PendingPayment, error: string): boolean {
+  return store.cas(pending.payment_id, "verified", "settlement_unknown", { last_error: error });
+}
+export function transitionToSettlementFailed(store: StateStore, pending: PendingPayment, error: string): boolean {
+  return store.cas(pending.payment_id, "verified", "settlement_failed", { last_error: error });
 }

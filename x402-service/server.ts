@@ -43,6 +43,8 @@ import {
   transitionToExecuting,
   transitionToDelivered,
   transitionToFailedRefundable,
+  transitionToSettlementUnknown,
+  transitionToSettlementFailed,
 } from "./payment.js";
 
 const cfg = loadConfig();
@@ -155,6 +157,13 @@ const QuoteBody = z.object({
 });
 
 const PAYMENT_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+function toUsdcAtomic(value: number): string { if (!Number.isFinite(value) || value <= 0) throw new Error("invalid USDC amount"); return BigInt(Math.ceil(value * 1_000_000)).toString(); }
+function atomicToUsdc(value: string): string { const n = BigInt(value); return `${n / 1_000_000n}.${(n % 1_000_000n).toString().padStart(6, "0")}`; }
+function parsePaymentId(signature: string): string | undefined {
+  // x402 payloads are opaque to the resource server; x-payment-id is the
+  // service correlation key. Accept an embedded JSON id for operator clients.
+  try { const json = JSON.parse(Buffer.from(signature, "base64").toString("utf8")); return typeof json.paymentId === "string" ? json.paymentId : undefined; } catch { return undefined; }
+}
 
 // ── Service info ───────────────────────────────────────────────────────
 const SERVICE_INFO = {
@@ -235,10 +244,12 @@ app.post("/x402/swap", async (c) => {
     );
   }
   const { from_currency, to_currency, amount, recipient } = parsed.data;
-  const xPayment = c.req.header("x-payment");
+  const paymentSignature = c.req.header("payment-signature");
+  const legacyPayment = c.req.header("x-payment");
+  if (legacyPayment) return c.json({ error: "unsupported_payment_header", message: "x402 v2 requires PAYMENT-SIGNATURE" }, 400);
 
   // ── Branch 1: no X-PAYMENT → 402 with payment_required ─────────
-  if (!xPayment) {
+  if (!paymentSignature) {
     let usdcRequired: number;
     let quoteSource: "sera" | "demo_mock" = "sera";
     const quote = await quoteRecipientAmountViaMcp(to_currency, amount, recipient);
@@ -263,7 +274,7 @@ app.post("/x402/swap", async (c) => {
     }
 
     const surcharge = cfg.surchargeBps / 10_000;
-    const totalUsdc = usdcRequired * (1 + surcharge);
+    const totalUsdcAtomic = toUsdcAtomic(usdcRequired * (1 + surcharge));
     const paymentId = randomUUID();
     const now = Math.floor(Date.now() / 1000);
     const payTo = cfg.vaultAddress ?? "0x000000000000000000000000000000000000dEaD";
@@ -277,9 +288,9 @@ app.post("/x402/swap", async (c) => {
       payment_id: paymentId,
       status: "pending",
       pay_to: payTo,
-      amount_usdc: totalUsdc,
+      amount_usdc: totalUsdcAtomic,
       asset: "USDC",
-      chain: 1,
+      chain: cfg.cdpNetwork === "eip155:84532" ? 84532 : 8453,
       swap_request: { from_currency, to_currency, amount, recipient },
       created_at: now,
       expires_at: now + cfg.pendingTtlSeconds,
@@ -287,13 +298,19 @@ app.post("/x402/swap", async (c) => {
     };
     store.save(pending);
 
+    const paymentRequired = {
+      x402Version: 2,
+      accepts: [{ scheme: "exact", network: cfg.cdpNetwork, maxAmountRequired: totalUsdcAtomic, resource: `${cfg.publicUrl ?? `http://${cfg.host}:${cfg.port}`}/x402/swap`, description: `Sera FX delivery to ${recipient}`, mimeType: "application/json", payTo, maxTimeoutSeconds: cfg.pendingTtlSeconds, asset: cfg.cdpUsdcAddress, extra: { name: "USD Coin", version: "2" } }],
+    };
+    c.header("PAYMENT-REQUIRED", Buffer.from(JSON.stringify(paymentRequired)).toString("base64"));
+    c.header("X-Payment-Id", paymentId);
     return c.json(
       {
         payment_required: {
-          scheme: "exact",
+          ...paymentRequired.accepts[0],
           asset: "USDC",
-          amount: totalUsdc.toFixed(6),
-          chain: 1,
+          amount: atomicToUsdc(totalUsdcAtomic),
+          amount_atomic: totalUsdcAtomic,
           network: cfg.cdpNetwork,
           pay_to: payTo,
           payment_id: paymentId,
@@ -307,9 +324,7 @@ app.post("/x402/swap", async (c) => {
           surcharge_bps: cfg.surchargeBps,
           quote_source: quoteSource,
         },
-        instructions:
-          "Construct an EIP-3009 transferWithAuthorization for USDC to pay_to in the amount above, " +
-          "then retry this request with X-PAYMENT: <payment_id>:<authorization-base64> header.",
+        instructions: "Sign the returned x402 v2 payment requirements and retry with PAYMENT-SIGNATURE.",
         demo: cfg.mode === "demo",
       },
       402,
@@ -317,7 +332,7 @@ app.post("/x402/swap", async (c) => {
   }
 
   // ── Branch 2: X-PAYMENT present → state-machine flow ──────────
-  const [paymentId, authorization] = xPayment.split(":", 2);
+  const paymentId = c.req.header("x-payment-id") ?? parsePaymentId(paymentSignature);
   if (!paymentId || !PAYMENT_ID_RE.test(paymentId)) {
     return c.json({ error: "invalid_payment_id" }, 400);
   }
@@ -345,13 +360,15 @@ app.post("/x402/swap", async (c) => {
       502,
     );
   }
+  if (pending.status === "settlement_unknown") return c.json({ error: "settlement_unknown", payment_id: pending.payment_id, message: "Settlement was not confirmed; investigate CDP transaction references before retrying." }, 202);
+  if (pending.status === "settlement_failed") return c.json({ error: "settlement_failed", payment_id: pending.payment_id, message: "Settlement was rejected; no delivery or refund was initiated." }, 502);
   if (pending.expires_at < Math.floor(Date.now() / 1000) && pending.status === "pending") {
     return c.json({ error: "payment_expired" }, 410);
   }
 
   // ── pending → verified (verify + settle BEFORE releasing service) ──
   if (pending.status === "pending") {
-    const verifyResult = await verifyPayment(cfg, pending, authorization ?? "");
+    const verifyResult = await verifyPayment(cfg, pending, paymentSignature);
     if (!verifyResult.ok) {
       process.stderr.write(`[verify] ${pending.payment_id}: ${verifyResult.reason}\n`);
       return c.json({ error: "payment_verification_failed", reason: verifyResult.reason }, 402);
@@ -370,14 +387,15 @@ app.post("/x402/swap", async (c) => {
       // Fall through; treat as verified from here.
     }
     // Settle BEFORE releasing service (two-phase). In demo mode this is a no-op.
-    const settleResult = await settlePayment(cfg, pending, authorization ?? "");
+    const settleResult = await settlePayment(cfg, pending, paymentSignature);
     if (!settleResult.ok) {
-      // Settle failed AFTER verify succeeded — this is the bad case. We don't
-      // re-charge the payer (verify proved their auth). We mark the payment
-      // failed_refundable so operator can investigate. Future iterations can
-      // automate refund here if the facilitator supports settlement reversal.
-      transitionToExecuting(store, pending); // move to executing first so transitionToFailedRefundable matches
-      transitionToFailedRefundable(store, pending, `settle_failed: ${settleResult.reason}`);
+      if (settleResult.unknown) {
+        transitionToSettlementUnknown(store, pending, `settle_unknown: ${settleResult.reason}`);
+        return c.json({ error: "settlement_unknown", payment_id: pending.payment_id }, 202);
+      }
+      // A definitive rejection is not a settled payment: neither deliver nor
+      // enqueue a refund. Transport/timeouts are handled separately above.
+      transitionToSettlementFailed(store, pending, `settle_failed: ${settleResult.reason}`);
       return c.json(
         { error: "settle_failed", payment_id: pending.payment_id, reason: settleResult.reason },
         502,
@@ -424,7 +442,7 @@ app.post("/x402/swap", async (c) => {
     const successBody = {
       success: true,
       payment_id: current.payment_id,
-      paid: { asset: "USDC", amount: current.amount_usdc.toFixed(6), to: current.pay_to },
+      paid: { asset: "USDC", amount: atomicToUsdc(current.amount_usdc), amount_atomic: current.amount_usdc, to: current.pay_to },
       delivered: {
         currency: current.swap_request.to_currency,
         amount: current.swap_request.amount,

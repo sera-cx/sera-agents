@@ -7,12 +7,14 @@
   "scripts": {
     "start": "tsx server.ts",
     "demo": "X402_MODE=demo tsx server.ts",
+    "e2e:sepolia": "tsx e2e-live.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
+    "@coinbase/cdp-sdk": "^1.55.0",
     "@hono/node-server": "^1.13.0",
     "better-sqlite3": "^12.10.0",
     "hono": "^4.6.0",

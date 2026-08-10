@@ -19,15 +19,18 @@ export type PaymentStatus =
   | "verified"
   | "executing"
   | "delivered"
-  | "failed_refundable";
+  | "failed_refundable"
+  | "settlement_unknown"
+  | "settlement_failed";
 
 export interface PendingPayment {
   payment_id: string;
   status: PaymentStatus;
   pay_to: string;
-  amount_usdc: number;
+  /** Exact USDC atomic units (six decimals), never a floating point value. */
+  amount_usdc: string;
   asset: "USDC";
-  chain: 1;
+  chain: number;
   swap_request: {
     from_currency: string;
     to_currency: string;
@@ -68,7 +71,7 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
           payment_id TEXT PRIMARY KEY,
           status TEXT NOT NULL,
           pay_to TEXT NOT NULL,
-          amount_usdc REAL NOT NULL,
+          amount_usdc TEXT NOT NULL,
           chain INTEGER NOT NULL,
           from_currency TEXT NOT NULL,
           to_currency TEXT NOT NULL,

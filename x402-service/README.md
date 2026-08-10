@@ -2,17 +2,17 @@
 
 A standard HTTP endpoint that follows the [x402 protocol](https://github.com/coinbase/x402) for accepting USDC payments and delivering FX swaps via Sera. Any agent that knows how to pay an x402-priced API can use Sera without ever touching MCP, an EIP-712 wallet signer, or Sera's own SDK.
 
-**Status:** v0.3.0. Demo mode is stable. Live mode is **wired against Coinbase CDP facilitator** (verify + settle + atomic CAS idempotency + `Cache-Control: no-store` + `k≥3` confirmation depth + manual-refund queue) but **not yet production-verified against Coinbase mainnet** — operator must complete Base Sepolia E2E before flipping. See [`SECURITY-MODEL.md`](../SECURITY-MODEL.md) for the full hardening matrix.
+**Status:** x402 **v2 only**. Live mode uses CDP request-bound Bearer JWTs, `PAYMENT-REQUIRED` / `PAYMENT-SIGNATURE`, CAIP-2 Base networks, and exact USDC atomic units. Base mainnet cannot start without a reviewed Sepolia E2E attestation. See the [operator runbook](RUNBOOK.md).
 
 ## What it does
 
 ```
-Agent has USDC → POST /x402/swap → 402 with payment_required → Agent pays USDC →
+Agent has USDC → POST /x402/swap → 402 with PAYMENT-REQUIRED → Agent signs →
   Service verifies via CDP /verify → CAS to verified → CDP /settle → CAS to executing →
   Sera convert_and_send → CAS to delivered → 200 with tx_hash + settlement metadata.
 ```
 
-One call from the agent's perspective. Two HTTP requests under the hood (the second one carries `X-PAYMENT`). Atomic CAS on every state transition means concurrent X-PAYMENT submissions for the same `payment_id` resolve idempotently — replays return the cached `delivered_payload`, never re-settle, never re-execute.
+One call from the agent's perspective. Two HTTP requests under the hood (the second carries `PAYMENT-SIGNATURE`; legacy `X-PAYMENT` is rejected). Atomic CAS makes same-signature replays idempotent.
 
 ## Architecture
 
