@@ -127,7 +127,7 @@ subgraph either — it calls Sera's hosted REST API (`server/sera-api.ts`):
 
 ```typescript
 DEFAULT_SERA_API_BASE_URL = "https://api.sera.cx/api/v1"
-DEFAULT_SERA_API_TESTNET_BASE_URL = "https://api.testnet.sera.cx/api/v1"
+DEFAULT_SERA_API_TESTNET_BASE_URL = "https://api-testnet.sera.cx/api/v1"
 ```
 
 Known endpoints (from `callSeraApi` call sites):
@@ -169,7 +169,7 @@ PAYMENT_BASE_URL=...
 
 # Sera API
 SERA_API_BASE_URL=https://api.sera.cx/api/v1
-SERA_API_TESTNET_BASE_URL=https://api.testnet.sera.cx/api/v1
+SERA_API_TESTNET_BASE_URL=https://api-testnet.sera.cx/api/v1
 SERA_API_KEY=...
 SERA_WEBHOOK_SECRET=...            # verifies inbound webhooks from Sera
 GOLDSKY_GRAPHQL_URL=...            # optional — exchange-graph lookups

@@ -2,7 +2,7 @@
 
 This file covers **two distinct MCP servers** for Sera Protocol:
 
-1. **Official `sera-mcp`** (`sera-cx/sera-mcp`) — 32 tools, production-grade, for AI agents
+1. **Official `sera-mcp`** (`sera-cx/sera-mcp`) — production-grade, for AI agents
 2. **Local sample `mcp-server/`** — 8 tools, demo/learning code inside `SeraProtocol-Sample/`
 
 ---
@@ -11,14 +11,14 @@ This file covers **two distinct MCP servers** for Sera Protocol:
 
 ### Overview
 
-`sera-mcp` is the production-grade MCP server published by Sera Protocol. It connects any MCP-compatible AI agent to Sera's stablecoin FX rails with 32 tools across 9 categories.
+`sera-mcp` is the production-grade MCP server published by Sera Protocol. It connects any MCP-compatible AI agent to Sera's stablecoin FX rails.
 
 **Repo**: https://github.com/sera-cx/sera-mcp
 **Architecture docs**: https://deepwiki.com/sera-cx/sera-mcp
 
 | Property | Value |
 |---|---|
-| Tools | 32 |
+| Tools | See the current [tool catalog in the sera-mcp README](https://github.com/sera-cx/sera-mcp#readme) |
 | Transports | stdio (local), Streamable HTTP (remote) |
 | Node version | 18.17+ |
 | Security | Policy engine + EIP-712 quote-sign-execute |
@@ -100,72 +100,12 @@ node dist/index.js --transport http --port 3848
 | `local` | Yes (`SERA_PRIVATE_KEY`) | Automated agents — server signs and broadcasts |
 | `readonly` | No | Price queries and monitoring only |
 
-### All 32 Tools
+### Current tool catalog
 
-#### Discovery
-| Tool | Description |
-|---|---|
-| `list_currencies` | List all supported currencies and stablecoin symbols |
-| `get_markets` | List available trading pairs and market metadata |
-
-#### Pricing & Analytics
-| Tool | Description |
-|---|---|
-| `get_fx_rate` | Real-time FX rate for a currency pair |
-| `compare_to_external_fx` | Compare Sera rate vs external FX providers |
-| `multi_source_mid` | Aggregate mid-rate from multiple price sources |
-| `spread_radar` | Scan spread widths across corridors |
-
-#### Liquidity Probing
-| Tool | Description |
-|---|---|
-| `scan_markets` | Scan all markets for liquidity and health metrics |
-| `find_deals` | Find corridors with above-average spread opportunities |
-| `probe_depth` | Probe order book depth at a price level |
-| `round_trip_cost` | Calculate round-trip cost for a corridor |
-| `infer_book` | Infer implied order book from available data |
-
-#### Quote & Execute
-| Tool | Description |
-|---|---|
-| `get_quote` | Get a firm quote for a swap (returns quote_id) |
-| `prepare_swap` | Prepare swap parameters (unsigned tx for external signing) |
-| `execute_swap` | Execute a previously quoted swap |
-| `convert_and_send` | Convert and send to recipient address in one step |
-| `quote_recipient_amount` | Quote how much recipient receives for a given input |
-| `find_cheapest_settlement_path` | Find optimal multi-hop settlement path |
-| `limit_watcher` | Watch for a limit price to be reached before executing |
-
-#### Maker
-| Tool | Description |
-|---|---|
-| `maker_quote_ladder` | Generate and manage a maker quote ladder |
-
-#### Treasury
-| Tool | Description |
-|---|---|
-| `get_balances` | Get token balances for an address |
-| `treasury_value` | Get total treasury value in USD |
-| `exposure_report` | Report on currency exposure across positions |
-| `rebalance_plan` | Generate a rebalancing plan for a target allocation |
-| `pay_invoice` | Pay a payment invoice from treasury |
-
-#### Settlement
-| Tool | Description |
-|---|---|
-| `settlement_status` | Check the status of a settlement or transfer |
-
-#### History
-| Tool | Description |
-|---|---|
-| `fx_history` | Historical FX rate data (requires `SERA_HISTORY_DB`) |
-| `fx_volatility` | FX volatility metrics for a corridor |
-| `corridor_pnl` | P&L analysis for a trading corridor |
-
-#### Admin
-| Tool | Description |
-|---|---|
-| `doctor` | Health check: API status, network, signer mode, policy summary |
+The `sera-mcp` tool inventory evolves with the server. Do not treat this Skill as
+a static catalog: consult the [current tool catalog in the official
+README](https://github.com/sera-cx/sera-mcp#readme), then call `tools/list` on
+the configured MCP server before selecting a tool or relying on its schema.
 
 ### MCP Resources
 
@@ -382,7 +322,7 @@ User: "Claim my filled order"
 
 | Need | Use |
 |---|---|
-| Production AI agent with FX trading | `sera-cx/sera-mcp` (32 tools) |
+| Production AI agent with FX trading | `sera-cx/sera-mcp` (see its current README tool catalog) |
 | Learning how Sera MCP works | `mcp-server/` (8 tools, simpler code) |
 | Multi-currency treasury management | `sera-cx/sera-mcp` + treasury tools |
 | Simple order book queries | Either works |

@@ -11,7 +11,7 @@
 > `references/graphql-api.md`) and haven't been migrated — don't assume their code reflects
 > this API.
 
-**Base URL**: `https://api.testnet.sera.cx/api/v1` (testnet) / `https://api.sera.cx/api/v1` (mainnet)
+**Base URL**: `https://api-testnet.sera.cx/api/v1` (testnet) / `https://api.sera.cx/api/v1` (mainnet)
 **Format**: JSON request/response bodies throughout.
 
 ## Table of Contents
