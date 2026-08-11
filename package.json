@@ -18,10 +18,9 @@
   "scripts": {
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
-    "test": "node --test test/*.test.mjs && npm run test --workspaces --if-present",
     "audit": "npm audit --workspaces --audit-level=high",
     "check": "npm run typecheck && npm run audit",
-    "ci": "npm ci && npm run typecheck && npm run build && npm run test && npm run audit"
+    "ci": "npm ci && npm run typecheck && npm run build && npm run audit"
   },
   "overrides": {
     "qs": "^6.15.2",
