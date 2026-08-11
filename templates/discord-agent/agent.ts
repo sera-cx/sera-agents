@@ -6,7 +6,7 @@
  * in-memory rate limiting, concurrency cap slots, and premium embeds for financial summaries.
  * All functions are encapsulated in a single file per repository template conventions.
  */
-import { Agent, run, MCPServerStdio } from "@openai/agents";
+import { Agent, run, MCPServerStdio, user, assistant } from "@openai/agents";
 import { Client, GatewayIntentBits, Partials, EmbedBuilder, ChannelType, ActivityType } from "discord.js";
 
 // ── 1. LOGGING & UTILITIES ───────────────────────────────────────────────────
@@ -28,6 +28,7 @@ management, deal scanning, and more.
 
 Operating principles:
 - Always use sera.* tools rather than guessing values from training data.
+- Do not execute swaps unless explicitly told.
 - Quote prices via sera.get_quote, never via sera.get_fx_rate.
 - Default to simulate:true on get_quote when the user is exploring.
 - For execution, return the route_params + uuid. Format structured outputs (quotes, balances, built transactions) as standard JSON blocks within \`\`\`json ... \`\`\` so the bot can format them into premium Discord embeds.
@@ -213,7 +214,7 @@ async function main() {
   });
 
   // Dynamic context history retriever
-  async function fetchHistory(channel: any, authorId: string, limit: number = 15): Promise<any[]> {
+  async function fetchHistory(channel: any, authorId: string, limit: number = 15, excludeMessageId?: string): Promise<any[]> {
     try {
       const messages = await channel.messages.fetch({ limit });
       const sorted = [...messages.values()].reverse();
@@ -223,6 +224,9 @@ async function main() {
       const isThread = channel.isThread();
 
       for (const msg of sorted) {
+        if (excludeMessageId && msg.id === excludeMessageId) {
+          continue;
+        }
         if (msg.author.bot) {
           if (msg.author.id === client.user?.id) {
             let content = msg.content || "";
@@ -236,7 +240,7 @@ async function main() {
               }
             }
             if (content.trim()) {
-              mapped.push({ role: "assistant", content: content.trim() });
+              mapped.push(assistant(content.trim()));
             }
           }
         } else {
@@ -247,7 +251,7 @@ async function main() {
 
           const cleanText = msg.content.replace(mentionRegex, "").trim();
           if (cleanText) {
-            mapped.push({ role: "user", content: cleanText });
+            mapped.push(user(cleanText));
           }
         }
       }
@@ -356,10 +360,10 @@ async function main() {
 
       try {
         // Reconstruct Context: threads/DMs fetch recent history, standard channels fetch only current user history
-        const history = await fetchHistory(message.channel, message.author.id, 15);
+        const history = await fetchHistory(message.channel, message.author.id, 15, message.id);
 
         // Ensure the current user prompt is included in the history for this execution run
-        history.push({ role: "user", content: userPrompt });
+        history.push(user(userPrompt));
 
         // Execute Agent loop
         const result = await run(agent, history);
