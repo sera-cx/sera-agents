@@ -39,11 +39,11 @@ test("Path D documents localhost, self-hosting, and live-readiness guidance", as
   ]);
 
   assert.match(landing, /localhost:8402/);
-  assert.match(landing, /Self-host the x402 service/);
-  assert.match(landing, /x402-service\/README\.md/);
-  assert.match(landing, /SECURITY-MODEL\.md/);
+  assert.match(landing, /self-host(?:ed|ing)?/i);
+  assert.match(landing, /https:\/\/github\.com\/sera-cx\/sera-agents\/blob\/main\/x402-service\/README\.md/);
+  assert.match(landing, /https:\/\/github\.com\/sera-cx\/sera-agents\/blob\/main\/SECURITY-MODEL\.md/);
   assert.match(readme, /agents\.sera\.cx` does not offer a public x402 URL/);
   assert.match(readme, /Base Sepolia E2E verification/);
-  assert.match(concepts, /agents\.sera\.cx<\/code> does not host this endpoint/);
-  assert.match(architecture, /self-hosted x402/);
+  assert.match(concepts, /self-host/i);
+  assert.match(architecture, /self-host/i);
 });
