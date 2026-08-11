@@ -1,6 +1,6 @@
 ---
 name: sera
-description: Multi-currency settlement for AI agents. Quote, swap, and settle across 40 stablecoins (USDC, USDT, EURC, XSGD, JPYC, MYRT, TGBP, BRZ, MXNT, IDRT, AUDD, and more) and 22 fiat currencies via Sera Protocol. 52 tools — quotes, swaps, treasury management, FX deal scanning, and a maker spread ladder.
+description: Multi-currency settlement for AI agents. Quote, swap, and settle across 40 stablecoins (USDC, USDT, EURC, XSGD, JPYC, MYRT, TGBP, BRZ, MXNT, IDRT, AUDD, and more) and 22 fiat currencies via Sera Protocol. 55 tools — quotes, swaps, treasury management, FX deal scanning, and a maker spread ladder.
 metadata:
   openclaw:
     requires:

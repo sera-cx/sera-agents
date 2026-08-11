@@ -7,7 +7,7 @@ All notable changes to `sera-agents` are documented in this file.
 ### Changed — docs + defaults reconciled to current surface
 - Gateway docs (`agents-gateway/README.md`, `package.json`, `.env.example`, `DEPLOY.md`, `integrations/standard-mcp-hosts`) now describe the **17** keyless MCP tools (4 core + 13 analytics), not 4.
 - Dockerfile / local-run docs pin `sera-mcp` at **v0.8.3**.
-- Stale “32 tools” copy updated to **~52–55** (`ARCHITECTURE.md`, agent system prompts, examples).
+- Stale “32 tools” copy updated to **55** (`ARCHITECTURE.md`, agent system prompts, examples).
 - Templates inventory documents all five starters (`market-maker`, `withdraw-cli` included); root README + ARCHITECTURE folder maps list `agents-gateway` and 10 workspaces.
 - Removed hardcoded `~/Desktop/...` `sera-mcp` paths — `SERA_MCP_DIST` is required (Hermes skill defaults to `npx -y sera-mcp`).
 - `SECURITY.md` aligned with `SECURITY-MODEL.md`: live x402 verify is CDP-facilitator-wired, not a stub; remaining gate is Sepolia E2E + `X402_LIVE_ACK`.

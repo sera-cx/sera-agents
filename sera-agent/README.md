@@ -2,7 +2,7 @@
 
 For teams without an existing agent. One repository, one command, end-to-end:
 
-- The Sera MCP (52 tools) pre-wired
+- The Sera MCP (55 tools) pre-wired
 - Your choice of LLM provider (OpenAI by default, Anthropic supported)
 - Interactive CLI chat surface
 - Reference flows (invoice payer, treasury rebalancer) callable in-conversation
@@ -33,7 +33,7 @@ You'll get an interactive prompt connected to the Sera MCP. Try:
 ```
 ┌────────────┐   chat    ┌────────────────┐   MCP    ┌──────────┐   REST   ┌──────┐
 │   You      │ ────────▶ │   Sera Agent   │ ───────▶ │ Sera MCP │ ───────▶ │ Sera │
-│ (terminal) │           │  (OpenAI/      │ stdio    │ (~52–55  │          │  API │
+│ (terminal) │           │  (OpenAI/      │ stdio    │ (55      │          │  API │
 │            │ ◀──────── │   Anthropic)   │ ◀─────── │  tools)  │ ◀─────── │      │
 └────────────┘           └────────────────┘          └──────────┘          └──────┘
 ```

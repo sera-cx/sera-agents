@@ -11,8 +11,8 @@ This repo is the public companion to `sera-mcp`. It contains everything someone 
 │  sera-agents     │                       │   sera-mcp      │
 │  (this repo)     │  consumes via stdio   │  (engine, npm)  │
 │                  │ ────────────────────▶ │                 │
-│  site + docs     │                       │  ~52–55 MCP     │
-│  templates       │                       │  tools          │
+│  site + docs     │                       │  MCP (55 tools) │
+│  templates       │                       │                 │
 │  examples        │                       │  signer + policy│
 │  x402-service    │                       │  Sera REST      │
 │  agents-gateway  │                       │                 │

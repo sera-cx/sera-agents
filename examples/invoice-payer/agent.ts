@@ -82,7 +82,7 @@ async function main() {
   const seraMcpPath = resolve(mcpDist);
 
   // Spin up the Sera MCP as a subprocess. The Agent SDK speaks MCP and will
-  // auto-discover the ~52–55 sera.* tools.
+  // auto-discover the 55 sera.* tools.
   const sera = new MCPServerStdio({
     command: "node",
     args: [seraMcpPath],
