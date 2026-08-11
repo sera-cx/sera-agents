@@ -188,14 +188,16 @@ npm start
 console.log(response);</code></pre>
       </div>
 
-      <p>For the hosted keyless gateway, use Streamable HTTP instead. It exposes the public gateway tool set; self-host and authenticate <code>sera-mcp</code> when you need account-scoped or execution tools.</p>
+      <p>For the hosted keyless gateway, use Streamable HTTP instead. It exposes the public gateway tool set. For account-scoped or execution tools, self-host <code>sera-mcp</code> and set its secret <code>SERA_MCP_TOKEN</code> in your server environment.</p>
       <div class="codeblock">
         <div class="filename">my-agent.ts</div>
 <pre><code><span style="color:#A78BFA">import</span> { Agent, MCPServerStreamableHttp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'@openai/agents'</span>;
 
+<span style="color:#A78BFA">const</span> token = process.env.SERA_MCP_TOKEN;
 <span style="color:#A78BFA">const</span> sera = <span style="color:#A78BFA">new</span> MCPServerStreamableHttp({
   url: <span style="color:#7DF9C2">'https://agents.sera.cx/mcp'</span>,
-  name: <span style="color:#7DF9C2">'sera'</span>
+  name: <span style="color:#7DF9C2">'sera'</span>,
+  ...(token ? { requestInit: { headers: { Authorization: <span style="color:#7DF9C2">`Bearer ${token}`</span> } } } : {})
 });
 <span style="color:#A78BFA">await</span> sera.connect();</code></pre>
       </div>

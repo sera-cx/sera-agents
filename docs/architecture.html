@@ -183,7 +183,7 @@
         <li>On-chain settlement; agent polls <code>sera.settlement_status</code> for confirmation.</li>
       </ul>
 
-      <p>For Path B starters, <code>SERA_MCP_URL=https://agents.sera.cx/mcp</code> selects the hosted keyless gateway. To access account-scoped or execution tools over HTTP, self-host <code>sera-mcp</code> behind authentication and point the same variable at that deployment.</p>
+      <p>For Path B starters, <code>SERA_MCP_URL=https://agents.sera.cx/mcp</code> selects the hosted keyless gateway. To access account-scoped or execution tools over HTTP, self-host <code>sera-mcp</code>, point <code>SERA_MCP_URL</code> at it, and set its secret <code>SERA_MCP_TOKEN</code>; the starter sends it as a Bearer token only to that MCP connection.</p>
 
       <h3>Path 2 — x402 (skip MCP)</h3>
       <ul>

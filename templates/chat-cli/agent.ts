@@ -28,11 +28,18 @@ async function main() {
   // Set SERA_MCP_URL to use a hosted or self-hosted Streamable HTTP MCP
   // endpoint. Without it, this starter retains its full local stdio MCP setup.
   const seraMcpUrl = process.env.SERA_MCP_URL;
+  const seraMcpToken = process.env.SERA_MCP_TOKEN?.trim();
   const seraMcpPath =
     process.env.SERA_MCP_DIST ?? resolve(process.env.HOME!, "Desktop/sera-mcp/dist/index.js");
 
   const sera = seraMcpUrl
-    ? new MCPServerStreamableHttp({ url: seraMcpUrl, name: "sera" })
+    ? new MCPServerStreamableHttp({
+        url: seraMcpUrl,
+        name: "sera",
+        ...(seraMcpToken
+          ? { requestInit: { headers: { Authorization: `Bearer ${seraMcpToken}` } } }
+          : {}),
+      })
     : new MCPServerStdio({
         command: "node",
         args: [seraMcpPath],

@@ -126,7 +126,7 @@ External — uses `sera-mcp` directly, no code in this repo. See `README.md` Pat
 
 - A single-file `agent.ts` or `server.ts` (the entire template body).
 - Uses [`@openai/agents`](https://www.npmjs.com/package/@openai/agents) (the OpenAI Agents SDK for JS/TS).
-- Defaults to a local `sera-mcp` stdio subprocess via `MCPServerStdio`; setting `SERA_MCP_URL` selects `MCPServerStreamableHttp` instead.
+- Defaults to a local `sera-mcp` stdio subprocess via `MCPServerStdio`; setting `SERA_MCP_URL` selects `MCPServerStreamableHttp` instead. When that endpoint needs Bearer authentication, `SERA_MCP_TOKEN` is sent only as its `Authorization` header.
 - Defines a system prompt + agent role; the agent decides which `sera.*` tools to call.
 
 Each template exposes one shape:
@@ -210,7 +210,7 @@ GitHub Pages config:
 
 This repo does **not** vendor or duplicate `sera-mcp`. Every code path that invokes Sera goes through the published `sera-mcp` package (or a local clone at the user's path). The contract between repos:
 
-- `sera-agents` consumes `sera-mcp` via stdio by default (`MCPServerStdio` from `@openai/agents`); Path B starters can instead use Streamable HTTP via `SERA_MCP_URL`.
+- `sera-agents` consumes `sera-mcp` via stdio by default (`MCPServerStdio` from `@openai/agents`); Path B starters can instead use Streamable HTTP via `SERA_MCP_URL` and optional Bearer authentication via `SERA_MCP_TOKEN`.
 - `sera-agents` does not import `sera-mcp` symbols or types.
 - `sera-mcp` does not depend on `sera-agents` for anything.
 - Both repos target the same MCP compatibility surface (stdio and Streamable HTTP; SSE is not used by the starters).

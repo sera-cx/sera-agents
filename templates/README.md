@@ -29,9 +29,13 @@ export OPENAI_API_KEY=sk-...
 # Optional: SERA_API_KEY + SERA_API_SECRET to unlock balances + treasury tools
 
 # Optional: use the hosted keyless MCP instead of a local subprocess.
-# It exposes the public gateway tool set; self-host a full MCP endpoint for
-# account-scoped or execution tools.
+# It exposes the public gateway tool set.
 export SERA_MCP_URL=https://agents.sera.cx/mcp
+
+# For account-scoped or execution tools, self-host sera-mcp and configure its
+# Bearer token. Keep the token in your deployment's secret store.
+export SERA_MCP_URL=https://mcp.example.com/mcp
+export SERA_MCP_TOKEN=...
 
 # Run
 npm start
@@ -48,8 +52,9 @@ The starters use stdio by default, spawning a local full `sera-mcp` process. Set
 `SERA_MCP_URL` to select Streamable HTTP instead. The hosted
 `https://agents.sera.cx/mcp` gateway is keyless and exposes its public tool set;
 for the full account-scoped or execution surface, self-host `sera-mcp` over
-Streamable HTTP and protect that endpoint appropriately. SSE is intentionally
-not used.
+Streamable HTTP and set `SERA_MCP_TOKEN`; the templates send it as an
+`Authorization: Bearer …` header only to that MCP connection. Keep it in a
+server-side secret store. SSE is intentionally not used.
 
 ## Why no `npx create-sera-agent` yet
 

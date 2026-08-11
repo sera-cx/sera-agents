@@ -23,9 +23,15 @@ to Streamable HTTP without changing code:
 export SERA_MCP_URL=https://agents.sera.cx/mcp
 ```
 
-The hosted gateway is keyless and exposes its public tool set. Point the same
-variable at an authenticated self-hosted `sera-mcp` endpoint when the template
-needs the full account-scoped or execution surface.
+The hosted gateway is keyless and exposes its public tool set. For the full
+account-scoped or execution surface, point the URL at an authenticated
+self-hosted `sera-mcp` endpoint and set its Bearer token in the template's
+server environment:
+
+```bash
+export SERA_MCP_URL=https://mcp.example.com/mcp
+export SERA_MCP_TOKEN=... # sent as Authorization: Bearer … only to this MCP
+```
 
 ## Remote (Streamable HTTP) — copy/paste per framework
 

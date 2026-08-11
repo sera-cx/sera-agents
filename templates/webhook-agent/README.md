@@ -22,9 +22,14 @@ To connect to a Streamable HTTP MCP instead of spawning a local process, set:
 export SERA_MCP_URL=https://agents.sera.cx/mcp
 ```
 
-The hosted endpoint is keyless and exposes the public gateway tool set. Use an
-authenticated self-hosted `sera-mcp` endpoint when your webhook needs the full
-account-scoped or execution surface.
+The hosted endpoint is keyless and exposes the public gateway tool set. For an
+authenticated self-hosted `sera-mcp` endpoint, configure its Bearer token on
+the server:
+
+```bash
+export SERA_MCP_URL=https://mcp.example.com/mcp
+export SERA_MCP_TOKEN=... # keep this secret out of source control
+```
 
 For exposing publicly behind a proxy (Cloudflare Tunnel, Fly, etc.):
 
@@ -58,4 +63,4 @@ The agent runs the task and returns its summary in the response.
 - **Mapping events to tasks** — edit `TASK_BUILDER` in `server.ts`. Examples included for Stripe `invoice.paid`, GitHub release events, cron ticks.
 - **Auth** — `WEBHOOK_SECRET` env enables a bearer-token gate. For production add IP allowlisting or HMAC verification per upstream provider.
 - **Long-running tasks** — if your tasks take >30s, return a 202 + run async, then deliver the result via your own callback URL.
-- **MCP transport** — `SERA_MCP_URL` selects Streamable HTTP and takes precedence over the local stdio configuration.
+- **MCP transport** — `SERA_MCP_URL` selects Streamable HTTP and takes precedence over the local stdio configuration. If set, `SERA_MCP_TOKEN` is sent as its Bearer token.
