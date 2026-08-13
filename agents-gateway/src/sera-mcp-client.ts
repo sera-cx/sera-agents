@@ -44,7 +44,10 @@ const REQUEST_TIMEOUT_MS = 30_000;
 export function makeSeraMcpClient(opts: InitOpts): SeraMcpClient {
   let proc: ChildProcessWithoutNullStreams | null = null;
   let reqId = 0;
-  let initialized = false;
+  // A single in-flight readiness promise shared by all callers. Memoizing it is
+  // what makes the cold-start handshake happen exactly once under concurrency —
+  // see ensureReady().
+  let readyPromise: Promise<void> | null = null;
   const pending = new Map<number, { resolve: (v: any) => void; reject: (e: any) => void }>();
 
   function start(): ChildProcessWithoutNullStreams {
@@ -84,7 +87,9 @@ export function makeSeraMcpClient(opts: InitOpts): SeraMcpClient {
       for (const [, h] of pending) h.reject(new Error(reason));
       pending.clear();
       proc = null;
-      initialized = false;
+      // Drop the memoized handshake so the next call re-spawns and re-initializes
+      // a fresh subprocess rather than reusing a promise for a dead child.
+      readyPromise = null;
     }
 
     p.stderr.on("data", (chunk) => process.stderr.write("[sera-mcp] " + chunk.toString("utf8")));
@@ -139,19 +144,29 @@ export function makeSeraMcpClient(opts: InitOpts): SeraMcpClient {
     });
   }
 
-  async function ensureReady(): Promise<void> {
-    if (!proc) {
-      proc = start();
-      await new Promise((r) => setTimeout(r, 250));
-    }
-    if (!initialized) {
-      await rpc("initialize", {
-        protocolVersion: "2024-11-05",
-        capabilities: {},
-        clientInfo: { name: "agents-gateway", version: "0.1.0" },
+  // Spawn + initialize exactly once, even when several callTool() calls race on
+  // a cold start (e.g. `rates()` fans out with Promise.all). Without memoizing,
+  // each concurrent caller saw `proc`/`initialized` still unset and independently
+  // sent its own `initialize` handshake — the subprocess got initialized N times
+  // and later callers wrote to stdin before the spawn grace period elapsed. All
+  // callers now await the same promise. A failed handshake is not memoized so the
+  // next call retries against a fresh subprocess.
+  function ensureReady(): Promise<void> {
+    if (!readyPromise) {
+      readyPromise = (async () => {
+        proc = start();
+        await new Promise((r) => setTimeout(r, 250));
+        await rpc("initialize", {
+          protocolVersion: "2024-11-05",
+          capabilities: {},
+          clientInfo: { name: "agents-gateway", version: "0.1.0" },
+        });
+      })().catch((err) => {
+        readyPromise = null;
+        throw err;
       });
-      initialized = true;
     }
+    return readyPromise;
   }
 
   return {
@@ -167,7 +182,7 @@ export function makeSeraMcpClient(opts: InitOpts): SeraMcpClient {
       if (proc) {
         proc.kill();
         proc = null;
-        initialized = false;
+        readyPromise = null;
       }
     },
   };

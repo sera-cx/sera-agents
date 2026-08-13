@@ -153,8 +153,8 @@
       <h2 id="x402" class="gradient-text">x402 <span class="anchor-jump">— HTTP 402 Payment Required</span></h2>
       <p>An open agent-payment standard layered on top of HTTP. The server returns <code>402 Payment Required</code> with payment instructions. The client pays (USDC, on-chain). The client retries with an <code>X-PAYMENT</code> header. The server verifies and returns <code>200 OK</code> with the goods. Idempotent, stateless, cache-friendly.</p>
 
-      <h3>Why we expose one</h3>
-      <p>Some agents don't speak MCP — they speak HTTP. The x402 endpoint lets any agent that knows the standard pay USDC and get an FX-converted payout in any of 40 stablecoins, no Sera SDK required.</p>
+      <h3>Why you might self-host one</h3>
+      <p>Some agents don't speak MCP — they speak HTTP. Run or deploy <code>x402-service</code> yourself to let an agent that knows the standard pay USDC and receive an FX-converted payout, with no Sera SDK required. The local demo listens on <code>localhost:8402</code>; <code>agents.sera.cx</code> does not host this endpoint.</p>
 
       <h3>Why this is interesting beyond Sera</h3>
       <p>x402 is the closest thing the agent ecosystem has to "Stripe for agents" without the Stripe. Wrapping <em>any</em> API in the same pattern means agents can pay you per call without contract negotiations, OAuth flows, or pre-funded API keys. See the <a href="tutorials/x402-paid-api.html">x402-paid API tutorial</a>.</p>
@@ -194,14 +194,14 @@
 
       <h3>FX swap via x402 (uses CLOB + x402 + EIP-3009)</h3>
       <div class="codeblock my-4">
-<pre><code><span style="color:#6B7180">1.</span> Agent → <span style="color:#7DF9C2">POST /x402/swap</span> → server returns 402 + payment_id
+<pre><code><span style="color:#6B7180">1.</span> Agent → <span style="color:#7DF9C2">POST your-x402-host/x402/swap</span> → server returns 402 + payment_id
 <span style="color:#6B7180">2.</span> Agent → signs USDC transferWithAuthorization (EIP-3009) off-chain
 <span style="color:#6B7180">3.</span> Agent → retries POST with <span style="color:#7DF9C2">X-PAYMENT: id:auth</span> header
 <span style="color:#6B7180">4.</span> Server → verifies USDC payment + executes Sera swap from vault
 <span style="color:#6B7180">5.</span> Server → returns 200 OK with delivered + trade_id</code></pre>
       </div>
 
-      <p class="mt-12">Next: <a href="tutorials/">Pick a tutorial</a> · <a href="api/">API reference</a> · <a href="recipes.html">Recipes</a>.</p>
+      <p class="mt-12">For the local demo and live-readiness requirements, see <a href="https://github.com/sera-cx/sera-agents/blob/main/x402-service/README.md">x402-service/README.md</a> and <a href="https://github.com/sera-cx/sera-agents/blob/main/SECURITY-MODEL.md">SECURITY-MODEL.md</a>. Next: <a href="tutorials/">Pick a tutorial</a> · <a href="api/">API reference</a> · <a href="recipes.html">Recipes</a>.</p>
 
     </main>
   </div>

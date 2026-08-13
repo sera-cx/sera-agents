@@ -11,6 +11,12 @@ internet ─► Caddy (80/443, TLS) ─┬─► static     (nginx, landing page
 
 `docker-compose.yml` and `agents-gateway/deploy/Caddyfile` are the source of truth.
 
+## Deployment scope
+
+`agents.sera.cx` publishes the static site and keyless MCP gateway only. The Compose file has no `x402-service`, and Caddy has no `/x402/*` route; consequently, this host does **not** provide a managed x402 API.
+
+Run the Path D demo locally at `localhost:8402`, or deploy `x402-service/` to infrastructure you operate. Public x402 operations — including deployment topology, Vault and facilitator secrets, payment monitoring, refunds, and production smoke tests — are outside this guide. Live operation also requires the Base Sepolia E2E and explicit operator acknowledgement described in [`x402-service/README.md`](x402-service/README.md) and [`SECURITY-MODEL.md`](SECURITY-MODEL.md).
+
 ---
 
 ## Prerequisites on the VM
@@ -119,6 +125,8 @@ curl -fsS 'https://agents.sera.cx/rates?pairs=USDC/EURC' | head
 # Static landing page still served
 curl -fsS https://agents.sera.cx/ | head -5
 ```
+
+`/x402/swap` is intentionally not a smoke test: it is not served by `agents.sera.cx`.
 
 If any of those fail, see Troubleshooting below.
 

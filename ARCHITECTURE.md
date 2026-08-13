@@ -72,6 +72,7 @@ sera-agents/
 │   ├── chat-cli/               Terminal REPL template
 │   ├── web-chat/               Express + browser chat UI
 │   ├── webhook-agent/          HTTP endpoint that triggers an agent task
+│   ├── slack-agent/            Slack bot worker (Bolt, Socket/HTTP)
 │   ├── market-maker/           Deterministic two-sided spread bot
 │   └── withdraw-cli/           Dual-sig instant-withdrawal walkthrough
 │
@@ -101,7 +102,7 @@ sera-agents/
 
 ## Workspaces
 
-This repo is an `npm` workspace. Root `package.json` declares 10 packages:
+This repo is an `npm` workspace. Root `package.json` declares all packages, including:
 
 ```
 agents-gateway
@@ -110,6 +111,7 @@ x402-service
 templates/chat-cli
 templates/web-chat
 templates/webhook-agent
+templates/slack-agent
 templates/market-maker
 templates/withdraw-cli
 examples/invoice-payer
@@ -133,7 +135,7 @@ External — uses `sera-mcp` directly, no code in this repo. See `README.md` Pat
 
 ## Path B — build from a template
 
-`templates/{chat-cli, web-chat, webhook-agent, market-maker, withdraw-cli}` are each:
+`templates/{chat-cli, web-chat, webhook-agent, slack-agent, market-maker, withdraw-cli}` are each:
 
 - A single-file `agent.ts` or `server.ts` (the entire template body).
 - Uses [`@openai/agents`](https://www.npmjs.com/package/@openai/agents) (the OpenAI Agents SDK for JS/TS).
@@ -147,6 +149,7 @@ Each template exposes one shape:
 | `chat-cli` | Terminal REPL | none |
 | `web-chat` | Express + plain-HTML chat UI | bearer (required off-loopback) |
 | `webhook-agent` | HTTP `POST /webhook` → run agent → return result | HMAC (Stripe / GitHub / generic) |
+| `slack-agent` | Slack Bot DM / channel mentions | Slack Verification (HMAC/Token) |
 | `market-maker` | Deterministic cancel-before-place spread loop | Sepolia-safe; `MM_DRY_RUN` default |
 | `withdraw-cli` | Interactive dual-sig withdraw walkthrough | none |
 
