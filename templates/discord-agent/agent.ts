@@ -181,6 +181,8 @@ async function main() {
       SERA_NETWORK: process.env.SERA_NETWORK ?? "mainnet",
       POLICY_PRESET: process.env.POLICY_PRESET ?? "standard",
       LOG_LEVEL: process.env.LOG_LEVEL ?? "warn",
+      SERA_ENABLE_EXECUTION_TOOLS: "false",
+      SERA_SIGNER_MODE: "external",
       ...(process.env.SERA_API_KEY ? { SERA_API_KEY: process.env.SERA_API_KEY } : {}),
       ...(process.env.SERA_API_SECRET ? { SERA_API_SECRET: process.env.SERA_API_SECRET } : {}),
     },
