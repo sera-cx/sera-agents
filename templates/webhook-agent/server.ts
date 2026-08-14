@@ -148,6 +148,8 @@ async function main() {
     process.exit(1);
   }
   const seraMcpPath = resolve(mcpDist);
+  const seraMcpUrl = process.env.SERA_MCP_URL?.trim();
+  const seraMcpToken = process.env.SERA_MCP_TOKEN?.trim();
 
   const sera = seraMcpUrl
     ? new MCPServerStreamableHttp({

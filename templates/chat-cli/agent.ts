@@ -38,6 +38,8 @@ function requireSeraMcpDist(): string {
 
 async function main() {
   const seraMcpPath = requireSeraMcpDist();
+  const seraMcpUrl = process.env.SERA_MCP_URL?.trim();
+  const seraMcpToken = process.env.SERA_MCP_TOKEN?.trim();
 
   const sera = seraMcpUrl
     ? new MCPServerStreamableHttp({
