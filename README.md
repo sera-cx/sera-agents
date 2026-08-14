@@ -6,7 +6,7 @@
 
 **Who this is for:** developers integrating Sera into an existing agent product, picking up a template to ship fast, or self-hosting an x402 service for agent-to-agent FX delivery.
 
-Multi-currency settlement infrastructure for AI agents. Quote, convert, and settle across 40 stablecoins and 22 fiat currencies — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more — through an open Model Context Protocol server, three starter templates, a complete bundled agent, and a self-hosted x402 service.
+Multi-currency settlement infrastructure for AI agents. Quote, convert, and settle across 40 stablecoins and 22 fiat currencies — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more — through an open Model Context Protocol server, six starter templates, a complete bundled agent, and a self-hosted x402 service.
 
 For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.md`](SECURITY-MODEL.md), and [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -15,7 +15,7 @@ For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.m
 | Path | For | Artifact |
 |---|---|---|
 | **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | [`sera-mcp`](https://github.com/sera-cx/sera-mcp) (the MCP) |
-| **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent, slack-agent}` |
+| **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent, slack-agent, market-maker, withdraw-cli}` |
 | **C — Run** | Want it ready out of the box | `sera-agent/` (interactive CLI) |
 | **D — Self-host** | Agent speaks x402 HTTP | `x402-service/` (run locally or deploy yourself) |
 
@@ -28,6 +28,8 @@ sera-agents/
 ├── README.md                     This file.
 ├── index.html                    Landing page (single file, host anywhere static).
 │
+├── agents-gateway/               Public HTTP + MCP gateway for agents.sera.cx (17 keyless tools).
+│
 ├── sera-agent/                   PATH C — bundled CLI.
 │   ├── agent.ts
 │   ├── package.json
@@ -38,7 +40,9 @@ sera-agents/
 │   ├── chat-cli/                 Terminal REPL.
 │   ├── web-chat/                 Express + browser chat UI.
 │   ├── webhook-agent/            HTTP endpoint that triggers an agent task.
-│   └── slack-agent/              Slack bot worker (Bolt, Socket/HTTP).
+│   ├── slack-agent/              Slack bot worker (Bolt, Socket/HTTP).
+│   ├── market-maker/             Deterministic two-sided spread bot.
+│   └── withdraw-cli/             Dual-sig instant-withdrawal walkthrough.
 │
 ├── x402-service/                 PATH D — protocol-level service.
 │   ├── server.ts                 Hono server. Implements 402 → pay → 200.
@@ -60,7 +64,7 @@ sera-agents/
 
 Plus repo-root files: `LICENSE` (MIT), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `.github/` (issue + PR templates).
 
-The MCP server itself lives in a separate repo: [sera-cx/sera-mcp](https://github.com/sera-cx/sera-mcp) — distributed independently. v0.8.3, 52 tools.
+The MCP server itself lives in a separate repo: [sera-cx/sera-mcp](https://github.com/sera-cx/sera-mcp) — distributed independently. v0.8.3, 55 tools.
 
 ## Path A — install the MCP
 
@@ -91,11 +95,12 @@ Verify in any agent session: `Call sera.doctor`. For other hosts and agent frame
 ## Path B — build from a template
 
 ```bash
-# Pick chat-cli, web-chat, webhook-agent, or slack-agent
+# Pick chat-cli, web-chat, webhook-agent, slack-agent, market-maker, or withdraw-cli
 cp -r templates/web-chat ~/my-sera-agent
 cd ~/my-sera-agent
 npm install
 export OPENAI_API_KEY=sk-...
+export SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js
 npm start
 ```
 

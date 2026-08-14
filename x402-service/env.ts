@@ -54,9 +54,16 @@ export function loadConfig(): X402Config {
     surchargeBps: Number(process.env.X402_SURCHARGE_BPS ?? 0),
     maxAmount: Number(process.env.X402_MAX_AMOUNT ?? 1_000_000),
     stateDb: process.env.X402_STATE_DB,
-    seraMcpPath:
-      process.env.SERA_MCP_DIST ??
-      `${process.env.HOME}/Desktop/SERA MCP and AGENT/sera-mcp/dist/index.js`,
+    seraMcpPath: (() => {
+      const p = process.env.SERA_MCP_DIST?.trim();
+      if (!p) {
+        fail(
+          `\nSERA_MCP_DIST is required. Point it at a built sera-mcp/dist/index.js\n` +
+            `  e.g. SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js npm start\n\n`,
+        );
+      }
+      return p;
+    })(),
     vaultAddress: process.env.X402_VAULT_ADDRESS,
     facilitatorUrl: process.env.X402_FACILITATOR_URL,
     cdpApiKeyId: process.env.X402_CDP_API_KEY_ID,

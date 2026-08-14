@@ -9,7 +9,7 @@ For vulnerability reporting, see [`SECURITY.md`](SECURITY.md). For architecture,
 | Package | Treat as |
 |---|---|
 | `sera-agent/` (bundled CLI) | Local single-user tool |
-| `templates/{chat-cli, web-chat, webhook-agent}` | Starter code you fork and harden |
+| `templates/{chat-cli, web-chat, webhook-agent, market-maker, withdraw-cli}` | Starter code you fork and harden |
 | `examples/{invoice-payer, treasury-rebalancer}` | Reference flows for reading, not deploying |
 | `x402-service/` (`demo` mode) | Safe to run locally |
 | `x402-service/` (`live` mode) | **Not production-complete — see below** |
@@ -72,7 +72,7 @@ Until Sepolia E2E is verified, **demo mode is the safe default**.
 
 ## Template security expectations
 
-`templates/chat-cli/`, `templates/web-chat/`, and `templates/webhook-agent/` are intentionally minimal starters. They are **not** production-hardened.
+`templates/chat-cli/`, `templates/web-chat/`, `templates/webhook-agent/`, `templates/market-maker/`, and `templates/withdraw-cli/` are intentionally minimal starters. They are **not** production-hardened.
 
 What they DO ship safely:
 

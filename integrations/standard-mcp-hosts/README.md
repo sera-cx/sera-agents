@@ -62,7 +62,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
 }
 ```
 
-Fully quit and reopen Claude Desktop. The hammer icon should show `sera` with 52 tools.
+Fully quit and reopen Claude Desktop. The hammer icon should show `sera` with 55 tools.
 
 ---
 
@@ -74,7 +74,7 @@ Settings → Connectors → Add Custom Connector. ChatGPT supports remote MCP se
 https://agents.sera.cx/mcp
 ```
 
-That's the Streamable HTTP endpoint exposing `fx_quote`, `fx_settle`, `corridors`, `rates` (keyless). If instead you want the full 52-tool stdio `sera-mcp` in a remote host, it also supports Streamable HTTP since v0.8.0 (`--transport http`) — self-host and front it with auth; see the [sera-mcp README](https://github.com/sera-cx/sera-mcp).
+That's the Streamable HTTP endpoint exposing **17 keyless tools** (`fx_quote`, `fx_settle`, `corridors`, `rates`, plus analytics such as `find_deals`, `spread_radar`, `probe_depth`, … — see [`.well-known/mcp.json`](../../.well-known/mcp.json)). If instead you want the full 55-tool stdio `sera-mcp` in a remote host, it also supports Streamable HTTP since v0.8.0 (`--transport http`) — self-host and front it with auth; see the [sera-mcp README](https://github.com/sera-cx/sera-mcp).
 
 ---
 
@@ -142,7 +142,7 @@ All three accept the standard MCP stdio config. Per-host config locations:
 - **Zed**: `~/.config/zed/settings.json` → `context_servers` block
 - **Goose**: `~/.config/goose/config.yaml` → `extensions` section
 
-Same `command + args + env` shape as everywhere else. Sera surfaces 52 tools regardless of host.
+Same `command + args + env` shape as everywhere else. Sera surfaces 55 tools regardless of host.
 
 ---
 

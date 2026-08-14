@@ -18,9 +18,18 @@ import { Agent, MCPServerStdio, run } from "@openai/agents";
 import { resolve } from "node:path";
 import { randomBytes } from "node:crypto";
 
-const MCP_PATH =
-  process.env.SERA_MCP_DIST ??
-  resolve(process.env.HOME!, "Desktop/SERA MCP and AGENT/sera-mcp/dist/index.js");
+function requireSeraMcpDist(): string {
+  const p = process.env.SERA_MCP_DIST?.trim();
+  if (!p) {
+    console.error(
+      "SERA_MCP_DIST is required. Point it at a built sera-mcp/dist/index.js\n" +
+        "  e.g. SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js npm start",
+    );
+    process.exit(1);
+  }
+  return resolve(p);
+}
+const MCP_PATH = requireSeraMcpDist();
 
 const USER = process.env.WITHDRAW_USER;
 const RECIPIENT = process.env.WITHDRAW_RECIPIENT;

@@ -99,7 +99,7 @@ All env vars are read from `.env` next to `docker-compose.yml`. None are require
 | Var | Default | Notes |
 |---|---|---|
 | `SERA_NETWORK` | `mainnet` | `mainnet` or `sepolia` |
-| `SERA_API_KEY` | _(unset)_ | Optional. Set to opt in to Sera's account-level quota; without it the four public tools work keyless. |
+| `SERA_API_KEY` | _(unset)_ | Optional. Set to opt in to Sera's account-level quota; without it all 17 keyless tools work. |
 | `SERA_API_SECRET` | _(unset)_ | Paired with `SERA_API_KEY` |
 | `GATEWAY_IMAGE_TAG` | `latest` | Pin to a specific image tag for reproducible rollouts (e.g. `sha-7848d1e…`) |
 

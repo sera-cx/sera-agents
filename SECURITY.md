@@ -21,7 +21,7 @@ This repository ships **starter templates**, a **bundled agent**, **integration 
 - HTTP templates (web-chat, webhook-agent, x402-service) may be deployed publicly. They refuse to start in unsafe configurations (no auth + non-loopback bind) and require explicit opt-ins.
 - Agent natural-language inputs (chat messages, webhook payloads) are treated as **untrusted** and pass through allowlist mappers / Zod validation before becoming agent instructions.
 - The Sera MCP child process treats every tool argument as agent-influenced. Schema validation happens upstream in sera-mcp itself.
-- x402-service in `live` mode performs real on-chain settlement and requires a vault wallet. The current build is wired to the Coinbase CDP facilitator and refuses live boot without facilitator credentials, a vault address, confirmation-depth safeguards, and an explicit operator acknowledgement. It is not production-verified: complete the Base Sepolia E2E before any live deployment.
+- x402-service in `live` mode performs real on-chain settlement and requires a vault wallet. The current build is wired to the Coinbase CDP facilitator and refuses live boot without facilitator credentials, a vault address, confirmation-depth safeguards, and an explicit operator acknowledgement (`X402_LIVE_ACK=true`). It is not production-verified: complete the Base Sepolia E2E before any live deployment (see [`SECURITY-MODEL.md`](SECURITY-MODEL.md)).
 
 ## Hardening Posture
 
@@ -66,6 +66,6 @@ Each package runs `npm ci`, typecheck, build, and `npm audit --audit-level=high`
 
 ## Known Out-of-Scope Items
 
-- The x402-service `live` mode is wired to a CDP facilitator but has not completed its required Base Sepolia end-to-end verification. Operators must complete that E2E and approve their own deployment before enabling live settlement.
+- The x402-service `live` mode is wired to a CDP facilitator but has not completed its required Base Sepolia end-to-end verification. Operators must set `X402_LIVE_ACK=true`, complete that E2E, and approve their own deployment before enabling live settlement (see [`SECURITY-MODEL.md`](SECURITY-MODEL.md)).
 - We do not implement encrypted transport between MCP host and the MCP server (stdio is treated as a trust boundary at the host).
 - Smart contract security is Sera Protocol's responsibility, not this repo.

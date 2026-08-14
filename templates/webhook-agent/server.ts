@@ -139,12 +139,15 @@ function ipRateLimit(ip: string): boolean {
 }
 
 async function main() {
-  // Set SERA_MCP_URL to use a hosted or self-hosted Streamable HTTP MCP
-  // endpoint. Without it, this starter retains its full local stdio MCP setup.
-  const seraMcpUrl = process.env.SERA_MCP_URL;
-  const seraMcpToken = process.env.SERA_MCP_TOKEN?.trim();
-  const seraMcpPath =
-    process.env.SERA_MCP_DIST ?? resolve(process.env.HOME!, "Desktop/sera-mcp/dist/index.js");
+  const mcpDist = process.env.SERA_MCP_DIST?.trim();
+  if (!mcpDist) {
+    console.error(
+      "SERA_MCP_DIST is required. Point it at a built sera-mcp/dist/index.js\n" +
+        "  e.g. SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js npm start",
+    );
+    process.exit(1);
+  }
+  const seraMcpPath = resolve(mcpDist);
 
   const sera = seraMcpUrl
     ? new MCPServerStreamableHttp({
