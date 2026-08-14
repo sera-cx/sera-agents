@@ -65,7 +65,8 @@ sera-agents/
 │   ├── README.md
 │   ├── chat-cli/               Terminal REPL template
 │   ├── web-chat/               Express + browser chat UI
-│   └── webhook-agent/          HTTP endpoint that triggers an agent task
+│   ├── webhook-agent/          HTTP endpoint that triggers an agent task
+│   └── slack-agent/            Slack bot worker (Bolt, Socket/HTTP)
 │
 ├── examples/                   Reference flows (programmatic, single-task)
 │   ├── invoice-payer/          Cross-currency invoice settlement
@@ -93,7 +94,7 @@ sera-agents/
 
 ## Workspaces
 
-This repo is an `npm` workspace. Root `package.json` declares 7 packages:
+This repo is an `npm` workspace. Root `package.json` declares all packages, including:
 
 ```
 sera-agent
@@ -101,6 +102,7 @@ x402-service
 templates/chat-cli
 templates/web-chat
 templates/webhook-agent
+templates/slack-agent
 examples/invoice-payer
 examples/treasury-rebalancer
 ```
@@ -122,7 +124,7 @@ External — uses `sera-mcp` directly, no code in this repo. See `README.md` Pat
 
 ## Path B — build from a template
 
-`templates/{chat-cli, web-chat, webhook-agent}` are each:
+`templates/{chat-cli, web-chat, webhook-agent, slack-agent}` are each:
 
 - A single-file `agent.ts` or `server.ts` (the entire template body).
 - Uses [`@openai/agents`](https://www.npmjs.com/package/@openai/agents) (the OpenAI Agents SDK for JS/TS).
@@ -136,6 +138,7 @@ Each template exposes one shape:
 | `chat-cli` | Terminal REPL | none |
 | `web-chat` | Express + plain-HTML chat UI | none (intended for local dev) |
 | `webhook-agent` | HTTP `POST /webhook` → run agent → return result | HMAC (Stripe / GitHub / generic) |
+| `slack-agent` | Slack Bot DM / channel mentions | Slack Verification (HMAC/Token) |
 
 Templates do not bundle production-grade auth, rate limiting, or persistence. They are starters.
 

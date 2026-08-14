@@ -168,6 +168,9 @@ export function makeHandlers(mcp: SeraMcpClient, cache: QuoteCache) {
     if (!DECIMAL.test(amount.trim())) {
       throw new GatewayError(400, "amount must be a decimal number");
     }
+    if (Number(amount) <= 0) {
+      throw new GatewayError(400, "amount must be greater than zero");
+    }
     if (!DECIMAL.test(rateStr)) {
       throw new Error("sera-mcp returned a non-numeric rate");
     }

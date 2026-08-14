@@ -1,0 +1,20 @@
+{
+  "name": "sera-template-slack-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Template: Slack bot agent powered by the Sera MCP.",
+  "scripts": {
+    "start": "tsx server.ts",
+    "typecheck": "tsc --noEmit",
+    "audit": "npm audit --omit=dev --audit-level=high"
+  },
+  "dependencies": {
+    "@openai/agents": "^0.3.0",
+    "@slack/bolt": "^3.21.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}

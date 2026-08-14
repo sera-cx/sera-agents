@@ -47,6 +47,18 @@ describe("handlers — error status classification", () => {
     expect(err.status).toBe(400);
   });
 
+  it("quote → 400 GatewayError on a negative amount (caller input)", async () => {
+    const err = await make().quote({ from_token: "A", to_token: "B", amount: "-5" }).catch((e) => e);
+    expect(err).toBeInstanceOf(GatewayError);
+    expect(err.status).toBe(400);
+  });
+
+  it("quote → 400 GatewayError on a zero amount (caller input)", async () => {
+    const err = await make().quote({ from_token: "A", to_token: "B", amount: "0" }).catch((e) => e);
+    expect(err).toBeInstanceOf(GatewayError);
+    expect(err.status).toBe(400);
+  });
+
   it("quote → plain Error (→502) on a non-numeric upstream rate", async () => {
     const err = await make("not-a-number")
       .quote({ from_token: "A", to_token: "B", amount: "1" })
