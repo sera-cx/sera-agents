@@ -6,6 +6,7 @@
  * validated, so a URL-only setup never needs a local sera-mcp build.
  */
 import { resolve } from "node:path";
+import { MCPServerStdio, MCPServerStreamableHttp } from "@openai/agents";
 
 export interface SeraMcpEnv {
   SERA_MCP_URL?: string;
@@ -66,4 +67,44 @@ export function resolveSeraMcpTransport(env: SeraMcpEnv): SeraMcpTransport {
     return { kind: "http", url, token };
   }
   return { kind: "stdio", path: requireSeraMcpDist(env) };
+}
+
+export interface SeraMcpStdioEnv {
+  SERA_NETWORK?: string;
+  POLICY_PRESET?: string;
+  LOG_LEVEL?: string;
+  SERA_API_KEY?: string;
+  SERA_API_SECRET?: string;
+}
+
+/**
+ * Builds the actual MCP client for the selected transport. Kept alongside
+ * resolveSeraMcpTransport so tests exercise the exact same Bearer-header /
+ * stdio-env wiring that main() runs in production, instead of a re-typed copy.
+ */
+export function buildSeraMcpServer(
+  transport: SeraMcpTransport,
+  stdioEnv: SeraMcpStdioEnv = process.env,
+): MCPServerStreamableHttp | MCPServerStdio {
+  if (transport.kind === "http") {
+    return new MCPServerStreamableHttp({
+      url: transport.url,
+      name: "sera",
+      ...(transport.token
+        ? { requestInit: { headers: { Authorization: `Bearer ${transport.token}` } } }
+        : {}),
+    });
+  }
+  return new MCPServerStdio({
+    command: "node",
+    args: [transport.path],
+    env: {
+      SERA_NETWORK: stdioEnv.SERA_NETWORK ?? "mainnet",
+      POLICY_PRESET: stdioEnv.POLICY_PRESET ?? "standard",
+      LOG_LEVEL: stdioEnv.LOG_LEVEL ?? "warn",
+      ...(stdioEnv.SERA_API_KEY ? { SERA_API_KEY: stdioEnv.SERA_API_KEY } : {}),
+      ...(stdioEnv.SERA_API_SECRET ? { SERA_API_SECRET: stdioEnv.SERA_API_SECRET } : {}),
+    },
+    name: "sera",
+  });
 }

@@ -2,8 +2,7 @@ import { createServer, type Server } from "node:http";
 import { afterEach, describe, expect, it } from "vitest";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { MCPServerStreamableHttp } from "@openai/agents";
-import { resolveSeraMcpTransport } from "../sera-mcp-transport.js";
+import { buildSeraMcpServer, resolveSeraMcpTransport } from "../sera-mcp-transport.js";
 
 /**
  * A minimal mock sera-mcp endpoint. Records the Authorization header seen on
@@ -45,17 +44,11 @@ describe("Streamable HTTP MCP authentication", () => {
     const mock = await startMockMcpServer();
     servers.push(mock.server);
 
+    // Goes through resolveSeraMcpTransport + buildSeraMcpServer exactly as
+    // main() does in agent.ts/server.ts — no re-implemented header logic
+    // here, so a typo in the production Bearer-header wiring fails this test.
     const transport = resolveSeraMcpTransport({ SERA_MCP_URL: mock.url, SERA_MCP_TOKEN: "s3cr3t" });
-    expect(transport.kind).toBe("http");
-    if (transport.kind !== "http") throw new Error("unreachable");
-
-    const sera = new MCPServerStreamableHttp({
-      url: transport.url,
-      name: "sera",
-      ...(transport.token
-        ? { requestInit: { headers: { Authorization: `Bearer ${transport.token}` } } }
-        : {}),
-    });
+    const sera = buildSeraMcpServer(transport);
     try {
       await sera.connect();
       expect(mock.lastAuthHeader()).toBe("Bearer s3cr3t");
@@ -69,9 +62,7 @@ describe("Streamable HTTP MCP authentication", () => {
     servers.push(mock.server);
 
     const transport = resolveSeraMcpTransport({ SERA_MCP_URL: mock.url });
-    if (transport.kind !== "http") throw new Error("unreachable");
-
-    const sera = new MCPServerStreamableHttp({ url: transport.url, name: "sera" });
+    const sera = buildSeraMcpServer(transport);
     try {
       await sera.connect();
       expect(mock.lastAuthHeader()).toBeUndefined();

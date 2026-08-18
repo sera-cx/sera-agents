@@ -5,9 +5,9 @@
  * to make this agent do whatever you need. Default persona is a multi-currency
  * settlement assistant.
  */
-import { Agent, run, MCPServerStdio, MCPServerStreamableHttp, user } from "@openai/agents";
+import { Agent, run, user } from "@openai/agents";
 import { createInterface } from "node:readline";
-import { resolveSeraMcpTransport } from "./sera-mcp-transport.js";
+import { buildSeraMcpServer, resolveSeraMcpTransport } from "./sera-mcp-transport.js";
 
 const SYSTEM_PROMPT = `
 You are a multi-currency settlement assistant powered by the Sera MCP. You have
@@ -33,27 +33,7 @@ async function main() {
     process.exit(1);
   }
 
-  const sera =
-    transport.kind === "http"
-      ? new MCPServerStreamableHttp({
-          url: transport.url,
-          name: "sera",
-          ...(transport.token
-            ? { requestInit: { headers: { Authorization: `Bearer ${transport.token}` } } }
-            : {}),
-        })
-      : new MCPServerStdio({
-          command: "node",
-          args: [transport.path],
-          env: {
-            SERA_NETWORK: process.env.SERA_NETWORK ?? "mainnet",
-            POLICY_PRESET: process.env.POLICY_PRESET ?? "standard",
-            LOG_LEVEL: process.env.LOG_LEVEL ?? "warn",
-            ...(process.env.SERA_API_KEY ? { SERA_API_KEY: process.env.SERA_API_KEY } : {}),
-            ...(process.env.SERA_API_SECRET ? { SERA_API_SECRET: process.env.SERA_API_SECRET } : {}),
-          },
-          name: "sera",
-        });
+  const sera = buildSeraMcpServer(transport);
   await sera.connect();
 
   const agent = new Agent({

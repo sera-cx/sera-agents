@@ -15,7 +15,7 @@ Six starters for common shapes. Copy whichever matches what you're building, cha
 
 Every template is:
 - **TypeScript** + ES modules.
-- Spawns the **Sera MCP** as a subprocess via `SERA_MCP_DIST` (required — no hardcoded Desktop path).
+- Spawns the **Sera MCP** as a subprocess via `SERA_MCP_DIST` by default (no hardcoded Desktop path). Set `SERA_MCP_URL` instead to skip `SERA_MCP_DIST` entirely and connect over Streamable HTTP — see "MCP transport" below.
 - Chat / webhook templates use **`@openai/agents`** (the OpenAI Agents SDK) — speaks MCP natively. Swap to `@anthropic-ai/sdk` if you prefer Claude; the MCP tool surface is identical.
 - `market-maker` is rule-based (ethers + a thin MCP JSON-RPC client); no Agents SDK in the inner loop.
 - Reads `OPENAI_API_KEY` from env where an LLM is used.
