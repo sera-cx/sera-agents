@@ -31,6 +31,11 @@ export SERA_MCP_URL=https://mcp.example.com/mcp
 export SERA_MCP_TOKEN=... # keep this secret out of source control
 ```
 
+`SERA_MCP_TOKEN` requires an `https://` `SERA_MCP_URL`, or an explicit
+`localhost` / `127.0.0.1` / `::1` URL for local development — plaintext
+`http://` to any other host is rejected at startup so the token can't leak
+on the wire.
+
 For exposing publicly behind a proxy (Cloudflare Tunnel, Fly, etc.):
 
 ```bash
