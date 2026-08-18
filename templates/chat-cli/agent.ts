@@ -6,8 +6,8 @@
  * settlement assistant.
  */
 import { Agent, run, MCPServerStdio, MCPServerStreamableHttp, user } from "@openai/agents";
-import { resolve } from "node:path";
 import { createInterface } from "node:readline";
+import { resolveSeraMcpTransport } from "./sera-mcp-transport.js";
 
 const SYSTEM_PROMPT = `
 You are a multi-currency settlement assistant powered by the Sera MCP. You have
@@ -24,43 +24,36 @@ Operating principles:
 - Be concise. Show numbers with sensible precision. Skip filler.
 `.trim();
 
-function requireSeraMcpDist(): string {
-  const p = process.env.SERA_MCP_DIST?.trim();
-  if (!p) {
-    console.error(
-      "SERA_MCP_DIST is required. Point it at a built sera-mcp/dist/index.js\n" +
-        "  e.g. SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js npm start",
-    );
+async function main() {
+  let transport;
+  try {
+    transport = resolveSeraMcpTransport(process.env);
+  } catch (e: any) {
+    console.error(e.message);
     process.exit(1);
   }
-  return resolve(p);
-}
 
-async function main() {
-  const seraMcpPath = requireSeraMcpDist();
-  const seraMcpUrl = process.env.SERA_MCP_URL?.trim();
-  const seraMcpToken = process.env.SERA_MCP_TOKEN?.trim();
-
-  const sera = seraMcpUrl
-    ? new MCPServerStreamableHttp({
-        url: seraMcpUrl,
-        name: "sera",
-        ...(seraMcpToken
-          ? { requestInit: { headers: { Authorization: `Bearer ${seraMcpToken}` } } }
-          : {}),
-      })
-    : new MCPServerStdio({
-        command: "node",
-        args: [seraMcpPath],
-        env: {
-          SERA_NETWORK: process.env.SERA_NETWORK ?? "mainnet",
-          POLICY_PRESET: process.env.POLICY_PRESET ?? "standard",
-          LOG_LEVEL: process.env.LOG_LEVEL ?? "warn",
-          ...(process.env.SERA_API_KEY ? { SERA_API_KEY: process.env.SERA_API_KEY } : {}),
-          ...(process.env.SERA_API_SECRET ? { SERA_API_SECRET: process.env.SERA_API_SECRET } : {}),
-        },
-        name: "sera",
-      });
+  const sera =
+    transport.kind === "http"
+      ? new MCPServerStreamableHttp({
+          url: transport.url,
+          name: "sera",
+          ...(transport.token
+            ? { requestInit: { headers: { Authorization: `Bearer ${transport.token}` } } }
+            : {}),
+        })
+      : new MCPServerStdio({
+          command: "node",
+          args: [transport.path],
+          env: {
+            SERA_NETWORK: process.env.SERA_NETWORK ?? "mainnet",
+            POLICY_PRESET: process.env.POLICY_PRESET ?? "standard",
+            LOG_LEVEL: process.env.LOG_LEVEL ?? "warn",
+            ...(process.env.SERA_API_KEY ? { SERA_API_KEY: process.env.SERA_API_KEY } : {}),
+            ...(process.env.SERA_API_SECRET ? { SERA_API_SECRET: process.env.SERA_API_SECRET } : {}),
+          },
+          name: "sera",
+        });
   await sera.connect();
 
   const agent = new Agent({

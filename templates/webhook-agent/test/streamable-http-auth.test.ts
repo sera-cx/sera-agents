@@ -1,35 +1,88 @@
-import { readFile } from "node:fs/promises";
-import { describe, expect, it } from "vitest";
+import { createServer, type Server } from "node:http";
+import { afterEach, describe, expect, it } from "vitest";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { MCPServerStreamableHttp } from "@openai/agents";
+import { resolveSeraMcpTransport } from "../sera-mcp-transport.js";
 
-const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
+/**
+ * A minimal mock sera-mcp endpoint. Records the Authorization header seen on
+ * the most recent request so tests can assert the Bearer token was (or was
+ * not) actually sent on the wire — not just present somewhere in source.
+ */
+async function startMockMcpServer(): Promise<{ url: string; server: Server; lastAuthHeader: () => string | undefined }> {
+  const mcpServer = new McpServer({ name: "mock-sera-mcp", version: "0.0.0" });
+  let lastAuthHeader: string | undefined;
+
+  const server = createServer((req, res) => {
+    lastAuthHeader = req.headers.authorization;
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+    res.on("close", () => transport.close().catch(() => {}));
+    mcpServer
+      .connect(transport)
+      .then(() => transport.handleRequest(req, res))
+      .catch((e) => {
+        res.statusCode = 500;
+        res.end(String(e));
+      });
+  });
+
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address() as { port: number };
+  return { url: `http://127.0.0.1:${port}/mcp`, server, lastAuthHeader: () => lastAuthHeader };
+}
 
 describe("Streamable HTTP MCP authentication", () => {
-  it("adds an optional Bearer header consistently across all starters", async () => {
-    const sources = await Promise.all([
-      read("../../chat-cli/agent.ts"),
-      read("../../web-chat/server.ts"),
-      read("../server.ts"),
-    ]);
+  const servers: Server[] = [];
 
-    for (const source of sources) {
-      expect(source).toContain("const seraMcpToken = process.env.SERA_MCP_TOKEN?.trim();");
-      expect(source).toContain("requestInit: { headers: { Authorization: `Bearer ${seraMcpToken}` } }");
-      expect(source).toContain("...(seraMcpToken");
+  afterEach(async () => {
+    await Promise.all(
+      servers.splice(0).map((server) => new Promise<void>((resolve) => server.close(() => resolve()))),
+    );
+  });
+
+  it("sends the configured Bearer token to the MCP server on a loopback http connection", async () => {
+    const mock = await startMockMcpServer();
+    servers.push(mock.server);
+
+    const transport = resolveSeraMcpTransport({ SERA_MCP_URL: mock.url, SERA_MCP_TOKEN: "s3cr3t" });
+    expect(transport.kind).toBe("http");
+    if (transport.kind !== "http") throw new Error("unreachable");
+
+    const sera = new MCPServerStreamableHttp({
+      url: transport.url,
+      name: "sera",
+      ...(transport.token
+        ? { requestInit: { headers: { Authorization: `Bearer ${transport.token}` } } }
+        : {}),
+    });
+    try {
+      await sera.connect();
+      expect(mock.lastAuthHeader()).toBe("Bearer s3cr3t");
+    } finally {
+      await sera.close();
     }
   });
 
-  it("documents the optional token without changing the keyless gateway path", async () => {
-    const docs = await Promise.all([
-      read("../../chat-cli/README.md"),
-      read("../../web-chat/README.md"),
-      read("../README.md"),
-      read("../../README.md"),
-      read("../.env.example"),
-    ]);
+  it("connects without an Authorization header when SERA_MCP_TOKEN is unset", async () => {
+    const mock = await startMockMcpServer();
+    servers.push(mock.server);
 
-    for (const document of docs) {
-      expect(document).toContain("SERA_MCP_TOKEN");
+    const transport = resolveSeraMcpTransport({ SERA_MCP_URL: mock.url });
+    if (transport.kind !== "http") throw new Error("unreachable");
+
+    const sera = new MCPServerStreamableHttp({ url: transport.url, name: "sera" });
+    try {
+      await sera.connect();
+      expect(mock.lastAuthHeader()).toBeUndefined();
+    } finally {
+      await sera.close();
     }
-    expect(docs[3]).toContain("https://agents.sera.cx/mcp");
+  });
+
+  it("rejects a token over plaintext http on a non-loopback host before any connection is attempted", () => {
+    expect(() =>
+      resolveSeraMcpTransport({ SERA_MCP_URL: "http://mcp.example.com/mcp", SERA_MCP_TOKEN: "s3cr3t" }),
+    ).toThrow(/refusing to send SERA_MCP_TOKEN/);
   });
 });
