@@ -1,6 +1,6 @@
 # agents-gateway
 
-Public HTTP + MCP gateway for `agents.sera.cx`. Wraps [`sera-mcp`](https://github.com/sera-cx/sera-mcp) and exposes the four agent-discoverable endpoints advertised by the marketing site:
+Public HTTP + MCP gateway for [`agents.sera.cx`](https://agents.sera.cx). Wraps [`sera-mcp`](https://github.com/sera-cx/sera-mcp) and exposes a **keyless** surface for agent hosts:
 
 | Endpoint | Method | Purpose |
 |---|---|---|
@@ -10,9 +10,29 @@ Public HTTP + MCP gateway for `agents.sera.cx`. Wraps [`sera-mcp`](https://githu
 | `/corridors` | GET | Supported FX corridors |
 | `/quote` | POST | Live quote between two stablecoins |
 | `/settle` | POST | Build an unsigned EIP-712 settlement intent |
-| `/mcp` | POST/GET/DELETE | Streamable HTTP MCP transport (4 tools) |
+| `/mcp` | POST/GET/DELETE | Streamable HTTP MCP transport (**17 tools**) |
+| `POST /<proxy-tool>` | POST | Same 13 analytics tools as on `/mcp` (see below) |
 
-The MCP `/mcp` endpoint exposes the same four operations as MCP tools — `fx_quote`, `fx_settle`, `corridors`, `rates` — so any MCP-aware agent can use Sera without a wallet, an API key, or installing sera-mcp locally.
+## MCP tools (17, keyless)
+
+The `/mcp` endpoint advertises **17** tools so any MCP-aware agent can use Sera without a wallet, an API key, or installing sera-mcp locally.
+
+**Core (4)** — also available as REST `/quote`, `/settle`, `/corridors`, `/rates`:
+
+| MCP tool | Role |
+|---|---|
+| `fx_quote` | Live quote between two assets |
+| `fx_settle` | Build an unsigned EIP-712 settlement intent |
+| `corridors` | Supported FX corridors |
+| `rates` | Live FX reference rates |
+
+**Analytics / planning (13)** — proxied to sera-mcp (see [`src/proxy-tools.ts`](./src/proxy-tools.ts)); also available as `POST /<name>`:
+
+`markets` · `mid` · `compare_fx` · `market_health` · `spread_radar` · `find_deals` · `scan_markets` · `probe_depth` · `round_trip_cost` · `fx_quote_diff` · `compare_corridors` · `maker_quote_ladder` · `quote_recipient_amount`
+
+Source of truth for the public catalog: [`.well-known/mcp.json`](../.well-known/mcp.json).
+
+Account-scoped tools (balances, orders, withdraw, execution) are **not** exposed on this keyless gateway.
 
 ## How it works
 
@@ -24,21 +44,22 @@ The MCP `/mcp` endpoint exposes the same four operations as MCP tools — `fx_qu
 | `GET /corridors` | `sera.list_currencies` (cross-product) |
 | `POST /quote` | `sera.get_fx_rate` + local quote reservation |
 | `POST /settle` | `sera.prepare_swap` |
+| `POST /<proxy>` | matching `sera.*` tool from `PROXY_TOOLS` |
 
 Quote reservations are kept in an in-memory map for 5 minutes — long enough for an agent to call `/quote` then `/settle`. No persistence; restarts invalidate outstanding `quote_id`s.
 
 ## Configuration
 
-See [.env.example](./.env.example). All env vars optional except `PORT`.
+See [.env.example](./.env.example). All env vars optional except `PORT` / `SERA_MCP_PATH` for local runs.
 
 | Var | Default | Notes |
 |---|---|---|
 | `PORT` | `8787` | TCP port to bind |
 | `HOST` | `0.0.0.0` | Bind address |
 | `SERA_NETWORK` | `mainnet` | `mainnet` or `sepolia` |
-| `SERA_API_KEY` | _(unset)_ | Optional. Required only if you want Sera's account-level rate-limit/quota. The 4 public tools work keyless. |
+| `SERA_API_KEY` | _(unset)_ | Optional. Required only if you want Sera's account-level rate-limit/quota. All **17** keyless tools work without it. |
 | `SERA_API_SECRET` | _(unset)_ | Optional, paired with `SERA_API_KEY`. |
-| `SERA_MCP_PATH` | **required** | Path to a built `sera-mcp/dist/index.js`. Baked at `/opt/sera-mcp/dist/index.js` in the Docker image. |
+| `SERA_MCP_PATH` | **required** (local) | Path to a built `sera-mcp/dist/index.js`. Baked at `/opt/sera-mcp/dist/index.js` in the Docker image. |
 
 ## Run locally
 
@@ -46,7 +67,7 @@ The gateway spawns `sera-mcp` as a subprocess, so you need a built copy on disk.
 
 ```bash
 # Clone & build sera-mcp anywhere (pinned tag recommended)
-git clone --branch v0.8.2 https://github.com/sera-cx/sera-mcp.git ~/code/sera-mcp
+git clone --branch v0.8.3 https://github.com/sera-cx/sera-mcp.git ~/code/sera-mcp
 cd ~/code/sera-mcp && npm ci && npm run build
 ```
 
@@ -66,7 +87,7 @@ SERA_MCP_PATH=~/code/sera-mcp/dist/index.js \
   npm run start --workspace=sera-agents-gateway
 ```
 
-(Docker users don't need any of this — the image clones and builds sera-mcp at `v0.8.2` itself.)
+(Docker users don't need any of this — the image clones and builds sera-mcp at `v0.8.3` itself.)
 
 In another terminal:
 
@@ -77,6 +98,9 @@ curl http://127.0.0.1:8787/corridors
 curl -X POST http://127.0.0.1:8787/quote \
   -H 'content-type: application/json' \
   -d '{"from_token":"XSGD","to_token":"IDRX","amount":"100"}'
+curl -X POST http://127.0.0.1:8787/find_deals \
+  -H 'content-type: application/json' \
+  -d '{"min_deviation_bps":25}'
 ```
 
 ## Docker
@@ -116,10 +140,10 @@ The full OpenAPI 3.1 document is served at `GET /openapi.json` and source-of-tru
 
 ## MCP transport
 
-`/mcp` implements the [MCP Streamable HTTP transport](https://spec.modelcontextprotocol.io/specification/basic/transports/) statelessly — every POST is a self-contained JSON-RPC exchange. Tools registered: `fx_quote`, `fx_settle`, `corridors`, `rates`. Use any MCP-aware client (Claude, Cursor, OpenAI Agents SDK, etc.) by pointing it at `https://agents.sera.cx/mcp`.
+`/mcp` implements the [MCP Streamable HTTP transport](https://spec.modelcontextprotocol.io/specification/basic/transports/) statelessly — every POST is a self-contained JSON-RPC exchange. Tools registered: the **17** listed above. Use any MCP-aware client (Claude, Cursor, OpenAI Agents SDK, etc.) by pointing it at `https://agents.sera.cx/mcp`.
 
 ## What's intentionally not here
 
 - **No persistence.** Quote reservations live in process memory. Restarts drop outstanding `quote_id`s.
-- **No execution path.** `/settle` returns unsigned typed data — the caller signs and submits to Sera directly. The gateway never moves money.
-- **No auth on the MCP endpoint.** The four exposed tools are read-only or signature-gated downstream. If you front this with anything other than Caddy + TLS, review §5 of [`agents-handoff.md`](../../Sera v1 Mainnet/agents-handoff.md) before exposing it.
+- **No execution path.** `/settle` / `fx_settle` return unsigned typed data — the caller signs and submits to Sera directly. The gateway never moves money.
+- **No auth on the MCP endpoint.** The 17 exposed tools are read/analytics or signature-gated downstream. If you front this with anything other than Caddy + TLS, review the security model before exposing it.

@@ -72,11 +72,17 @@ function parseArgs(argv: string[]): Args {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const seraMcpPath =
-    args.seraMcpDist ?? resolve(process.env.HOME!, "Desktop/sera-mcp/dist/index.js");
+  const mcpDist = args.seraMcpDist?.trim() || process.env.SERA_MCP_DIST?.trim();
+  if (!mcpDist) {
+    console.error(
+      "SERA_MCP_DIST (or --sera-mcp-dist) is required. Point it at a built sera-mcp/dist/index.js",
+    );
+    process.exit(1);
+  }
+  const seraMcpPath = resolve(mcpDist);
 
   // Spin up the Sera MCP as a subprocess. The Agent SDK speaks MCP and will
-  // auto-discover the 32 sera.* tools.
+  // auto-discover the 55 sera.* tools.
   const sera = new MCPServerStdio({
     command: "node",
     args: [seraMcpPath],

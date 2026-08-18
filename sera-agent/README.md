@@ -2,7 +2,7 @@
 
 For teams without an existing agent. One repository, one command, end-to-end:
 
-- The Sera MCP (52 tools) pre-wired
+- The Sera MCP (55 tools) pre-wired
 - Your choice of LLM provider (OpenAI by default, Anthropic supported)
 - Interactive CLI chat surface
 - Reference flows (invoice payer, treasury rebalancer) callable in-conversation
@@ -14,6 +14,7 @@ For teams without an existing agent. One repository, one command, end-to-end:
 cd sera-agent
 npm install
 export OPENAI_API_KEY=sk-...
+export SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js
 # Optional: SERA_API_KEY + SERA_API_SECRET to unlock balances and treasury tools
 npm start
 ```
@@ -32,12 +33,12 @@ You'll get an interactive prompt connected to the Sera MCP. Try:
 ```
 ┌────────────┐   chat    ┌────────────────┐   MCP    ┌──────────┐   REST   ┌──────┐
 │   You      │ ────────▶ │   Sera Agent   │ ───────▶ │ Sera MCP │ ───────▶ │ Sera │
-│ (terminal) │           │  (OpenAI/      │ stdio    │ (32      │          │  API │
+│ (terminal) │           │  (OpenAI/      │ stdio    │ (55      │          │  API │
 │            │ ◀──────── │   Anthropic)   │ ◀─────── │  tools)  │ ◀─────── │      │
 └────────────┘           └────────────────┘          └──────────┘          └──────┘
 ```
 
-The Sera MCP is run as a subprocess; the agent SDK auto-discovers all 52 tools. No separate service to host.
+The Sera MCP is run as a subprocess; the agent SDK auto-discovers all tools. No separate service to host.
 
 ## What's next in the bundle
 

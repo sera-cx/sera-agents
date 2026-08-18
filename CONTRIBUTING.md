@@ -17,8 +17,8 @@ Thanks for taking the time. This is the agent suite around the [Sera MCP](https:
 sera-agents/
 ├── index.html              Landing page (single-file static)
 ├── README.md
-├── PLAN.md                 Active delivery plan
-├── LAUNCH.md               Public + internal launch copy
+├── ARCHITECTURE.md
+├── agents-gateway/         Public HTTP + MCP gateway (agents.sera.cx)
 ├── sera-agent/             Path C — bundled CLI
 ├── templates/              Path B — starter templates
 ├── x402-service/           Path D — protocol-level service
@@ -35,7 +35,7 @@ cd sera-agents
 # Install all workspace packages (sera-agent, x402-service, templates/*, examples/*)
 npm install
 
-# Run typecheck + audit across all packages
+# Run format/lint, typecheck, and audit across all packages
 npm run check
 ```
 
@@ -53,7 +53,8 @@ Override the MCP path with `SERA_MCP_DIST` env when running templates/examples t
 - Keep PRs focused. One template, one integration, or one bug fix per PR.
 - Update the top-level [`integrations/README.md`](integrations/README.md) host table when adding a host.
 - Update [`README.md`](README.md) if you add a new top-level folder, and [`ARCHITECTURE.md`](ARCHITECTURE.md) if you add a new top-level concept.
-- Run `npm run check` from the repo root to confirm typecheck + audit pass before opening the PR.
+- Run `npm run check` from the repo root to confirm formatting, lint, typecheck, and audit pass before opening the PR.
+- Run `npm run format` to apply the repository formatting rules; CI uses `npm run biome:check` and does not rewrite files.
 
 ## Adding a host integration
 

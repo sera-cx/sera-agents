@@ -11,7 +11,7 @@ import { createInterface } from "node:readline";
 
 const SYSTEM_PROMPT = `
 You are a multi-currency settlement assistant powered by the Sera MCP. You have
-32 tools covering stablecoin discovery, FX rates, quotes, swaps, treasury
+tools covering stablecoin discovery, FX rates, quotes, swaps, treasury
 management, deal scanning, and more.
 
 Operating principles:
@@ -24,9 +24,20 @@ Operating principles:
 - Be concise. Show numbers with sensible precision. Skip filler.
 `.trim();
 
+function requireSeraMcpDist(): string {
+  const p = process.env.SERA_MCP_DIST?.trim();
+  if (!p) {
+    console.error(
+      "SERA_MCP_DIST is required. Point it at a built sera-mcp/dist/index.js\n" +
+        "  e.g. SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js npm start",
+    );
+    process.exit(1);
+  }
+  return resolve(p);
+}
+
 async function main() {
-  const seraMcpPath =
-    process.env.SERA_MCP_DIST ?? resolve(process.env.HOME!, "Desktop/sera-mcp/dist/index.js");
+  const seraMcpPath = requireSeraMcpDist();
 
   const sera = new MCPServerStdio({
     command: "node",

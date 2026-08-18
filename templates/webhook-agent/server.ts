@@ -139,8 +139,15 @@ function ipRateLimit(ip: string): boolean {
 }
 
 async function main() {
-  const seraMcpPath =
-    process.env.SERA_MCP_DIST ?? resolve(process.env.HOME!, "Desktop/sera-mcp/dist/index.js");
+  const mcpDist = process.env.SERA_MCP_DIST?.trim();
+  if (!mcpDist) {
+    console.error(
+      "SERA_MCP_DIST is required. Point it at a built sera-mcp/dist/index.js\n" +
+        "  e.g. SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js npm start",
+    );
+    process.exit(1);
+  }
+  const seraMcpPath = resolve(mcpDist);
 
   const sera = new MCPServerStdio({
     command: "node",

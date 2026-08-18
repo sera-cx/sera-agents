@@ -4,8 +4,8 @@ description: Multi-currency settlement skill — quote, swap, and settle across 
 version: 0.4.0
 author: Sera Protocol
 mcp_server:
-  command: node
-  args: ["~/Desktop/sera-mcp/dist/index.js"]
+  command: npx
+  args: ["-y", "sera-mcp"]
   env:
     SERA_NETWORK: mainnet
     POLICY_PRESET: standard
@@ -65,7 +65,13 @@ Self-check: API health, network, signer mode, policy summary. Run first if anyth
 
 ## Setup
 
-This skill reads its underlying MCP from the path in the frontmatter. If you cloned `sera-mcp` somewhere else, edit the `mcp_server.args` path. Default assumes `~/Desktop/sera-mcp/dist/index.js`.
+Frontmatter defaults to `npx -y sera-mcp`. To use a local build instead:
+
+```yaml
+mcp_server:
+  command: node
+  args: ["/absolute/path/to/sera-mcp/dist/index.js"]
+```
 
 To enable treasury tools, set in your Hermes env:
 

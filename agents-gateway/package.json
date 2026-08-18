@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Public HTTP + MCP gateway for agents.sera.cx. Wraps sera-mcp and exposes the four agent-discoverable endpoints (fx_quote, fx_settle, corridors, rates) plus a Streamable-HTTP /mcp.",
+  "description": "Public HTTP + MCP gateway for agents.sera.cx. Wraps sera-mcp and exposes 17 keyless tools (fx_quote, fx_settle, corridors, rates + analytics) over REST and Streamable-HTTP /mcp.",
   "scripts": {
     "start": "node dist/server.js",
     "dev": "tsx src/server.ts",
