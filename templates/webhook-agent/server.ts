@@ -13,12 +13,12 @@
  *   - Concurrency limit on agent runs
  *   - Allowlisted task mapper — replace with your own once you know the schema
  */
-import { Agent, run, MCPServerStdio, MCPServerStreamableHttp, user } from "@openai/agents";
+import { Agent, run, user } from "@openai/agents";
 import express from "express";
 import { timingSafeEqual } from "node:crypto";
 import helmet from "helmet";
 import { verifyHmac as verifyHmacImpl, makeNonceStore, type HmacProvider } from "./hmac.js";
-import { resolveSeraMcpTransport } from "./sera-mcp-transport.js";
+import { buildSeraMcpServer, resolveSeraMcpTransport } from "./sera-mcp-transport.js";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const HOST = process.env.HOST ?? "127.0.0.1";
@@ -147,27 +147,7 @@ async function main() {
     process.exit(1);
   }
 
-  const sera =
-    transport.kind === "http"
-      ? new MCPServerStreamableHttp({
-          url: transport.url,
-          name: "sera",
-          ...(transport.token
-            ? { requestInit: { headers: { Authorization: `Bearer ${transport.token}` } } }
-            : {}),
-        })
-      : new MCPServerStdio({
-          command: "node",
-          args: [transport.path],
-          env: {
-            SERA_NETWORK: process.env.SERA_NETWORK ?? "mainnet",
-            POLICY_PRESET: process.env.POLICY_PRESET ?? "standard",
-            LOG_LEVEL: process.env.LOG_LEVEL ?? "warn",
-            ...(process.env.SERA_API_KEY ? { SERA_API_KEY: process.env.SERA_API_KEY } : {}),
-            ...(process.env.SERA_API_SECRET ? { SERA_API_SECRET: process.env.SERA_API_SECRET } : {}),
-          },
-          name: "sera",
-        });
+  const sera = buildSeraMcpServer(transport);
   await sera.connect();
 
   const agent = new Agent({
