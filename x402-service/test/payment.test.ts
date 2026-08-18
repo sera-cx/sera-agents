@@ -14,9 +14,15 @@ import {
   transitionToDelivered,
   transitionToFailedRefundable,
 } from "../payment.js";
+import { generateKeyPairSync } from "node:crypto";
 import { makeStore, type PendingPayment } from "../state.js";
 import type { X402Config } from "../env.js";
 import type { SeraMcpClient } from "../sera-client.js";
+
+const { privateKey: TEST_PRIVATE_KEY_PEM } = generateKeyPairSync("ec", {
+  namedCurve: "prime256v1",
+  privateKeyEncoding: { type: "pkcs8", format: "pem" },
+});
 
 function demoConfig(): X402Config {
   return {
@@ -45,7 +51,7 @@ function liveConfig(): X402Config {
     liveAck: true,
     facilitatorUrl: "https://test-facilitator",
     cdpApiKeyId: "id",
-    cdpApiKeySecret: "secret",
+    cdpApiKeySecret: TEST_PRIVATE_KEY_PEM,
     vaultAddress: "0x" + "a".repeat(40),
   };
 }

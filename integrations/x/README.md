@@ -45,7 +45,7 @@ tooling can consume it directly — no install, no stdio bridge:
 https://agents.sera.cx/mcp
 ```
 
-Tools exposed: `fx_quote`, `fx_settle`, `corridors`, `rates`. For a client that
+Tools exposed: 17 keyless tools (4 core settlement/rates endpoints + 13 analytics and deal-scanning proxy tools; see [`.well-known/mcp.json`](../../.well-known/mcp.json)). For a client that
 reads a project `.mcp.json`:
 
 ```json

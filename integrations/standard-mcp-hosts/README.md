@@ -62,7 +62,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
 }
 ```
 
-Fully quit and reopen Claude Desktop. The hammer icon should show `sera` with 55 tools.
+Fully quit and reopen Claude Desktop. The hammer icon should show `sera` with its exposed tools (54 in default external-signer mode; 55 in local mode).
 
 ---
 
@@ -142,7 +142,7 @@ All three accept the standard MCP stdio config. Per-host config locations:
 - **Zed**: `~/.config/zed/settings.json` → `context_servers` block
 - **Goose**: `~/.config/goose/config.yaml` → `extensions` section
 
-Same `command + args + env` shape as everywhere else. Sera surfaces 55 tools regardless of host.
+Same `command + args + env` shape as everywhere else. The server has 55 registered tools, exposing 54 by default over standard MCP stdio. `convert_and_send` is additionally exposed in local-signer mode.
 
 ---
 

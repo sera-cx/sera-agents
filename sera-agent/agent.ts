@@ -17,7 +17,7 @@ import { createInterface } from "node:readline";
 
 const SYSTEM_INSTRUCTIONS = `
 You are the Sera Agent — a multi-currency settlement assistant powered by
-the Sera MCP. You have 55 tools covering stablecoin discovery, FX rates,
+the Sera MCP. You have tools covering stablecoin discovery, FX rates,
 quotes, swaps, treasury management, deal scanning, and more.
 
 Operating principles:

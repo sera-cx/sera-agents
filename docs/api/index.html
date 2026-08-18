@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>API reference — Sera for Agents</title>
   <meta name="theme-color" content="#06070A" />
-  <meta name="description" content="Full reference for all 55 sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
+  <meta name="description" content="Full reference for all 55 registered sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
   <meta name="author" content="Sera Protocol" />
   <link rel="canonical" href="https://agents.sera.cx/docs/api/" />
 
@@ -17,7 +17,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Sera for Agents" />
   <meta property="og:title" content="API reference — Sera for Agents" />
-  <meta property="og:description" content="Full reference for all 55 sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
+  <meta property="og:description" content="Full reference for all 55 registered sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
   <meta property="og:url" content="https://agents.sera.cx/docs/api/" />
   <meta property="og:image" content="https://agents.sera.cx/og-image.png" />
   <meta property="og:image:width" content="1200" />
@@ -27,7 +27,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="API reference — Sera for Agents" />
-  <meta name="twitter:description" content="Full reference for all 55 sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
+  <meta name="twitter:description" content="Full reference for all 55 registered sera-mcp tools, 5 MCP resources, 4 slash prompts. Method signatures, params, response shapes." />
   <meta name="twitter:image" content="https://agents.sera.cx/og-image.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -106,7 +106,7 @@
       <a href="../recipes.html">Recipes</a>
       <div class="group-label">Reference</div>
       <a href="index.html" class="active">API reference</a>
-      <a href="#discovery" class="tool-link">Discovery (3)</a>
+      <a href="#discovery" class="tool-link">Discovery (6)</a>
       <a href="#pricing" class="tool-link">Pricing &amp; analytics (4)</a>
       <a href="#liquidity" class="tool-link">Liquidity probing (9)</a>
       <a href="#quote-plan" class="tool-link">Quote &amp; plan (6)</a>
@@ -123,12 +123,12 @@
     <main class="max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Reference</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">API reference.</h1>
-      <p class="text-lg mb-2" style="color:#A4A89C">All 55 tools exposed by <code class="font-mono text-accent-400 text-base">sera-mcp</code>, organized by category. Every tool is callable from any MCP host (Claude, Cursor, ChatGPT, OpenAI Agents SDK, etc.) and from the bundled <code class="font-mono text-accent-400 text-base">sera</code> CLI.</p>
+      <p class="text-lg mb-2" style="color:#A4A89C">Complete reference for all 55 registered tools in <code class="font-mono text-accent-400 text-base">sera-mcp</code>, organized by category. Under the default external-signer mode, 54 tools are exposed via <code class="font-mono text-accent-400 text-base">tools/list</code> because <code class="font-mono text-accent-400 text-base">sera.convert_and_send</code> is local-signer only. The Sera MCP can be used from standard MCP hosts such as Claude, Cursor, ChatGPT, and OpenAI Agents SDK, with tool availability determined by server configuration.</p>
       <p class="text-sm" style="color:#6B7180">Schema source-of-truth: <code class="font-mono text-accent-400 text-xs">sera-mcp/dist/index.js</code> — these signatures are kept in sync with the running MCP. For Sera Protocol's underlying REST endpoints, see <a href="https://docs.sera.cx" target="_blank" class="text-accent-400 hover:underline">docs.sera.cx</a>.</p>
 
       <!-- ============ DISCOVERY ============ -->
       <div id="discovery" class="group-header">
-        <span class="num">01</span><h2>Discovery</h2>
+        <span class="num">01</span><h2>Discovery (6)</h2>
       </div>
 
       <div class="tool" id="list_currencies">
@@ -158,6 +158,40 @@
         <ul class="params"><li>None</li></ul>
         <div class="label">Returns</div>
         <div class="codeblock"><pre><code>{ network_label, base_url, overall_ok, checks: [{ name, ok, detail }] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="search_coins">
+        <h3>sera.search_coins</h3>
+        <p class="summary">Fuzzy-find stablecoins in Sera's live <code>/tokens</code> registry by case-insensitive substring match on symbol, name, or fiat tag (e.g. query=<code>'sgd'</code>). Cached ~1 min server-side.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>query</code> <span class="badge-req">req</span> — substring matched against token symbol, name, or fiat tag (e.g. <code>'sgd'</code>, <code>'usd'</code>, <code>'xsg'</code>)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ query, count, matches: [{ symbol, name, fiat, address, decimals }] }</code></pre></div>
+      </div>
+
+      <div class="tool" id="get_coin_metadata">
+        <h3>sera.get_coin_metadata</h3>
+        <p class="summary">Full registry metadata (symbol, name, fiat, address, decimals) for a single stablecoin by symbol from Sera's <code>/tokens</code> registry. Case-insensitive; returns an honest not-found object if the symbol is unknown.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>symbol</code> <span class="badge-req">req</span> — token symbol to look up (e.g. <code>'USDC'</code>, <code>'XSGD'</code>)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ found, symbol, name, fiat, address, decimals }</code></pre></div>
+      </div>
+
+      <div class="tool" id="get_coin_history">
+        <h3>sera.get_coin_history</h3>
+        <p class="summary">Historical FX observations for a coin's implied fiat pair (e.g. XSGD &rarr; SGD/USD). Replays locally logged <code>/fx/rate</code> points and requires <code>SERA_HISTORY_DB</code> — returns an honest disabled/empty response otherwise.</p>
+        <div class="label">Params</div>
+        <ul class="params">
+          <li><code>symbol</code> <span class="badge-req">req</span> — token symbol whose implied fiat pair to pull history for (e.g. <code>'XSGD'</code>)</li>
+          <li><code>days</code> — lookback window in days (default 7, max 365)</li>
+        </ul>
+        <div class="label">Returns</div>
+        <div class="codeblock"><pre><code>{ found, symbol, pair, enabled, note?, observations: [{ timestamp, rate, source }] }</code></pre></div>
       </div>
 
       <!-- ============ PRICING ============ -->

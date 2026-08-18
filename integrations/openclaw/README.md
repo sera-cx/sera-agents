@@ -25,7 +25,7 @@ OpenClaw supports MCP servers via its agent config. Add Sera to your `openclaw.j
 
 See `openclaw.example.json` in this folder for a copy-pasteable starting point.
 
-Restart your OpenClaw agent. The 32 `sera.*` tools are available to any model that can call MCP tools.
+Restart your OpenClaw agent. The sera.* tools are available to any model that can call MCP tools.
 
 Verify (depending on which agent UI you use):
 

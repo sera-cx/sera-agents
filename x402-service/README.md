@@ -64,8 +64,8 @@ Required env (boot refuses if any is missing):
 export X402_MODE=live
 export X402_NETWORK=base-sepolia                # start on testnet
 export X402_FACILITATOR_URL=https://api.cdp.coinbase.com/platform/v2/x402
-export X402_CDP_API_KEY_ID=...
-export X402_CDP_API_KEY_SECRET=...
+export X402_CDP_API_KEY_ID=...                  # CDP API Key Identifier
+export X402_CDP_API_KEY_SECRET=...              # CDP EC private key in PEM format (to sign ES256 JWTs)
 export X402_VAULT_ADDRESS=0xYourVault            # where USDC lands
 export X402_CONFIRMATION_DEPTH=3                 # ≥3 per arXiv:2605.11781 (mitigates revert-grant)
 export X402_LIVE_ACK=true                        # operator acknowledges live wiring not yet
@@ -118,8 +118,8 @@ Selected vars (full list in `.env.example`):
 | `X402_LIVE_ACK` | `false` | Required `true` to boot `X402_MODE=live` — operator ack of not-yet-mainnet-tested |
 | `X402_NETWORK` | `base` | `base` / `base-sepolia` / `polygon` / `arbitrum` / `solana` |
 | `X402_FACILITATOR_URL` | — | CDP facilitator endpoint (live mode only) |
-| `X402_CDP_API_KEY_ID` | — | CDP API key id (live mode only) |
-| `X402_CDP_API_KEY_SECRET` | — | CDP API key secret (live mode only) |
+| `X402_CDP_API_KEY_ID` | — | CDP API key identifier (live mode only) |
+| `X402_CDP_API_KEY_SECRET` | — | CDP EC private key in PEM format used to sign ES256 JWTs (live mode only) |
 | `X402_VAULT_ADDRESS` | — | Wallet that holds pooled USDC + signs Sera intents (live mode only) |
 | `X402_CONFIRMATION_DEPTH` | `3` | Confirmation depth before release. Boot refuses < 3 in live mode. |
 | `X402_STATE_DB` | — | SQLite path for payment state (recommended for live; memory-only otherwise) |
