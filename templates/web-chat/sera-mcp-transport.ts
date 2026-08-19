@@ -18,7 +18,14 @@ export type SeraMcpTransport =
   | { kind: "http"; url: string; token?: string }
   | { kind: "stdio"; path: string };
 
-const LOOPBACK_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
+const LOOPBACK_HOSTNAMES = new Set([
+  "localhost",
+  "127.0.0.1",
+  "::1",
+  // IPv4-mapped IPv6 form of 127.0.0.1 — URL.hostname always normalizes any
+  // spelling of it (dotted-quad or hex) to this compressed hex form.
+  "::ffff:7f00:1",
+]);
 
 /**
  * SERA_MCP_TOKEN is a bearer credential. Refuse to send it over plaintext
@@ -34,8 +41,10 @@ export function assertTokenTransportSafety(url: string, token: string | undefine
     throw new Error(`invalid SERA_MCP_URL: ${url}`);
   }
   if (parsed.protocol === "https:") return;
-  // URL.hostname keeps brackets around IPv6 addresses (e.g. "[::1]").
-  const hostname = parsed.hostname.replace(/^\[|\]$/g, "");
+  // URL.hostname keeps brackets around IPv6 addresses (e.g. "[::1]") and
+  // preserves a trailing dot on FQDNs (e.g. "localhost.") that DNS treats as
+  // identical to the undotted form.
+  const hostname = parsed.hostname.replace(/^\[|\]$/g, "").replace(/\.$/, "");
   if (parsed.protocol === "http:" && LOOPBACK_HOSTNAMES.has(hostname)) return;
   throw new Error(
     `refusing to send SERA_MCP_TOKEN over ${parsed.protocol}//${parsed.hostname} — ` +
