@@ -15,7 +15,14 @@ Six starters for common shapes. Copy whichever matches what you're building, cha
 
 Every template is:
 - **TypeScript** + ES modules.
-- Spawns the **Sera MCP** as a subprocess via `SERA_MCP_DIST` by default (no hardcoded Desktop path). Set `SERA_MCP_URL` instead to skip `SERA_MCP_DIST` entirely and connect over Streamable HTTP — see "MCP transport" below.
+- Spawns the **Sera MCP** as a subprocess via `SERA_MCP_DIST` by default.
+  `chat-cli`, `web-chat`, and `webhook-agent` additionally accept `SERA_MCP_URL`
+  to skip `SERA_MCP_DIST` entirely and connect over Streamable HTTP instead —
+  see "MCP transport" below. `slack-agent`, `market-maker`, and `withdraw-cli`
+  are stdio-only for now: `SERA_MCP_DIST` is required and `SERA_MCP_URL` is
+  not read. (`slack-agent` also falls back to a Desktop-relative default path
+  when `SERA_MCP_DIST` is unset — override it explicitly rather than relying
+  on that default.)
 - Chat / webhook templates use **`@openai/agents`** (the OpenAI Agents SDK) — speaks MCP natively. Swap to `@anthropic-ai/sdk` if you prefer Claude; the MCP tool surface is identical.
 - `market-maker` is rule-based (ethers + a thin MCP JSON-RPC client); no Agents SDK in the inner loop.
 - Reads `OPENAI_API_KEY` from env where an LLM is used.
@@ -33,8 +40,8 @@ export OPENAI_API_KEY=sk-...
 export SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js
 # Optional: SERA_API_KEY + SERA_API_SECRET to unlock balances + treasury tools
 
-# Optional: use the hosted keyless MCP instead of a local subprocess.
-# It exposes the public gateway tool set.
+# Optional (chat-cli, web-chat, webhook-agent only): use the hosted keyless
+# MCP instead of a local subprocess. It exposes the public gateway tool set.
 export SERA_MCP_URL=https://agents.sera.cx/mcp
 
 # For account-scoped or execution tools, self-host sera-mcp and configure its
@@ -46,6 +53,9 @@ export SERA_MCP_TOKEN=...
 npm start
 ```
 
+`slack-agent`, `market-maker`, and `withdraw-cli` don't read `SERA_MCP_URL` /
+`SERA_MCP_TOKEN` yet — only `SERA_MCP_DIST` applies to those three.
+
 Then customize:
 - **System prompt** in `agent.ts` — change what the agent does (LLM templates).
 - **Triggers** — add HTTP endpoints, cron jobs, webhook routes as needed.
@@ -53,13 +63,19 @@ Then customize:
 
 ## MCP transport
 
-The starters use stdio by default, spawning a local full `sera-mcp` process. Set
-`SERA_MCP_URL` to select Streamable HTTP instead. The hosted
+All starters use stdio by default, spawning a local full `sera-mcp` process.
+`chat-cli`, `web-chat`, and `webhook-agent` additionally support Streamable
+HTTP: set `SERA_MCP_URL` to select it instead. The hosted
 `https://agents.sera.cx/mcp` gateway is keyless and exposes its public tool set;
 for the full account-scoped or execution surface, self-host `sera-mcp` over
-Streamable HTTP and set `SERA_MCP_TOKEN`; the templates send it as an
-`Authorization: Bearer …` header only to that MCP connection. Keep it in a
+Streamable HTTP and set `SERA_MCP_TOKEN`; those three templates send it as an
+`Authorization: Bearer …` header only to that MCP connection, and refuse to
+send it over plaintext `http://` to a non-loopback host. Keep it in a
 server-side secret store. SSE is intentionally not used.
+
+`slack-agent`, `market-maker`, and `withdraw-cli` have not been ported to this
+transport-selection logic yet — they always spawn a local subprocess via
+`SERA_MCP_DIST`.
 
 ## Why no `npx create-sera-agent` yet
 
