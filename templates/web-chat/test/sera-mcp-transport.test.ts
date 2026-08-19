@@ -61,4 +61,22 @@ describe("resolveSeraMcpTransport", () => {
       assertTokenTransportSafety("http://localhost.:4000/mcp", "secret"),
     ).not.toThrow();
   });
+
+  it("rejects a malformed SERA_MCP_URL even when no token is set", () => {
+    expect(() =>
+      resolveSeraMcpTransport({ SERA_MCP_URL: "not a valid url::::" }),
+    ).toThrow(/invalid SERA_MCP_URL/);
+  });
+
+  it("rejects a schemeless SERA_MCP_URL (missing https://) even when no token is set", () => {
+    expect(() =>
+      resolveSeraMcpTransport({ SERA_MCP_URL: "agents.sera.cx/mcp" }),
+    ).toThrow(/invalid SERA_MCP_URL/);
+  });
+
+  it("rejects a non-http(s) SERA_MCP_URL scheme even when no token is set", () => {
+    expect(() =>
+      resolveSeraMcpTransport({ SERA_MCP_URL: "ftp://agents.sera.cx/mcp" }),
+    ).toThrow(/must be http:\/\/ or https:\/\//);
+  });
 });

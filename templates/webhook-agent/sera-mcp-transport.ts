@@ -28,18 +28,24 @@ const LOOPBACK_HOSTNAMES = new Set([
 ]);
 
 /**
- * SERA_MCP_TOKEN is a bearer credential. Refuse to send it over plaintext
- * HTTP to anything but an explicit loopback address, so a misconfigured
- * SERA_MCP_URL can't leak it on the wire.
+ * Validates SERA_MCP_URL is well-formed before it's ever used, regardless of
+ * whether a token is configured — otherwise a typo'd/schemeless URL only
+ * surfaces later as a raw error out of MCPServerStreamableHttp's connect().
+ * When SERA_MCP_TOKEN is also set, additionally refuses to send it over
+ * plaintext HTTP to anything but an explicit loopback address, so a
+ * misconfigured SERA_MCP_URL can't leak the credential on the wire.
  */
 export function assertTokenTransportSafety(url: string, token: string | undefined): void {
-  if (!token) return;
   let parsed: URL;
   try {
     parsed = new URL(url);
   } catch {
     throw new Error(`invalid SERA_MCP_URL: ${url}`);
   }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw new Error(`invalid SERA_MCP_URL: ${url} (must be http:// or https://)`);
+  }
+  if (!token) return;
   if (parsed.protocol === "https:") return;
   // URL.hostname keeps brackets around IPv6 addresses (e.g. "[::1]") and
   // preserves a trailing dot on FQDNs (e.g. "localhost.") that DNS treats as
