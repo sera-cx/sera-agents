@@ -159,18 +159,19 @@ export function makeHandlers(mcp: SeraMcpClient, cache: QuoteCache) {
     amount: string;
   }): Promise<QuoteResult> {
     const { from_token, to_token, amount } = args;
-    const rate = await mcp.callTool<SeraFxRate>("sera.get_fx_rate", {
-      base: from_token,
-      quote: to_token,
-    });
-    const rateStr = asString(rate.rate).trim();
-    // A bad amount is caller input (400); a bad upstream rate is our fault (502).
+    // A bad amount is caller input (400) — validate before any upstream RPC.
     if (!DECIMAL.test(amount.trim())) {
       throw new GatewayError(400, "amount must be a decimal number");
     }
     if (Number(amount) <= 0) {
       throw new GatewayError(400, "amount must be greater than zero");
     }
+    const rate = await mcp.callTool<SeraFxRate>("sera.get_fx_rate", {
+      base: from_token,
+      quote: to_token,
+    });
+    const rateStr = asString(rate.rate).trim();
+    // A bad upstream rate is our fault (502).
     if (!DECIMAL.test(rateStr)) {
       throw new Error("sera-mcp returned a non-numeric rate");
     }

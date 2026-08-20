@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { mulDecimal, makeHandlers } from "../src/handlers.js";
 import { makeQuoteCache } from "../src/quote-cache.js";
 import { GatewayError } from "../src/errors.js";
+import type { SeraMcpClient } from "../src/sera-mcp-client.js";
 
 describe("mulDecimal — exact decimal product (no float artifacts)", () => {
   it("computes precise products", () => {
@@ -57,6 +58,23 @@ describe("handlers — error status classification", () => {
     const err = await make().quote({ from_token: "A", to_token: "B", amount: "0" }).catch((e) => e);
     expect(err).toBeInstanceOf(GatewayError);
     expect(err.status).toBe(400);
+  });
+
+  it("quote validates the amount before any upstream call (no RPC on bad input)", async () => {
+    const calls: string[] = [];
+    const mcp: SeraMcpClient = {
+  async callTool<T>(name: string): Promise<T> {
+    calls.push(name);
+    return { rate: "1.5" } as T;
+  },
+  running: () => true,
+  shutdown: () => {},
+  };
+    const h = makeHandlers(mcp, makeQuoteCache());
+    const err = await h.quote({ from_token: "A", to_token: "B", amount: "abc" }).catch((e) => e);
+    expect(err).toBeInstanceOf(GatewayError);
+    expect(err.status).toBe(400);
+    expect(calls).toEqual([]); // rejected before any upstream RPC
   });
 
   it("quote → plain Error (→502) on a non-numeric upstream rate", async () => {
