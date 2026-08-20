@@ -26,17 +26,17 @@ export interface X402Config {
   facilitatorUrl?: string;
   cdpApiKeyId?: string;
   cdpApiKeySecret?: string;
-  cdpNetwork: string;        // base | base-sepolia | polygon | arbitrum | solana
+  cdpNetwork: string; // base | base-sepolia | polygon | arbitrum | solana
   cdpUsdcAddress?: string;
   confirmationDepth: number; // k≥3 on Base mainnet (per arXiv:2605.11781)
   // Operator gates
-  liveAck: boolean;          // set true to acknowledge wired-but-not-production-tested live mode
+  liveAck: boolean; // set true to acknowledge wired-but-not-production-tested live mode
 }
 
 export function loadConfig(): X402Config {
   const port = Number(process.env.PORT ?? 8402);
   const host = process.env.HOST ?? "127.0.0.1";
-  const mode = ((process.env.X402_MODE ?? "demo").toLowerCase() as Mode);
+  const mode = (process.env.X402_MODE ?? "demo").toLowerCase() as Mode;
   if (mode !== "demo" && mode !== "live") {
     throw new Error(`X402_MODE must be 'demo' or 'live' (got '${process.env.X402_MODE}')`);
   }
@@ -79,8 +79,7 @@ export function loadConfig(): X402Config {
 }
 
 function enforceSafetyGates(cfg: X402Config): void {
-  const isLocalHost =
-    cfg.host === "127.0.0.1" || cfg.host === "localhost" || cfg.host === "::1";
+  const isLocalHost = cfg.host === "127.0.0.1" || cfg.host === "localhost" || cfg.host === "::1";
 
   // Demo on public host without explicit ack → refuse.
   if (cfg.mode === "demo" && !isLocalHost && !cfg.demoPublicOk) {

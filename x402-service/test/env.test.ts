@@ -5,7 +5,7 @@
  * deploying live mode without facilitator config / on a public host with
  * no auth. Every refuse path must be tested.
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadConfig } from "../env.js";
 
 // Snapshot env so each test starts clean.

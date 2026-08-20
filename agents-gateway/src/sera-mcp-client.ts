@@ -1,4 +1,4 @@
-import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { GatewayError, rateLimitFromToolError } from "./errors.js";
 
 export interface ToolCallResult {
@@ -65,10 +65,11 @@ export function makeSeraMcpClient(opts: InitOpts): SeraMcpClient {
     let buf = "";
     p.stdout.on("data", (chunk) => {
       buf += chunk.toString("utf8");
-      let nl: number;
-      while ((nl = buf.indexOf("\n")) !== -1) {
+      let nl = buf.indexOf("\n");
+      while (nl !== -1) {
         const line = buf.slice(0, nl);
         buf = buf.slice(nl + 1);
+        nl = buf.indexOf("\n");
         if (!line.trim()) continue;
         try {
           const msg = JSON.parse(line);

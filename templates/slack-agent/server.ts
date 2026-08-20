@@ -7,10 +7,12 @@
  * error boundaries, subprocess cleanup, and concurrency limits.
  */
 import pkg from "@slack/bolt";
+
 const { App } = pkg;
-import { Agent, run, MCPServerStdio, user, assistant } from "@openai/agents";
-import { resolve } from "node:path";
+
 import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+import { Agent, assistant, MCPServerStdio, run, user } from "@openai/agents";
 
 // ─── ENVIRONMENT VALIDATION ───────────────────────────────────────────────
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -31,11 +33,15 @@ if (!SLACK_BOT_TOKEN) {
   process.exit(1);
 }
 if (SLACK_SOCKET_MODE && !SLACK_APP_TOKEN) {
-  process.stderr.write("refusing to start: SLACK_SOCKET_MODE=true requires SLACK_APP_TOKEN to be set.\n");
+  process.stderr.write(
+    "refusing to start: SLACK_SOCKET_MODE=true requires SLACK_APP_TOKEN to be set.\n",
+  );
   process.exit(1);
 }
 if (!SLACK_SOCKET_MODE && !SLACK_SIGNING_SECRET) {
-  process.stderr.write("refusing to start: SLACK_SOCKET_MODE=false requires SLACK_SIGNING_SECRET to be set.\n");
+  process.stderr.write(
+    "refusing to start: SLACK_SOCKET_MODE=false requires SLACK_SIGNING_SECRET to be set.\n",
+  );
   process.exit(1);
 }
 
@@ -67,7 +73,8 @@ const sera = new MCPServerStdio({
     SERA_NETWORK: process.env.SERA_NETWORK ?? "mainnet",
     POLICY_PRESET: process.env.POLICY_PRESET ?? "standard",
     LOG_LEVEL: process.env.LOG_LEVEL ?? "warn",
-    SERA_ENABLE_EXECUTION_TOOLS: process.env.SERA_ENABLE_EXECUTION_TOOLS === "true" ? "true" : "false",
+    SERA_ENABLE_EXECUTION_TOOLS:
+      process.env.SERA_ENABLE_EXECUTION_TOOLS === "true" ? "true" : "false",
     SERA_SIGNER_MODE: "external",
     ...(process.env.SERA_API_KEY ? { SERA_API_KEY: process.env.SERA_API_KEY } : {}),
     ...(process.env.SERA_API_SECRET ? { SERA_API_SECRET: process.env.SERA_API_SECRET } : {}),
@@ -153,7 +160,7 @@ async function handleSlackMessage(
     user?: string;
   },
   client: any,
-  body?: any
+  body?: any,
 ) {
   // Prevent response loops by ignoring bot messages or empty texts
   if (!event.text || !event.user || event.user === botUserId) {
@@ -167,7 +174,9 @@ async function handleSlackMessage(
     return;
   }
 
-  console.log(`[slack_event] Received message from user ${event.user} in channel ${event.channel} (thread: ${event.thread_ts ?? "none"})`);
+  console.log(
+    `[slack_event] Received message from user ${event.user} in channel ${event.channel} (thread: ${event.thread_ts ?? "none"})`,
+  );
 
   // Thread behaviour setup
   const isIm = event.channel.startsWith("D") || event.channel.startsWith("G");
@@ -181,7 +190,7 @@ async function handleSlackMessage(
 
   if (fetchThreadTs) {
     try {
-      let replies = await client.conversations.replies({
+      const replies = await client.conversations.replies({
         channel: event.channel,
         ts: fetchThreadTs,
         limit: 100,
@@ -251,7 +260,9 @@ async function handleSlackMessage(
 
   // Execute agent run inside the slot concurrency pool
   const result = await withSlot(async () => {
-    console.log(`[agent_execution] Starting agent run with ${historyItems.length} history items...`);
+    console.log(
+      `[agent_execution] Starting agent run with ${historyItems.length} history items...`,
+    );
     try {
       // 30 seconds timeout boundary
       const runResult = await withTimeout(run(agent, historyItems), 30000);
@@ -262,7 +273,7 @@ async function handleSlackMessage(
         process.stderr.write(`[agent_execution_failed] Run timed out after ${duration}ms\n`);
         return { ok: false, error: "timeout" };
       }
-      
+
       // Distinguish MCP issues from OpenAI/other logic errors
       const isMcpError = e?.message?.includes("mcp") || e?.message?.includes("sera");
       if (isMcpError) {
@@ -270,7 +281,9 @@ async function handleSlackMessage(
         return { ok: false, error: "mcp_failure" };
       }
 
-      process.stderr.write(`[agent_execution_failed] OpenAI/Agent run failed in ${duration}ms: ${e?.message ?? String(e)}\n`);
+      process.stderr.write(
+        `[agent_execution_failed] OpenAI/Agent run failed in ${duration}ms: ${e?.message ?? String(e)}\n`,
+      );
       return { ok: false, error: "openai_failure" };
     }
   });
@@ -307,14 +320,17 @@ async function handleSlackMessage(
         text: responseText,
       });
     } catch (err) {
-      process.stderr.write(`[slack_api_error] Failed to send error response message: ${String(err)}\n`);
+      process.stderr.write(
+        `[slack_api_error] Failed to send error response message: ${String(err)}\n`,
+      );
     }
     return;
   }
 
   // Success
   console.log(`[agent_execution_success] Completed in ${duration}ms.`);
-  const responseText = result.output?.trim() || "I'm sorry, I was unable to generate a response. Please try again.";
+  const responseText =
+    result.output?.trim() || "I'm sorry, I was unable to generate a response. Please try again.";
   try {
     await client.chat.postMessage({
       channel: event.channel,
@@ -322,7 +338,9 @@ async function handleSlackMessage(
       text: responseText,
     });
   } catch (err) {
-    process.stderr.write(`[slack_api_error] Failed to send agent response message: ${String(err)}\n`);
+    process.stderr.write(
+      `[slack_api_error] Failed to send agent response message: ${String(err)}\n`,
+    );
   }
 }
 
@@ -339,7 +357,7 @@ app.event("app_mention", async ({ event, client, body }) => {
       user: event.user,
     },
     client,
-    body
+    body,
   ).catch((err) => {
     process.stderr.write(`[unhandled_app_mention_error] Exception in runner: ${String(err)}\n`);
   });
@@ -357,7 +375,7 @@ app.message(async ({ message, client, body }) => {
         user: (message as any).user,
       },
       client,
-      body
+      body,
     ).catch((err) => {
       process.stderr.write(`[unhandled_dm_error] Exception in runner: ${String(err)}\n`);
     });

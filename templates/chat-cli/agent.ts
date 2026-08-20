@@ -5,9 +5,10 @@
  * to make this agent do whatever you need. Default persona is a multi-currency
  * settlement assistant.
  */
-import { Agent, run, MCPServerStdio, user } from "@openai/agents";
+
 import { resolve } from "node:path";
 import { createInterface } from "node:readline";
+import { Agent, MCPServerStdio, run, user } from "@openai/agents";
 
 const SYSTEM_PROMPT = `
 You are a multi-currency settlement assistant powered by the Sera MCP. You have

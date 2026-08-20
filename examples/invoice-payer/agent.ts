@@ -15,8 +15,9 @@
  *     --owner 0xYou --recipient 0xVendor --amount 5000 --currency MYR \
  *     --sources USDC,USDT,EURC
  */
-import { Agent, run, MCPServerStdio } from "@openai/agents";
+
 import { resolve } from "node:path";
+import { Agent, MCPServerStdio, run } from "@openai/agents";
 
 interface Args {
   owner: string;
@@ -55,7 +56,10 @@ function parseArgs(argv: string[]): Args {
   if (!FIAT_RE.test(currency)) throw new Error(`--currency must be a 3-letter ISO code`);
   const amount = Number(amountStr);
   if (!Number.isFinite(amount) || amount <= 0) throw new Error("amount must be a positive number");
-  const sources = sourcesStr.split(",").map((s) => s.trim()).filter(Boolean);
+  const sources = sourcesStr
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   if (sources.length === 0) throw new Error("--sources must list at least one symbol");
   for (const s of sources) {
     if (!SYMBOL_RE.test(s)) throw new Error(`--sources contains bad symbol "${s}"`);

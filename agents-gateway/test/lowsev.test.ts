@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { mulDecimal, makeHandlers } from "../src/handlers.js";
-import { makeQuoteCache } from "../src/quote-cache.js";
+import { describe, expect, it } from "vitest";
 import { GatewayError } from "../src/errors.js";
+import { makeHandlers, mulDecimal } from "../src/handlers.js";
+import { makeQuoteCache } from "../src/quote-cache.js";
 
 describe("mulDecimal — exact decimal product (no float artifacts)", () => {
   it("computes precise products", () => {
@@ -42,19 +42,25 @@ describe("handlers — error status classification", () => {
   });
 
   it("quote → 400 GatewayError on a non-decimal amount (caller input)", async () => {
-    const err = await make().quote({ from_token: "A", to_token: "B", amount: "abc" }).catch((e) => e);
+    const err = await make()
+      .quote({ from_token: "A", to_token: "B", amount: "abc" })
+      .catch((e) => e);
     expect(err).toBeInstanceOf(GatewayError);
     expect(err.status).toBe(400);
   });
 
   it("quote → 400 GatewayError on a negative amount (caller input)", async () => {
-    const err = await make().quote({ from_token: "A", to_token: "B", amount: "-5" }).catch((e) => e);
+    const err = await make()
+      .quote({ from_token: "A", to_token: "B", amount: "-5" })
+      .catch((e) => e);
     expect(err).toBeInstanceOf(GatewayError);
     expect(err.status).toBe(400);
   });
 
   it("quote → 400 GatewayError on a zero amount (caller input)", async () => {
-    const err = await make().quote({ from_token: "A", to_token: "B", amount: "0" }).catch((e) => e);
+    const err = await make()
+      .quote({ from_token: "A", to_token: "B", amount: "0" })
+      .catch((e) => e);
     expect(err).toBeInstanceOf(GatewayError);
     expect(err.status).toBe(400);
   });
@@ -68,13 +74,17 @@ describe("handlers — error status classification", () => {
   });
 
   it("settle → 404 GatewayError on unknown/expired quote_id", async () => {
-    const err = await make().settle({ quote_id: "nope", signer }).catch((e) => e);
+    const err = await make()
+      .settle({ quote_id: "nope", signer })
+      .catch((e) => e);
     expect(err).toBeInstanceOf(GatewayError);
     expect(err.status).toBe(404);
   });
 
   it("rates → 400 GatewayError on a malformed pair", async () => {
-    const err = await make().rates(["BADPAIR"]).catch((e) => e);
+    const err = await make()
+      .rates(["BADPAIR"])
+      .catch((e) => e);
     expect(err).toBeInstanceOf(GatewayError);
     expect(err.status).toBe(400);
   });

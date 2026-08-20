@@ -1,6 +1,6 @@
-import type { SeraMcpClient } from "./sera-mcp-client.js";
-import type { QuoteCache } from "./quote-cache.js";
 import { GatewayError } from "./errors.js";
+import type { QuoteCache } from "./quote-cache.js";
+import type { SeraMcpClient } from "./sera-mcp-client.js";
 
 /**
  * Max currency pairs per `/rates` (and the MCP `rates` tool) request. Each pair
@@ -88,7 +88,7 @@ export function mulDecimal(a: string, b: string): string {
   const parse = (s: string) => {
     const neg = s.startsWith("-");
     const [int, frac = ""] = s.replace(/^[+-]/, "").split(".");
-    return { digits: BigInt((int + frac) || "0"), scale: frac.length, neg };
+    return { digits: BigInt(int + frac || "0"), scale: frac.length, neg };
   };
   const x = parse(a.trim());
   const y = parse(b.trim());
@@ -189,7 +189,10 @@ export function makeHandlers(mcp: SeraMcpClient, cache: QuoteCache) {
     const original = cache.lookup(args.quote_id);
     if (!original) {
       // Unknown/expired quote is a caller-recoverable condition → 404, not 502.
-      throw new GatewayError(404, `quote_id ${args.quote_id} unknown or expired — call /quote again`);
+      throw new GatewayError(
+        404,
+        `quote_id ${args.quote_id} unknown or expired — call /quote again`,
+      );
     }
     const prepared = await mcp.callTool<SeraQuote>("sera.prepare_swap", {
       from: original.from_token,

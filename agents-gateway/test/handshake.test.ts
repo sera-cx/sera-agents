@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
 import { makeSeraMcpClient } from "../src/sera-mcp-client.js";
 
 // A tiny JSON-RPC stub that reports how many `initialize` handshakes it has
@@ -14,7 +14,10 @@ describe("sera-mcp client — concurrent cold-start handshake", () => {
       // issues several concurrent callTool()s before the handshake completes.
       const results = await Promise.all(
         Array.from({ length: 8 }, () =>
-          client.callTool<{ initCount: number }>("sera.get_fx_rate", { base: "USDC", quote: "EURC" }),
+          client.callTool<{ initCount: number }>("sera.get_fx_rate", {
+            base: "USDC",
+            quote: "EURC",
+          }),
         ),
       );
       // Every concurrent caller must observe the single shared handshake.

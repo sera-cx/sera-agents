@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { resolve } from "node:path";
 /**
  * sera-market-maker — Sepolia-safe two-sided spread bot driver.
  *
@@ -12,9 +13,8 @@
  * loop itself is rule-based.
  */
 import { Wallet } from "ethers";
-import { resolve } from "node:path";
+import { type LoopConfig, type LoopState, type MarketInfo, runOneTick, sleep } from "./lib/loop.js";
 import { startSeraMcp } from "./lib/mcp-client.js";
-import { runOneTick, sleep, type LoopConfig, type LoopState, type MarketInfo } from "./lib/loop.js";
 
 // ── env config ──────────────────────────────────────────────────────────
 function requireSeraMcpDist(): string {
@@ -82,8 +82,8 @@ async function main() {
     mcpPath: MCP_PATH,
     env: {
       SERA_NETWORK: NETWORK,
-      SERA_SIGNER_MODE: "external",            // we sign locally
-      SERA_ENABLE_EXECUTION_TOOLS: "true",     // we need place_order
+      SERA_SIGNER_MODE: "external", // we sign locally
+      SERA_ENABLE_EXECUTION_TOOLS: "true", // we need place_order
       POLICY_PRESET: process.env.POLICY_PRESET ?? "starter",
       LOG_LEVEL: "warn",
     },
@@ -146,12 +146,16 @@ async function main() {
   process.on("SIGINT", async () => {
     console.log(`\n\nSIGINT — attempting final cancel_all_orders…`);
     try {
-      const r = await mcp.tool<{ total: number }>("sera.cancel_all_orders", { owner_address: ownerAddress });
+      const r = await mcp.tool<{ total: number }>("sera.cancel_all_orders", {
+        owner_address: ownerAddress,
+      });
       console.log(`  cancelled ${r.total ?? 0} on exit.`);
     } catch (e: any) {
       console.error(`  cancel-on-exit warning: ${e?.message ?? String(e)}`);
     }
-    console.log(`\nfinal stats: ticks=${state.ticks} posted=${state.ordersPosted} failed=${state.ordersFailed} errors=${state.errors}`);
+    console.log(
+      `\nfinal stats: ticks=${state.ticks} posted=${state.ordersPosted} failed=${state.ordersFailed} errors=${state.errors}`,
+    );
     mcp.close();
     process.exit(0);
   });
@@ -170,11 +174,16 @@ function parseExecutorId(detail?: string): bigint | null {
   return m ? BigInt(m[1]) : null;
 }
 
-function parseContracts(detail: string | undefined, network: string): { seraAddress: string; chainId: number } {
+function parseContracts(
+  detail: string | undefined,
+  network: string,
+): { seraAddress: string; chainId: number } {
   // detail format: "sera=0xB5C5…E198 vault=0xC7d4…4D43 sor=0xa7A0…1c18"
   const m = detail?.match(/sera=(0x[0-9a-fA-F]{40})/);
   if (!m) {
-    throw new Error(`Could not extract sera contract address from doctor. Got: ${detail ?? "(undefined)"}`);
+    throw new Error(
+      `Could not extract sera contract address from doctor. Got: ${detail ?? "(undefined)"}`,
+    );
   }
   return {
     seraAddress: m[1],
@@ -192,15 +201,19 @@ interface SeraMarket {
   quote_decimals: number;
 }
 
-async function findMarket(mcp: Awaited<ReturnType<typeof startSeraMcp>>, pair: string): Promise<MarketInfo> {
+async function findMarket(
+  mcp: Awaited<ReturnType<typeof startSeraMcp>>,
+  pair: string,
+): Promise<MarketInfo> {
   const r = await mcp.tool<{ markets: SeraMarket[] }>("sera.get_markets");
   const target = pair.toUpperCase();
   const match = r.markets.find((m) => m.symbol?.toUpperCase() === target);
   if (!match) {
-    const available = r.markets.map((m) => m.symbol).slice(0, 20).join(", ");
-    throw new Error(
-      `market "${pair}" not found in /markets. Available (first 20): ${available}.`,
-    );
+    const available = r.markets
+      .map((m) => m.symbol)
+      .slice(0, 20)
+      .join(", ");
+    throw new Error(`market "${pair}" not found in /markets. Available (first 20): ${available}.`);
   }
   if (!match.base_address || !match.quote_address) {
     throw new Error(`market "${pair}" missing base/quote addresses: ${JSON.stringify(match)}`);

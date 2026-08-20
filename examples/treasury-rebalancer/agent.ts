@@ -14,8 +14,9 @@
  *     --target USD:40,SGD:30,MYR:20,EUR:10 \
  *     --reporting-currency USD
  */
-import { Agent, run, MCPServerStdio } from "@openai/agents";
+
 import { resolve } from "node:path";
+import { Agent, MCPServerStdio, run } from "@openai/agents";
 
 interface Args {
   wallets: string[];
@@ -43,7 +44,10 @@ function parseArgs(argv: string[]): Args {
     );
   }
 
-  const wallets = walletsRaw.split(",").map((w) => w.trim()).filter(Boolean);
+  const wallets = walletsRaw
+    .split(",")
+    .map((w) => w.trim())
+    .filter(Boolean);
   if (wallets.length === 0) throw new Error("--wallets must list at least one address");
   for (const w of wallets) {
     if (!ADDR_RE.test(w)) throw new Error(`--wallets contains invalid address: "${w}"`);
@@ -56,10 +60,12 @@ function parseArgs(argv: string[]): Args {
     if (!fiat || !weightStr) throw new Error(`bad --target weight: "${part}"`);
     if (!FIAT_RE.test(fiat)) throw new Error(`--target fiat code "${fiat}" must be 3 letters`);
     const w = Number(weightStr);
-    if (!Number.isFinite(w) || w < 0) throw new Error(`--target weight "${weightStr}" must be >= 0`);
+    if (!Number.isFinite(w) || w < 0)
+      throw new Error(`--target weight "${weightStr}" must be >= 0`);
     targetWeights[fiat.toUpperCase()] = w;
   }
-  if (Object.keys(targetWeights).length === 0) throw new Error("--target must list at least one weight");
+  if (Object.keys(targetWeights).length === 0)
+    throw new Error("--target must list at least one weight");
 
   return {
     wallets,
@@ -134,7 +140,9 @@ Be terse. No filler.
   const result = await run(
     agent,
     `Produce the rebalance plan for wallets ${args.wallets.join(", ")} ` +
-      `targeting ${Object.entries(args.targetWeights).map(([f, w]) => `${f}:${w}%`).join(", ")} ` +
+      `targeting ${Object.entries(args.targetWeights)
+        .map(([f, w]) => `${f}:${w}%`)
+        .join(", ")} ` +
       `valued in ${args.reportingCurrency}.`,
   );
 
