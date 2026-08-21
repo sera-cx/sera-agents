@@ -16,12 +16,13 @@
  *   - Edit public/index.html for UI tweaks.
  *   - Add more MCPs to the agent's mcpServers array if you need other tools.
  */
-import { Agent, run, MCPServerStdio, user } from "@openai/agents";
+import { Agent, run, user } from "@openai/agents";
 import express from "express";
 import helmet from "helmet";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { buildSeraMcpServer, resolveSeraMcpTransport } from "./sera-mcp-transport.js";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const HOST = process.env.HOST ?? "127.0.0.1";
@@ -117,28 +118,15 @@ async function withSlot<T>(fn: () => Promise<T>): Promise<T | null> {
 }
 
 async function main() {
-  const mcpDist = process.env.SERA_MCP_DIST?.trim();
-  if (!mcpDist) {
-    console.error(
-      "SERA_MCP_DIST is required. Point it at a built sera-mcp/dist/index.js\n" +
-        "  e.g. SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js npm start",
-    );
+  let transport;
+  try {
+    transport = resolveSeraMcpTransport(process.env);
+  } catch (e: any) {
+    console.error(e.message);
     process.exit(1);
   }
-  const seraMcpPath = resolve(mcpDist);
 
-  const sera = new MCPServerStdio({
-    command: "node",
-    args: [seraMcpPath],
-    env: {
-      SERA_NETWORK: process.env.SERA_NETWORK ?? "mainnet",
-      POLICY_PRESET: process.env.POLICY_PRESET ?? "standard",
-      LOG_LEVEL: process.env.LOG_LEVEL ?? "warn",
-      ...(process.env.SERA_API_KEY ? { SERA_API_KEY: process.env.SERA_API_KEY } : {}),
-      ...(process.env.SERA_API_SECRET ? { SERA_API_SECRET: process.env.SERA_API_SECRET } : {}),
-    },
-    name: "sera",
-  });
+  const sera = buildSeraMcpServer(transport);
   await sera.connect();
 
   const agent = new Agent({

@@ -15,6 +15,8 @@
  * the first Base Sepolia E2E test.
  */
 
+import { createPrivateKey, randomBytes, sign } from "node:crypto";
+
 export interface VerifyResult {
   isValid: boolean;
   invalidReason?: string;
@@ -48,13 +50,58 @@ export interface PaymentRequirements {
   extra: Record<string, unknown>;
 }
 
-function authHeader(cfg: FacilitatorConfig): Record<string, string> {
-  // CDP typically takes a Bearer token derived from {api_key_id}:{api_secret}.
-  // Some installs use HMAC-SHA256 signed JWT — adjust here when verified
-  // against the live CDP integration. We keep the simpler concat form for
-  // now and document the override below.
+/**
+ * Generate a short-lived ES256 JWT for Coinbase CDP API v2 endpoints.
+ * Includes request-specific `uri` claim formatted as `<METHOD> <host><pathname>`
+ * and a cryptographic random nonce in the header.
+ */
+export function buildCdpJwt(
+  apiKeyId: string,
+  apiKeySecret: string,
+  method: string,
+  requestUrl: string,
+): string {
+  const parsedUrl = new URL(requestUrl);
+  const uri = `${method.toUpperCase()} ${parsedUrl.host}${parsedUrl.pathname}`;
+  const now = Math.floor(Date.now() / 1000);
+
+  const header = {
+    alg: "ES256",
+    typ: "JWT",
+    kid: apiKeyId,
+    nonce: randomBytes(16).toString("hex"),
+  };
+
+  const payload = {
+    iss: "cdp",
+    sub: apiKeyId,
+    nbf: now,
+    exp: now + 120,
+    uri,
+  };
+
+  const headerB64 = Buffer.from(JSON.stringify(header)).toString("base64url");
+  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  const data = `${headerB64}.${payloadB64}`;
+
+  const normalizedKey = apiKeySecret.includes("\\n")
+    ? apiKeySecret.replace(/\\n/g, "\n")
+    : apiKeySecret;
+  const privateKey = createPrivateKey(normalizedKey);
+
+  const signature = sign("SHA256", Buffer.from(data), {
+    key: privateKey,
+    dsaEncoding: "ieee-p1363",
+  });
+  const signatureB64 = signature.toString("base64url");
+
+  return `${data}.${signatureB64}`;
+}
+
+function authHeader(cfg: FacilitatorConfig, method: string, url: string): Record<string, string> {
+  const jwt = buildCdpJwt(cfg.apiKeyId, cfg.apiKeySecret, method, url);
   return {
-    authorization: `Bearer ${cfg.apiKeyId}:${cfg.apiKeySecret}`,
+    authorization: `Bearer ${jwt}`,
   };
 }
 
@@ -64,12 +111,13 @@ export async function facilitatorVerify(
   requirements: PaymentRequirements,
 ): Promise<VerifyResult> {
   try {
-    const res = await fetch(`${cfg.url.replace(/\/+$/, "")}/verify`, {
+    const url = `${cfg.url.replace(/\/+$/, "")}/verify`;
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         "content-type": "application/json",
         accept: "application/json",
-        ...authHeader(cfg),
+        ...authHeader(cfg, "POST", url),
       },
       body: JSON.stringify({
         x402Version: 1,
@@ -97,12 +145,13 @@ export async function facilitatorSettle(
   requirements: PaymentRequirements,
 ): Promise<SettleResult> {
   try {
-    const res = await fetch(`${cfg.url.replace(/\/+$/, "")}/settle`, {
+    const url = `${cfg.url.replace(/\/+$/, "")}/settle`;
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         "content-type": "application/json",
         accept: "application/json",
-        ...authHeader(cfg),
+        ...authHeader(cfg, "POST", url),
       },
       body: JSON.stringify({
         x402Version: 1,

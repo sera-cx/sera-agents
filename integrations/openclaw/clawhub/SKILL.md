@@ -46,7 +46,7 @@ Multi-currency settlement infrastructure for AI agents. Connects OpenClaw to [Se
    }
    ```
 
-3. Restart your OpenClaw agent. 32 `sera.*` tools are now available.
+3. Restart your OpenClaw agent. The `sera.*` tools are now available.
 
 ## Verify
 

@@ -127,7 +127,7 @@ export function buildMcpServer(handlers: Handlers): McpServer {
 }
 
 export async function handleMcpRequest(
-  mcpServer: McpServer,
+  handlers: Handlers,
   req: IncomingMessage,
   res: ServerResponse,
 ): Promise<void> {
@@ -164,6 +164,10 @@ export async function handleMcpRequest(
       }
     }
   }
+  // Stateless Streamable HTTP creates a new transport for every request.
+  // McpServer instances can connect to only one transport, so build a matching
+  // server per request rather than reusing a server that was already connected.
+  const mcpServer = buildMcpServer(handlers);
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
   res.on("close", () => transport.close().catch(() => {}));
   await mcpServer.connect(transport);

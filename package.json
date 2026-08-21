@@ -18,22 +18,29 @@
     "examples/treasury-rebalancer"
   ],
   "scripts": {
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
+    "biome:check": "biome check --changed --no-errors-on-unmatched",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "test": "node --test test/*.test.mjs && npm run test --workspaces --if-present",
     "audit": "npm audit --workspaces --audit-level=high",
-    "check": "npm run typecheck && npm run audit",
-    "ci": "npm ci && npm run typecheck && npm run build && npm run test && npm run audit"
+    "check": "npm run biome:check && npm run typecheck && npm run audit",
+    "ci": "npm ci && npm run biome:check && npm run typecheck && npm run build && npm run test && npm run audit"
   },
   "overrides": {
     "qs": "^6.15.2",
     "ws": "^8.21.0",
-    "fast-uri": "^3.1.5",
-    "ip-address": "^10.3.1",
     "@hono/node-server": "^1.19.15",
-    "hono": "^4.12.34"
+    "fast-uri": "^3.1.5",
+    "hono": "^4.12.34",
+    "ip-address": "^10.3.1"
   },
   "engines": {
     "node": ">=18.17"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.7"
   }
 }

@@ -35,7 +35,7 @@
    }
    ```
 
-4. **Restart `hermes`**. The 32 `sera.*` tools are now callable from any agent session. Verify:
+4. **Restart `hermes`**. The `sera.*` tools are now callable from any agent session. Verify:
 
    ```
    call sera.doctor

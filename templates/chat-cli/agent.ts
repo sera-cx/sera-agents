@@ -5,13 +5,13 @@
  * to make this agent do whatever you need. Default persona is a multi-currency
  * settlement assistant.
  */
-import { Agent, run, MCPServerStdio, user } from "@openai/agents";
-import { resolve } from "node:path";
+import { Agent, run, user } from "@openai/agents";
 import { createInterface } from "node:readline";
+import { buildSeraMcpServer, resolveSeraMcpTransport } from "./sera-mcp-transport.js";
 
 const SYSTEM_PROMPT = `
 You are a multi-currency settlement assistant powered by the Sera MCP. You have
-55 tools covering stablecoin discovery, FX rates, quotes, swaps, treasury
+tools covering stablecoin discovery, FX rates, quotes, swaps, treasury
 management, deal scanning, and more.
 
 Operating principles:
@@ -24,33 +24,16 @@ Operating principles:
 - Be concise. Show numbers with sensible precision. Skip filler.
 `.trim();
 
-function requireSeraMcpDist(): string {
-  const p = process.env.SERA_MCP_DIST?.trim();
-  if (!p) {
-    console.error(
-      "SERA_MCP_DIST is required. Point it at a built sera-mcp/dist/index.js\n" +
-        "  e.g. SERA_MCP_DIST=/path/to/sera-mcp/dist/index.js npm start",
-    );
+async function main() {
+  let transport;
+  try {
+    transport = resolveSeraMcpTransport(process.env);
+  } catch (e: any) {
+    console.error(e.message);
     process.exit(1);
   }
-  return resolve(p);
-}
 
-async function main() {
-  const seraMcpPath = requireSeraMcpDist();
-
-  const sera = new MCPServerStdio({
-    command: "node",
-    args: [seraMcpPath],
-    env: {
-      SERA_NETWORK: process.env.SERA_NETWORK ?? "mainnet",
-      POLICY_PRESET: process.env.POLICY_PRESET ?? "standard",
-      LOG_LEVEL: process.env.LOG_LEVEL ?? "warn",
-      ...(process.env.SERA_API_KEY ? { SERA_API_KEY: process.env.SERA_API_KEY } : {}),
-      ...(process.env.SERA_API_SECRET ? { SERA_API_SECRET: process.env.SERA_API_SECRET } : {}),
-    },
-    name: "sera",
-  });
+  const sera = buildSeraMcpServer(transport);
   await sera.connect();
 
   const agent = new Agent({
