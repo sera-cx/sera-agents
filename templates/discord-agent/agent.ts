@@ -6,8 +6,16 @@
  * in-memory rate limiting, concurrency cap slots, and premium embeds for financial summaries.
  * All functions are encapsulated in a single file per repository template conventions.
  */
-import { Agent, run, MCPServerStdio, user, assistant } from "@openai/agents";
-import { Client, GatewayIntentBits, Partials, EmbedBuilder, ChannelType, ActivityType } from "discord.js";
+import { Agent, assistant, MCPServerStdio, run, user } from "@openai/agents";
+import {
+  ActivityType,
+  ChannelType,
+  Client,
+  EmbedBuilder,
+  GatewayIntentBits,
+  Partials,
+  type TextBasedChannel,
+} from "discord.js";
 
 // ── 1. LOGGING & UTILITIES ───────────────────────────────────────────────────
 function logEvent(event: string, meta: Record<string, unknown> = {}) {
@@ -47,7 +55,7 @@ const RATE_LIMIT_MAX_REQUESTS = 5;
 function isRateLimited(userId: string): boolean {
   const now = Date.now();
   const limit = rateLimits.get(userId);
-  if (!limit || (now - limit.start) > RATE_LIMIT_WINDOW_MS) {
+  if (!limit || now - limit.start > RATE_LIMIT_WINDOW_MS) {
     rateLimits.set(userId, { count: 1, start: now });
     return false;
   }
@@ -98,36 +106,62 @@ function tryFormatEmbed(text: string): { embed: EmbedBuilder | null; cleanText: 
     const isBalance = Array.isArray(data.balances) || data.assets || data.holdings;
 
     if (isQuote || isBalance) {
-      const embed = new EmbedBuilder()
-        .setColor(0x00ffcc)
-        .setTimestamp();
+      const embed = new EmbedBuilder().setColor(0x00ffcc).setTimestamp();
 
       if (isQuote) {
         embed.setTitle("Sera Settlement Quote / Deal Details");
         if (data.source_asset || data.from_asset) {
-          embed.addFields({ name: "Source Asset", value: String(data.source_asset || data.from_asset), inline: true });
+          embed.addFields({
+            name: "Source Asset",
+            value: String(data.source_asset || data.from_asset),
+            inline: true,
+          });
         }
         if (data.destination_asset || data.to_asset) {
-          embed.addFields({ name: "Destination Asset", value: String(data.destination_asset || data.to_asset), inline: true });
+          embed.addFields({
+            name: "Destination Asset",
+            value: String(data.destination_asset || data.to_asset),
+            inline: true,
+          });
         }
         if (data.source_amount || data.from_amount) {
-          embed.addFields({ name: "Source Amount", value: String(data.source_amount || data.from_amount), inline: true });
+          embed.addFields({
+            name: "Source Amount",
+            value: String(data.source_amount || data.from_amount),
+            inline: true,
+          });
         }
         if (data.destination_amount || data.to_amount) {
-          embed.addFields({ name: "Destination Amount", value: String(data.destination_amount || data.to_amount), inline: true });
+          embed.addFields({
+            name: "Destination Amount",
+            value: String(data.destination_amount || data.to_amount),
+            inline: true,
+          });
         }
         if (data.rate || data.fx_rate) {
-          embed.addFields({ name: "FX Rate", value: String(data.rate || data.fx_rate), inline: true });
+          embed.addFields({
+            name: "FX Rate",
+            value: String(data.rate || data.fx_rate),
+            inline: true,
+          });
         }
         if (data.quote_uuid || data.uuid) {
-          embed.addFields({ name: "Quote UUID", value: `\`${data.quote_uuid || data.uuid}\``, inline: false });
+          embed.addFields({
+            name: "Quote UUID",
+            value: `\`${data.quote_uuid || data.uuid}\``,
+            inline: false,
+          });
         }
         if (data.route_params) {
-          embed.addFields({ name: "Signing Parameters", value: "Copy route params to perform local client-side signing.", inline: false });
+          embed.addFields({
+            name: "Signing Parameters",
+            value: "Copy route params to perform local client-side signing.",
+            inline: false,
+          });
         }
       } else {
         embed.setTitle("Sera Account Balances");
-        const list = Array.isArray(data.balances) ? data.balances : (data.assets || []);
+        const list = Array.isArray(data.balances) ? data.balances : data.assets || [];
         for (const item of list.slice(0, 12)) {
           const asset = item.asset || item.token || item.name || "Unknown";
           const amount = item.amount || item.balance || "0";
@@ -138,7 +172,7 @@ function tryFormatEmbed(text: string): { embed: EmbedBuilder | null; cleanText: 
       const cleanText = text.replace(JSON_BLOCK_REGEX, "").trim();
       return { embed, cleanText };
     }
-  } catch (err) {
+  } catch {
     // Graceful fallback to text on parsing failure
   }
 
@@ -162,7 +196,10 @@ async function main() {
     throw new Error("OPENAI_API_KEY is required");
   }
   if (!seraMcpPath || seraMcpPath === "path-to-sera-mcp-dist-index-js") {
-    logEvent("startup_failed", { reason: "SERA_MCP_DIST environment variable is required to point to the built sera-mcp server (e.g. /path/to/sera-mcp/dist/index.js)" });
+    logEvent("startup_failed", {
+      reason:
+        "SERA_MCP_DIST environment variable is required to point to the built sera-mcp server (e.g. /path/to/sera-mcp/dist/index.js)",
+    });
     process.exit(1);
     throw new Error("SERA_MCP_DIST is required");
   }
@@ -192,8 +229,9 @@ async function main() {
   try {
     await sera.connect();
     logEvent("mcp_connected");
-  } catch (err: any) {
-    logEvent("mcp_connection_failed", { error: err.message });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    logEvent("mcp_connection_failed", { error: errorMsg });
     process.exit(1);
   }
 
@@ -216,11 +254,16 @@ async function main() {
   });
 
   // Dynamic context history retriever
-  async function fetchHistory(channel: any, authorId: string, limit: number = 15, excludeMessageId?: string): Promise<any[]> {
+  async function fetchHistory(
+    channel: TextBasedChannel,
+    authorId: string,
+    limit = 15,
+    excludeMessageId?: string,
+  ): Promise<Array<ReturnType<typeof user> | ReturnType<typeof assistant>>> {
     try {
       const messages = await channel.messages.fetch({ limit });
       const sorted = [...messages.values()].reverse();
-      const mapped: any[] = [];
+      const mapped: Array<ReturnType<typeof user> | ReturnType<typeof assistant>> = [];
 
       const isDM = channel.type === ChannelType.DM;
       const isThread = channel.isThread();
@@ -258,8 +301,9 @@ async function main() {
         }
       }
       return mapped;
-    } catch (err: any) {
-      logEvent("history_fetch_failed", { error: err.message });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      logEvent("history_fetch_failed", { error: errorMsg });
       return [];
     }
   }
@@ -288,8 +332,9 @@ async function main() {
         await client.application?.commands.set([data]);
         logEvent("global_commands_registered");
       }
-    } catch (err: any) {
-      logEvent("commands_registration_failed", { error: err.message });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      logEvent("commands_registration_failed", { error: errorMsg });
     }
 
     client.user?.setActivity("Sera Multi-Currency", { type: ActivityType.Watching });
@@ -340,7 +385,7 @@ async function main() {
       logEvent("empty_mention_warning", { authorId: message.author.id });
       await message.reply(
         "I received your mention, but the message content was blank. " +
-        "Please check that the bot has **Message Content Intent** enabled in the Discord Developer Portal."
+          "Please check that the bot has **Message Content Intent** enabled in the Discord Developer Portal.",
       );
       return;
     }
@@ -348,15 +393,20 @@ async function main() {
     // Rate limiter
     if (isRateLimited(message.author.id)) {
       logEvent("rate_limit_exceeded", { authorId: message.author.id });
-      await message.reply("You are sending messages too quickly! Please wait a moment before trying again.");
+      await message.reply(
+        "You are sending messages too quickly! Please wait a moment before trying again.",
+      );
       return;
     }
 
     // Acquire concurrency slot
     const slotAcquired = await withSlot(async () => {
       const startExecution = Date.now();
-      logEvent("agent_execution_start", { authorId: message.author.id, channelId: message.channel.id });
-      
+      logEvent("agent_execution_start", {
+        authorId: message.author.id,
+        channelId: message.channel.id,
+      });
+
       // Trigger typing state feedback
       await message.channel.sendTyping();
 
@@ -391,18 +441,30 @@ async function main() {
         }
 
         const durationMs = Date.now() - startExecution;
-        logEvent("agent_execution_complete", { authorId: message.author.id, durationMs, status: "success" });
-
-      } catch (err: any) {
+        logEvent("agent_execution_complete", {
+          authorId: message.author.id,
+          durationMs,
+          status: "success",
+        });
+      } catch (err: unknown) {
         const durationMs = Date.now() - startExecution;
-        logEvent("agent_execution_failed", { authorId: message.author.id, durationMs, error: err.message });
-        await message.reply("Sorry, an error occurred while processing your request. Please try again later.");
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        logEvent("agent_execution_failed", {
+          authorId: message.author.id,
+          durationMs,
+          error: errorMsg,
+        });
+        await message.reply(
+          "Sorry, an error occurred while processing your request. Please try again later.",
+        );
       }
     });
 
     if (slotAcquired === null) {
       logEvent("concurrency_slot_unavailable", { authorId: message.author.id });
-      await message.reply("I am currently busy handling other requests. Please try again in a few seconds.");
+      await message.reply(
+        "I am currently busy handling other requests. Please try again in a few seconds.",
+      );
     }
   });
 
@@ -411,8 +473,9 @@ async function main() {
     logEvent("shutdown", { signal });
     try {
       await sera.close();
-    } catch (err: any) {
-      logEvent("mcp_disconnect_failed", { error: err.message });
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      logEvent("mcp_disconnect_failed", { error: errorMsg });
     }
     client.destroy();
     process.exit(0);
@@ -424,13 +487,14 @@ async function main() {
   // Log in to Discord
   try {
     await client.login(DISCORD_TOKEN);
-  } catch (err: any) {
-    logEvent("discord_login_failed", { error: err.message });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    logEvent("discord_login_failed", { error: errorMsg });
     process.exit(1);
   }
 }
 
-main().catch((err) => {
+main().catch((err: unknown) => {
   logEvent("fatal_startup_error", { error: err instanceof Error ? err.message : String(err) });
   process.exit(1);
 });
