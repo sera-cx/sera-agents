@@ -11,13 +11,15 @@
  *   - Body cap 32kb
  *   - Per-IP rate limit (only honored behind a configured trusted proxy)
  *   - Concurrency limit on agent runs
+ *   - Tool Profile execution gating (READ_ONLY by default)
  *   - Allowlisted task mapper — replace with your own once you know the schema
  */
+import { timingSafeEqual } from "node:crypto";
 import { Agent, run, user } from "@openai/agents";
 import express from "express";
-import { timingSafeEqual } from "node:crypto";
 import helmet from "helmet";
-import { verifyHmac as verifyHmacImpl, makeNonceStore, type HmacProvider } from "./hmac.js";
+import { type HmacProvider, makeNonceStore, verifyHmac as verifyHmacImpl } from "./hmac.js";
+import { createChildMcpEnv, FilteredMCPServer, getToolProfileFromEnv } from "./mcp-tool-filter.js";
 import { buildSeraMcpServer, resolveSeraMcpTransport } from "./sera-mcp-transport.js";
 
 const PORT = Number(process.env.PORT ?? 4000);
@@ -101,10 +103,7 @@ function TASK_BUILDER(eventPayload: any): string | { error: string } {
 // to verifyHmac.
 const nonceStore = makeNonceStore();
 
-function verifyHmac(
-  rawBody: Buffer,
-  headers: Record<string, string | undefined>,
-) {
+function verifyHmac(rawBody: Buffer, headers: Record<string, string | undefined>) {
   return verifyHmacImpl(
     {
       provider: HMAC_PROVIDER,
@@ -122,8 +121,11 @@ let activeRuns = 0;
 async function withSlot<T>(fn: () => Promise<T>): Promise<T | null> {
   if (activeRuns >= MAX_CONCURRENT) return null;
   activeRuns++;
-  try { return await fn(); }
-  finally { activeRuns--; }
+  try {
+    return await fn();
+  } finally {
+    activeRuns--;
+  }
 }
 
 const ipBuckets = new Map<string, { count: number; windowStart: number }>();
@@ -139,7 +141,7 @@ function ipRateLimit(ip: string): boolean {
 }
 
 async function main() {
-  let transport;
+  let transport: ReturnType<typeof resolveSeraMcpTransport>;
   try {
     transport = resolveSeraMcpTransport(process.env);
   } catch (e: any) {
@@ -147,7 +149,18 @@ async function main() {
     process.exit(1);
   }
 
-  const sera = buildSeraMcpServer(transport);
+  const toolProfile = getToolProfileFromEnv();
+  const childMcpEnv = createChildMcpEnv(toolProfile);
+
+  const underlyingSera = buildSeraMcpServer(transport, childMcpEnv);
+  const sera = new FilteredMCPServer(underlyingSera, {
+    profile: toolProfile,
+    onBlockedToolCall: (toolName, _args, err) => {
+      process.stderr.write(
+        `[security_alert] Blocked tool execution attempt: ${toolName} (${err.message})\n`,
+      );
+    },
+  });
   await sera.connect();
 
   const agent = new Agent({
@@ -157,7 +170,7 @@ async function main() {
   });
 
   const app = express();
-  app.use(helmet({ contentSecurityPolicy: false })); // API-only; CSP not needed
+  app.use(helmet());
   if (TRUST_PROXY) app.set("trust proxy", 1); // single hop only — never `true`
 
   // We need raw body for HMAC verification; capture it before json parses.
@@ -165,8 +178,11 @@ async function main() {
   app.use((req, _res, next) => {
     if (req.body && Buffer.isBuffer(req.body)) {
       (req as any).rawBody = req.body;
-      try { req.body = JSON.parse(req.body.toString("utf8") || "{}"); }
-      catch { req.body = null; }
+      try {
+        req.body = JSON.parse(req.body.toString("utf8") || "{}");
+      } catch {
+        req.body = null;
+      }
     }
     next();
   });
@@ -211,7 +227,8 @@ async function main() {
         return { ok: false, error: "agent_error" };
       }
     });
-    if (result === null) return res.status(503).json({ error: "concurrency_limit", retry_after_seconds: 5 });
+    if (result === null)
+      return res.status(503).json({ error: "concurrency_limit", retry_after_seconds: 5 });
     res.status(result.ok ? 200 : 500).json(result);
   });
 
@@ -221,6 +238,7 @@ async function main() {
       auth_required: !!WEBHOOK_SECRET,
       hmac_provider: HMAC_PROVIDER,
       trust_proxy: TRUST_PROXY,
+      tool_profile: toolProfile,
       active_runs: activeRuns,
     });
   });
