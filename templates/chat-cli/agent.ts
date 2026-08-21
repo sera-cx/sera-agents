@@ -5,9 +5,14 @@
  * to make this agent do whatever you need. Default persona is a multi-currency
  * settlement assistant.
  */
-import { Agent, run, user } from "@openai/agents";
+
 import { createInterface } from "node:readline";
-import { buildSeraMcpServer, resolveSeraMcpTransport } from "./sera-mcp-transport.js";
+import { Agent, run, user } from "@openai/agents";
+import {
+  buildSeraMcpServer,
+  resolveSeraMcpTransport,
+  type SeraMcpTransport,
+} from "./sera-mcp-transport.js";
 
 const SYSTEM_PROMPT = `
 You are a multi-currency settlement assistant powered by the Sera MCP. You have
@@ -25,7 +30,7 @@ Operating principles:
 `.trim();
 
 async function main() {
-  let transport;
+  let transport: SeraMcpTransport;
   try {
     transport = resolveSeraMcpTransport(process.env);
   } catch (e: any) {

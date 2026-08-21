@@ -11,10 +11,11 @@ function respond(id, result) {
 
 process.stdin.on("data", (chunk) => {
   buf += chunk.toString("utf8");
-  let nl;
-  while ((nl = buf.indexOf("\n")) !== -1) {
+  let nl = buf.indexOf("\n");
+  while (nl !== -1) {
     const line = buf.slice(0, nl);
     buf = buf.slice(nl + 1);
+    nl = buf.indexOf("\n");
     if (!line.trim()) continue;
     let msg;
     try {

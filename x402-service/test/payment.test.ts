@@ -4,20 +4,21 @@
  * The facilitator client and Sera MCP client are both injectable function
  * shapes — mocked here to test the orchestration logic in isolation.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  verifyPayment,
-  settlePayment,
-  executeSwap,
-  transitionToVerified,
-  transitionToExecuting,
-  transitionToDelivered,
-  transitionToFailedRefundable,
-} from "../payment.js";
+
 import { generateKeyPairSync } from "node:crypto";
-import { makeStore, type PendingPayment } from "../state.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { X402Config } from "../env.js";
+import {
+  executeSwap,
+  settlePayment,
+  transitionToDelivered,
+  transitionToExecuting,
+  transitionToFailedRefundable,
+  transitionToVerified,
+  verifyPayment,
+} from "../payment.js";
 import type { SeraMcpClient } from "../sera-client.js";
+import { makeStore, type PendingPayment } from "../state.js";
 
 const { privateKey: TEST_PRIVATE_KEY_PEM } = generateKeyPairSync("ec", {
   namedCurve: "prime256v1",
@@ -230,9 +231,7 @@ describe("state transition helpers", () => {
     store.save(p);
     transitionToVerified(store, p);
     transitionToExecuting(store, p);
-    expect(
-      transitionToDelivered(store, p, '{"success":true}', '{"txHash":"0xabc"}'),
-    ).toBe(true);
+    expect(transitionToDelivered(store, p, '{"success":true}', '{"txHash":"0xabc"}')).toBe(true);
     const final = store.load(p.payment_id);
     expect(final?.status).toBe("delivered");
     expect(final?.delivered_payload).toBe('{"success":true}');
@@ -245,9 +244,7 @@ describe("state transition helpers", () => {
     store.save(p);
     transitionToVerified(store, p);
     transitionToExecuting(store, p);
-    expect(
-      transitionToFailedRefundable(store, p, "swap reverted on chain"),
-    ).toBe(true);
+    expect(transitionToFailedRefundable(store, p, "swap reverted on chain")).toBe(true);
     expect(store.load(p.payment_id)?.last_error).toBe("swap reverted on chain");
   });
 

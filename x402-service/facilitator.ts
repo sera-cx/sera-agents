@@ -30,10 +30,10 @@ export interface SettleResult {
 }
 
 export interface FacilitatorConfig {
-  url: string;            // e.g. https://api.cdp.coinbase.com/platform/v2/x402
+  url: string; // e.g. https://api.cdp.coinbase.com/platform/v2/x402
   apiKeyId: string;
   apiKeySecret: string;
-  network: string;        // base | base-sepolia | polygon | arbitrum | solana
+  network: string; // base | base-sepolia | polygon | arbitrum | solana
   confirmationDepth: number;
 }
 

@@ -16,13 +16,18 @@
  *   - Edit public/index.html for UI tweaks.
  *   - Add more MCPs to the agent's mcpServers array if you need other tools.
  */
+
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Agent, run, user } from "@openai/agents";
 import express from "express";
 import helmet from "helmet";
-import { resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { buildSeraMcpServer, resolveSeraMcpTransport } from "./sera-mcp-transport.js";
+import {
+  buildSeraMcpServer,
+  resolveSeraMcpTransport,
+  type SeraMcpTransport,
+} from "./sera-mcp-transport.js";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const HOST = process.env.HOST ?? "127.0.0.1";
@@ -71,9 +76,7 @@ if (ALLOW_NO_AUTH && !AUTH_TOKEN) {
     );
     process.exit(1);
   }
-  process.stderr.write(
-    `WARNING: web-chat running with NO AUTH (loopback-only).\n`,
-  );
+  process.stderr.write(`WARNING: web-chat running with NO AUTH (loopback-only).\n`);
 }
 
 // In-memory session store with LRU eviction (insertion order = recency).
@@ -113,12 +116,15 @@ let activeRuns = 0;
 async function withSlot<T>(fn: () => Promise<T>): Promise<T | null> {
   if (activeRuns >= MAX_CONCURRENT) return null;
   activeRuns++;
-  try { return await fn(); }
-  finally { activeRuns--; }
+  try {
+    return await fn();
+  } finally {
+    activeRuns--;
+  }
 }
 
 async function main() {
-  let transport;
+  let transport: SeraMcpTransport;
   try {
     transport = resolveSeraMcpTransport(process.env);
   } catch (e: any) {
@@ -201,7 +207,8 @@ async function main() {
         return { ok: false, error: "agent_error" };
       }
     });
-    if (result === null) return res.status(503).json({ error: "concurrency_limit", retry_after_seconds: 5 });
+    if (result === null)
+      return res.status(503).json({ error: "concurrency_limit", retry_after_seconds: 5 });
     if (!result.ok) return res.status(500).json({ error: result.error });
     res.json({ reply: result.reply });
   });

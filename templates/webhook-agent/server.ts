@@ -13,12 +13,17 @@
  *   - Concurrency limit on agent runs
  *   - Allowlisted task mapper — replace with your own once you know the schema
  */
+
+import { timingSafeEqual } from "node:crypto";
 import { Agent, run, user } from "@openai/agents";
 import express from "express";
-import { timingSafeEqual } from "node:crypto";
 import helmet from "helmet";
-import { verifyHmac as verifyHmacImpl, makeNonceStore, type HmacProvider } from "./hmac.js";
-import { buildSeraMcpServer, resolveSeraMcpTransport } from "./sera-mcp-transport.js";
+import { type HmacProvider, makeNonceStore, verifyHmac as verifyHmacImpl } from "./hmac.js";
+import {
+  buildSeraMcpServer,
+  resolveSeraMcpTransport,
+  type SeraMcpTransport,
+} from "./sera-mcp-transport.js";
 
 const PORT = Number(process.env.PORT ?? 4000);
 const HOST = process.env.HOST ?? "127.0.0.1";
@@ -101,10 +106,7 @@ function TASK_BUILDER(eventPayload: any): string | { error: string } {
 // to verifyHmac.
 const nonceStore = makeNonceStore();
 
-function verifyHmac(
-  rawBody: Buffer,
-  headers: Record<string, string | undefined>,
-) {
+function verifyHmac(rawBody: Buffer, headers: Record<string, string | undefined>) {
   return verifyHmacImpl(
     {
       provider: HMAC_PROVIDER,
@@ -122,8 +124,11 @@ let activeRuns = 0;
 async function withSlot<T>(fn: () => Promise<T>): Promise<T | null> {
   if (activeRuns >= MAX_CONCURRENT) return null;
   activeRuns++;
-  try { return await fn(); }
-  finally { activeRuns--; }
+  try {
+    return await fn();
+  } finally {
+    activeRuns--;
+  }
 }
 
 const ipBuckets = new Map<string, { count: number; windowStart: number }>();
@@ -139,7 +144,7 @@ function ipRateLimit(ip: string): boolean {
 }
 
 async function main() {
-  let transport;
+  let transport: SeraMcpTransport;
   try {
     transport = resolveSeraMcpTransport(process.env);
   } catch (e: any) {
@@ -165,8 +170,11 @@ async function main() {
   app.use((req, _res, next) => {
     if (req.body && Buffer.isBuffer(req.body)) {
       (req as any).rawBody = req.body;
-      try { req.body = JSON.parse(req.body.toString("utf8") || "{}"); }
-      catch { req.body = null; }
+      try {
+        req.body = JSON.parse(req.body.toString("utf8") || "{}");
+      } catch {
+        req.body = null;
+      }
     }
     next();
   });
@@ -211,7 +219,8 @@ async function main() {
         return { ok: false, error: "agent_error" };
       }
     });
-    if (result === null) return res.status(503).json({ error: "concurrency_limit", retry_after_seconds: 5 });
+    if (result === null)
+      return res.status(503).json({ error: "concurrency_limit", retry_after_seconds: 5 });
     res.status(result.ok ? 200 : 500).json(result);
   });
 

@@ -14,9 +14,10 @@
  * connection beyond the template's scope — see README for production
  * patterns.
  */
-import { Agent, MCPServerStdio, run } from "@openai/agents";
-import { resolve } from "node:path";
+
 import { randomBytes } from "node:crypto";
+import { resolve } from "node:path";
+import { Agent, MCPServerStdio, run } from "@openai/agents";
 
 function requireSeraMcpDist(): string {
   const p = process.env.SERA_MCP_DIST?.trim();
@@ -53,7 +54,9 @@ if (!USER || !RECIPIENT || TOKENS.length === 0 || AMOUNTS.length === 0) {
   process.exit(1);
 }
 if (TOKENS.length !== AMOUNTS.length) {
-  console.error(`WITHDRAW_TOKENS (${TOKENS.length}) and WITHDRAW_AMOUNTS (${AMOUNTS.length}) length mismatch.`);
+  console.error(
+    `WITHDRAW_TOKENS (${TOKENS.length}) and WITHDRAW_AMOUNTS (${AMOUNTS.length}) length mismatch.`,
+  );
   process.exit(1);
 }
 
@@ -107,7 +110,9 @@ async function main() {
   console.log("with { intent, user_signature }. This template doesn't include wallet wiring");
   console.log("(would need ethers / viem + a private key or wallet connection).\n");
   console.log("Sera EIP-712 domain:");
-  console.log("  { name: 'Sera', version: '1', chainId: 1, verifyingContract: <Sera.sol address> }");
+  console.log(
+    "  { name: 'Sera', version: '1', chainId: 1, verifyingContract: <Sera.sol address> }",
+  );
   console.log("  → fetch verifyingContract live from sera.doctor or sera://config\n");
   console.log("WithdrawIntent struct types (for EIP-712 signTypedData):");
   console.log("  WithdrawIntent: [");
@@ -122,7 +127,9 @@ async function main() {
   console.log("Once you have user_signature (0x… hex):");
   console.log("  → sera.withdraw_request { intent, user_signature }");
   console.log("  ← returns { executor_address, executor_signature }\n");
-  console.log("Step 2: sera.withdraw_build { intent, user_signature, executor, executor_signature }");
+  console.log(
+    "Step 2: sera.withdraw_build { intent, user_signature, executor, executor_signature }",
+  );
   console.log("  ← returns { tx }  (unsigned EIP-1559 transaction)\n");
   console.log("Step 3: sign tx locally with your wallet → produces raw_tx (0x… hex).\n");
   console.log("Step 4: sera.withdraw_send { raw_tx }");

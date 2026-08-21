@@ -6,21 +6,25 @@
  * that outgoing Authorization headers carry cryptographically valid
  * ES256 JWTs with request-specific claims.
  */
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { generateKeyPairSync, verify as cryptoVerify } from "node:crypto";
+
+import { verify as cryptoVerify, generateKeyPairSync } from "node:crypto";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildCdpJwt,
-  facilitatorVerify,
-  facilitatorSettle,
   type FacilitatorConfig,
+  facilitatorSettle,
+  facilitatorVerify,
   type PaymentRequirements,
 } from "../facilitator.js";
 
-const { privateKey: TEST_PRIVATE_KEY_PEM, publicKey: TEST_PUBLIC_KEY_PEM } = generateKeyPairSync("ec", {
-  namedCurve: "prime256v1",
-  publicKeyEncoding: { type: "spki", format: "pem" },
-  privateKeyEncoding: { type: "pkcs8", format: "pem" },
-});
+const { privateKey: TEST_PRIVATE_KEY_PEM, publicKey: TEST_PUBLIC_KEY_PEM } = generateKeyPairSync(
+  "ec",
+  {
+    namedCurve: "prime256v1",
+    publicKeyEncoding: { type: "spki", format: "pem" },
+    privateKeyEncoding: { type: "pkcs8", format: "pem" },
+  },
+);
 
 const CFG: FacilitatorConfig = {
   url: "https://api.cdp.coinbase.com/platform/v2/x402",
@@ -65,7 +69,12 @@ function verifyAndDecodeJwt(authHeaderValue: string) {
 
 describe("buildCdpJwt", () => {
   it("generates a valid ES256 JWT with correct headers, claims, and nonce", () => {
-    const jwt = buildCdpJwt("test-id", TEST_PRIVATE_KEY_PEM, "POST", "https://api.cdp.coinbase.com/platform/v2/x402/verify");
+    const jwt = buildCdpJwt(
+      "test-id",
+      TEST_PRIVATE_KEY_PEM,
+      "POST",
+      "https://api.cdp.coinbase.com/platform/v2/x402/verify",
+    );
     const { header, payload } = verifyAndDecodeJwt(`Bearer ${jwt}`);
     expect(header.alg).toBe("ES256");
     expect(header.typ).toBe("JWT");
@@ -82,8 +91,18 @@ describe("buildCdpJwt", () => {
   });
 
   it("generates distinct nonces for separate JWT invocations", () => {
-    const jwt1 = buildCdpJwt("test-id", TEST_PRIVATE_KEY_PEM, "POST", "https://api.cdp.coinbase.com/platform/v2/x402/verify");
-    const jwt2 = buildCdpJwt("test-id", TEST_PRIVATE_KEY_PEM, "POST", "https://api.cdp.coinbase.com/platform/v2/x402/verify");
+    const jwt1 = buildCdpJwt(
+      "test-id",
+      TEST_PRIVATE_KEY_PEM,
+      "POST",
+      "https://api.cdp.coinbase.com/platform/v2/x402/verify",
+    );
+    const jwt2 = buildCdpJwt(
+      "test-id",
+      TEST_PRIVATE_KEY_PEM,
+      "POST",
+      "https://api.cdp.coinbase.com/platform/v2/x402/verify",
+    );
     const { header: h1 } = verifyAndDecodeJwt(`Bearer ${jwt1}`);
     const { header: h2 } = verifyAndDecodeJwt(`Bearer ${jwt2}`);
     expect(typeof h1.nonce).toBe("string");
@@ -95,7 +114,12 @@ describe("buildCdpJwt", () => {
 
   it("handles escaped \\n in private key PEM", () => {
     const escapedPem = TEST_PRIVATE_KEY_PEM.replace(/\n/g, "\\n");
-    const jwt = buildCdpJwt("test-id", escapedPem, "POST", "https://api.cdp.coinbase.com/platform/v2/x402/verify");
+    const jwt = buildCdpJwt(
+      "test-id",
+      escapedPem,
+      "POST",
+      "https://api.cdp.coinbase.com/platform/v2/x402/verify",
+    );
     const { isValidSig } = verifyAndDecodeJwt(`Bearer ${jwt}`);
     expect(isValidSig).toBe(true);
   });

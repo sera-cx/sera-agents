@@ -242,7 +242,7 @@
   <!-- ============== STICKY NAV (with mobile menu) ============== -->
   <header class="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
     <div class="max-w-7xl mx-auto px-5 lg:px-6 h-16 flex items-center justify-between">
-      <a href="#" class="flex items-center gap-2.5">
+      <a href="/" class="flex items-center gap-2.5">
         <img src="logo.png" alt="Sera" class="w-7 h-7 rounded-md" />
         <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
       </a>
@@ -263,8 +263,8 @@
 
       <div class="flex items-center gap-3">
         <a href="#install" class="hidden sm:inline-block text-sm bg-accent-500 text-ink-950 font-semibold px-4 py-2 rounded-lg hover:bg-accent-400 transition">Get started</a>
-        <button id="menu-btn" class="lg:hidden w-9 h-9 rounded-md ring-soft flex items-center justify-center text-chalk-300 hover:text-chalk-50" aria-label="Menu" aria-expanded="false">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        <button type="button" id="menu-btn" class="lg:hidden w-9 h-9 rounded-md ring-soft flex items-center justify-center text-chalk-300 hover:text-chalk-50" aria-label="Menu" aria-expanded="false">
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
         </button>
       </div>
     </div>
@@ -324,7 +324,7 @@
             Build with Sera
           </a>
           <a href="https://github.com/sera-cx/sera-mcp" target="_blank" rel="noopener" class="border border-white/10 text-chalk-300 hover:text-chalk-50 px-6 py-3 rounded-lg hover:border-white/30 transition flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
             Source
           </a>
         </div>
@@ -668,17 +668,17 @@
         </div>
 
         <!-- Pagination — desktop only (hidden on mobile via CSS) -->
-        <div class="build-pagination" role="navigation" aria-label="Build with Sera pages">
-          <button class="arrow" id="build-prev" aria-label="Previous page" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+        <nav class="build-pagination" aria-label="Build with Sera pages">
+          <button type="button" class="arrow" id="build-prev" aria-label="Previous page" disabled>
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
           <span class="label">Page</span>
-          <button data-page="0" aria-current="true">1</button>
-          <button data-page="1">2</button>
-          <button class="arrow" id="build-next" aria-label="Next page">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+          <button type="button" data-page="0" aria-current="true">1</button>
+          <button type="button" data-page="1">2</button>
+          <button type="button" class="arrow" id="build-next" aria-label="Next page">
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
           </button>
-        </div>
+        </nav>
       </div>
 
       <div class="mt-10 flex flex-wrap gap-3">
@@ -843,10 +843,10 @@
 
       <div class="mb-7 overflow-x-auto">
         <div class="tabbar" role="tablist" aria-label="Install path">
-          <button class="tab-btn" role="tab" aria-selected="true" data-tab="a">A · MCP + CLI</button>
-          <button class="tab-btn" role="tab" aria-selected="false" data-tab="b">B · Template</button>
-          <button class="tab-btn" role="tab" aria-selected="false" data-tab="c">C · Bundled</button>
-          <button class="tab-btn" role="tab" aria-selected="false" data-tab="d">D · x402 service</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="true" data-tab="a">A · MCP + CLI</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="b">B · Template</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="c">C · Bundled</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="d">D · x402 service</button>
         </div>
       </div>
 
@@ -957,7 +957,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Discovery</span>
               <span class="acc-title font-medium text-chalk-300">6 tools — list_currencies · get_markets · doctor · search_coins · get_coin_metadata · get_coin_history</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             Live token registry from Sera's <code class="font-mono text-accent-400">/tokens</code> (40 stablecoins) and the active-market catalog. Search and query single-coin metadata via <code class="font-mono text-accent-400">search_coins</code> and <code class="font-mono text-accent-400">get_coin_metadata</code>, or pull coin history via <code class="font-mono text-accent-400">get_coin_history</code>. Pair existence ≠ tradeable now — use <code class="font-mono text-accent-400">scan_markets</code> to find what's actually quotable. <code class="font-mono text-accent-400">doctor</code> is a one-call self-check — API health, network sanity, signer mode, policy summary.
@@ -970,7 +970,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Pricing & analytics</span>
               <span class="acc-title font-medium text-chalk-300">4 tools — get_fx_rate · compare_to_external_fx · multi_source_mid · spread_radar</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             Reference FX rates with bias detection. <code class="font-mono text-accent-400">compare_to_external_fx</code> diffs Sera against Frankfurter (ECB). <code class="font-mono text-accent-400">multi_source_mid</code> takes the median across three free providers. <code class="font-mono text-accent-400">spread_radar</code> flags pair asymmetry and triangular drift across a basket — runs without any liquidity.
@@ -983,7 +983,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Liquidity probing</span>
               <span class="acc-title font-medium text-chalk-300">9 tools — scan_markets · find_deals · maker_quote_ladder · probe_depth · round_trip_cost · infer_book · market_health · fx_quote_diff · compare_corridors</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             <code class="font-mono text-accent-400">find_deals</code> is the headline: scans markets in parallel, diffs each against external mid, ranks the deals. <code class="font-mono text-accent-400">probe_depth</code> characterizes price impact at a size ladder; <code class="font-mono text-accent-400">round_trip_cost</code> reveals the maker hedge floor; <code class="font-mono text-accent-400">infer_book</code> reconstructs a synthetic order book. <code class="font-mono text-accent-400">market_health</code> checks corridor quotability, <code class="font-mono text-accent-400">fx_quote_diff</code> shows the reference-vs-executable gap, <code class="font-mono text-accent-400">compare_corridors</code> ranks source corridors for a target output, and <code class="font-mono text-accent-400">maker_quote_ladder</code> projects maker earnings across a 5→200 bps ladder.
@@ -996,7 +996,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Quote &amp; plan</span>
               <span class="acc-title font-medium text-chalk-300">6 tools — get_quote · prepare_swap · quote_recipient_amount · find_cheapest_settlement_path · batch_quote · limit_watcher</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             Single-use quote + EIP-712 Intent (<code class="font-mono text-accent-400">get_quote</code> / <code class="font-mono text-accent-400">prepare_swap</code>) — pass <code class="font-mono text-accent-400">simulate:true</code> to probe with no wallet. <code class="font-mono text-accent-400">quote_recipient_amount</code> inverts it — the input required for an exact target output. <code class="font-mono text-accent-400">find_cheapest_settlement_path</code> picks the cheapest source; <code class="font-mono text-accent-400">batch_quote</code> fetches up to 50 in one round-trip; <code class="font-mono text-accent-400">limit_watcher</code> polls until a target rate hits.
@@ -1009,7 +1009,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Execution</span>
               <span class="acc-title font-medium text-chalk-300">2 tools — execute_swap · convert_and_send</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             <code class="font-mono text-accent-400">execute_swap</code> submits the signed swap (destructive) with uuid binding + server-derived USD notional caps. <code class="font-mono text-accent-400">convert_and_send</code> quotes, executes, and delivers in one call — local-signer mode only. Both are gated behind <code class="font-mono text-accent-400">SERA_ENABLE_EXECUTION_TOOLS</code> and enforce the policy caps.
@@ -1022,7 +1022,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Maker &amp; orders</span>
               <span class="acc-title font-medium text-chalk-300">9 tools — place_order · cancel_order · cancel_all_orders · place_vl_batch · cancel_vl_batch · get_order · list_orders · get_fills · get_fills_for_order</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             Full CLOB order lifecycle. <code class="font-mono text-accent-400">place_order</code> submits an agent-signed limit order; <code class="font-mono text-accent-400">place_vl_batch</code> posts a capital-efficient multi-pair Virtual Liquidity batch. <code class="font-mono text-accent-400">cancel_order</code> / <code class="font-mono text-accent-400">cancel_all_orders</code> / <code class="font-mono text-accent-400">cancel_vl_batch</code> retire them. <code class="font-mono text-accent-400">get_order</code>, <code class="font-mono text-accent-400">list_orders</code>, <code class="font-mono text-accent-400">get_fills</code>, <code class="font-mono text-accent-400">get_fills_for_order</code> read status and fills. Requires <code class="font-mono text-accent-400">SERA_API_KEY</code>.
@@ -1035,7 +1035,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Treasury</span>
               <span class="acc-title font-medium text-chalk-300">6 tools — get_balances · treasury_value · exposure_report · rebalance_plan · pay_invoice · settlement_status</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             Multi-wallet aggregation (<code class="font-mono text-accent-400">get_balances</code>, <code class="font-mono text-accent-400">treasury_value</code>), currency <code class="font-mono text-accent-400">exposure_report</code>, target-weight <code class="font-mono text-accent-400">rebalance_plan</code>, and <code class="font-mono text-accent-400">pay_invoice</code> — "I owe X in currency Y, what's the cheapest source asset?" <code class="font-mono text-accent-400">settlement_status</code> tracks a trade through Sera's <code class="font-mono text-accent-400">/orders</code>. Requires <code class="font-mono text-accent-400">SERA_API_KEY</code>.
@@ -1048,7 +1048,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Account &amp; funds</span>
               <span class="acc-title font-medium text-chalk-300">5 tools — build_approve · build_deposit · build_transfer · send_tx · send_transfer</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             Build the unsigned transactions for the on-chain leg — ERC-20 <code class="font-mono text-accent-400">build_approve</code>, vault <code class="font-mono text-accent-400">build_deposit</code> (optionally with an EIP-2612 permit), and <code class="font-mono text-accent-400">build_transfer</code> — then broadcast the signed result with <code class="font-mono text-accent-400">send_tx</code> / <code class="font-mono text-accent-400">send_transfer</code>. The agent signs; nothing is custodial.
@@ -1061,7 +1061,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Withdraw</span>
               <span class="acc-title font-medium text-chalk-300">3 tools — withdraw_request · withdraw_build · withdraw_send</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             The staged non-custodial withdrawal flow — <code class="font-mono text-accent-400">withdraw_request</code> gets an executor co-signature, <code class="font-mono text-accent-400">withdraw_build</code> constructs the unsigned tx, and <code class="font-mono text-accent-400">withdraw_send</code> broadcasts the signed one. Funds leave the Vault only under a signature you produce.
@@ -1074,7 +1074,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">History</span>
               <span class="acc-title font-medium text-chalk-300">3 tools — fx_history · fx_volatility · corridor_pnl</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             OHLC isn't published as a primitive. Set <code class="font-mono text-accent-400">SERA_HISTORY_DB</code> to a SQLite path and the MCP logs every <code class="font-mono text-accent-400">fx_rate</code> + <code class="font-mono text-accent-400">quote</code> call it serves. Over time, your install becomes its own price feed — series, volatility, mark-to-market PnL queryable.
@@ -1087,7 +1087,7 @@
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Signing &amp; debug</span>
               <span class="acc-title font-medium text-chalk-300">2 tools — verify_signature · permit_metadata</span>
             </div>
-            <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
             <code class="font-mono text-accent-400">verify_signature</code> tests an EIP-712 signature without placing an order; <code class="font-mono text-accent-400">permit_metadata</code> checks EIP-2612 permit support for a token before you build a gasless deposit. Dry-run helpers for wiring up signing.
@@ -1315,7 +1315,7 @@
       const buttons = bar.querySelectorAll('.tab-btn');
       buttons.forEach(btn => {
         btn.addEventListener('click', () => {
-          buttons.forEach(b => b.setAttribute('aria-selected', 'false'));
+          buttons.forEach(b => { b.setAttribute('aria-selected', 'false'); });
           btn.setAttribute('aria-selected', 'true');
           const target = btn.dataset.tab;
           document.querySelectorAll('.tab-panel').forEach(p => {
@@ -1338,12 +1338,12 @@
       function render(idx) {
         active = Math.max(0, Math.min(total - 1, idx));
         pages.style.transform = `translateX(-${active * 100}%)`;
-        numButtons.forEach((b, i) => b.setAttribute('aria-current', i === active ? 'true' : 'false'));
+        numButtons.forEach((b, i) => { b.setAttribute('aria-current', i === active ? 'true' : 'false'); });
         prev.disabled = active === 0;
         next.disabled = active === total - 1;
       }
 
-      numButtons.forEach((btn, i) => btn.addEventListener('click', () => render(i)));
+      numButtons.forEach((btn, i) => { btn.addEventListener('click', () => render(i)); });
       prev.addEventListener('click', () => render(active - 1));
       next.addEventListener('click', () => render(active + 1));
 

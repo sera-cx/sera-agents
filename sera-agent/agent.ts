@@ -11,9 +11,10 @@
  * Run:
  *   OPENAI_API_KEY=sk-... npm start
  */
-import { Agent, run, MCPServerStdio, user } from "@openai/agents";
+
 import { resolve } from "node:path";
 import { createInterface } from "node:readline";
+import { Agent, MCPServerStdio, run, user } from "@openai/agents";
 
 const SYSTEM_INSTRUCTIONS = `
 You are the Sera Agent — a multi-currency settlement assistant powered by

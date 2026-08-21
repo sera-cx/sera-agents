@@ -55,6 +55,9 @@ sera-agents/
 │   ├── nanoclaw/                 Sera in NanoClaw (.mcp.json).
 │   └── standard-mcp-hosts/       Claude Code, Desktop, ChatGPT, Cursor, Cline, etc.
 │
+├── skills/                       Portable Agent Skills for coding agents.
+│   └── sera-protocol/            Sera Protocol knowledge and safe-integration workflow.
+│
 ├── examples/                     Reference flows (programmatic, single-task agents).
 │   ├── invoice-payer/
 │   └── treasury-rebalancer/
@@ -91,6 +94,62 @@ claude mcp add sera --scope user \
 ```
 
 Verify in any agent session: `Call sera.doctor`. For other hosts and agent frameworks see [`integrations/frameworks.md`](integrations/frameworks.md) and [`DISTRIBUTION.md`](DISTRIBUTION.md).
+
+## Sera Protocol Agent Skill
+
+[`skills/sera-protocol/SKILL.md`](skills/sera-protocol/SKILL.md) is the portable,
+official Sera Protocol skill for AI coding agents. It covers safe discovery,
+quoting, settlement-intent, MCP, and self-hosted x402 workflows without embedding
+credentials or treating a live payment action as implicit. Its `references/`
+directory includes the detailed API, contracts, MCP, Sera Agents, SeraPay, and
+frontend material.
+
+Copy the directory into the user-level skill location for your coding agent. The
+following commands assume you are at this repository's root:
+
+### Claude Code
+
+```bash
+mkdir -p ~/.claude/skills
+cp -R skills/sera-protocol ~/.claude/skills/
+```
+
+Restart Claude Code if `~/.claude/skills` did not exist when the session began,
+then invoke `/sera-protocol` or ask a Sera-related question.
+
+### Codex
+
+```bash
+mkdir -p ~/.codex/skills
+cp -R skills/sera-protocol ~/.codex/skills/
+```
+
+Start a new Codex session after installing. Codex also provides a Skill installer
+for installing directly from this repository once this directory is on `main`.
+
+### GitHub Copilot
+
+```bash
+mkdir -p ~/.copilot/skills
+cp -R skills/sera-protocol ~/.copilot/skills/
+```
+
+For a repository-only installation, use `.github/skills/sera-protocol/` instead.
+Copilot can then auto-load the skill or invoke `/sera-protocol`.
+
+### Kiro
+
+```bash
+mkdir -p ~/.kiro/skills
+cp -R skills/sera-protocol ~/.kiro/skills/
+```
+
+Kiro also supports importing this folder from its **Agent Steering & Skills** panel.
+For a workspace-only installation, copy it to `.kiro/skills/sera-protocol/`.
+
+The layout follows the open Agent Skills convention, so the same directory can be
+shared across compatible tools. See the original implementation walkthrough:
+[Sera Protocol Agent SKILL on Zenn](https://zenn.dev/mashharuki/articles/web3_sera_protocol-7).
 
 ## Path B — build from a template
 
