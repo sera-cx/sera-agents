@@ -167,7 +167,7 @@ npm start
       <p>You should get back <code>overall_ok: true</code> with green checks for sera_health, network_sanity, tokens_registry, signer_mode, policy.</p>
 
       <h2 class="gradient-text">Path C — Your own host (OpenAI Agents SDK)</h2>
-      <p>Best if you're building a custom agent product and need programmatic control over the loop.</p>
+      <p>Best if you're building a custom agent product and need programmatic control over the loop. Use local stdio for the full MCP surface:</p>
       <div class="codeblock">
         <div class="filename">my-agent.ts</div>
 <pre><code><span style="color:#A78BFA">import</span> { Agent, MCPServerStdio } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'@openai/agents'</span>;
@@ -186,6 +186,20 @@ npm start
 
 <span style="color:#A78BFA">const</span> response = <span style="color:#A78BFA">await</span> agent.run(<span style="color:#7DF9C2">'Find me FX deals over 25 bps right now.'</span>);
 console.log(response);</code></pre>
+      </div>
+
+      <p>For the hosted keyless gateway, use Streamable HTTP instead. It exposes the public gateway tool set. For account-scoped or execution tools, self-host <code>sera-mcp</code> and set its secret <code>SERA_MCP_TOKEN</code> in your server environment.</p>
+      <div class="codeblock">
+        <div class="filename">my-agent.ts</div>
+<pre><code><span style="color:#A78BFA">import</span> { Agent, MCPServerStreamableHttp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'@openai/agents'</span>;
+
+<span style="color:#A78BFA">const</span> token = process.env.SERA_MCP_TOKEN;
+<span style="color:#A78BFA">const</span> sera = <span style="color:#A78BFA">new</span> MCPServerStreamableHttp({
+  url: <span style="color:#7DF9C2">'https://agents.sera.cx/mcp'</span>,
+  name: <span style="color:#7DF9C2">'sera'</span>,
+  ...(token ? { requestInit: { headers: { Authorization: <span style="color:#7DF9C2">`Bearer ${token}`</span> } } } : {})
+});
+<span style="color:#A78BFA">await</span> sera.connect();</code></pre>
       </div>
 
       <h2 class="gradient-text">Add policy gates (any path)</h2>

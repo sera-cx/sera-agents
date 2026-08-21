@@ -7,6 +7,7 @@
   "scripts": {
     "start": "tsx agent.ts",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
@@ -14,6 +15,7 @@
   },
   "devDependencies": {
     "tsx": "^4.0.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.9"
   }
 }

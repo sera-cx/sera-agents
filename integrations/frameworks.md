@@ -13,6 +13,26 @@ Two endpoints to choose from:
 The remote endpoint is the fastest start and needs no install. Use the local
 stdio server when you need the account-scoped or execution tools.
 
+## Path B templates: choose the transport with one variable
+
+`templates/chat-cli`, `templates/web-chat`, and `templates/webhook-agent` use
+the local stdio server by default. Set `SERA_MCP_URL` to switch those starters
+to Streamable HTTP without changing code:
+
+```bash
+export SERA_MCP_URL=https://agents.sera.cx/mcp
+```
+
+The hosted gateway is keyless and exposes its public tool set. For the full
+account-scoped or execution surface, point the URL at an authenticated
+self-hosted `sera-mcp` endpoint and set its Bearer token in the template's
+server environment:
+
+```bash
+export SERA_MCP_URL=https://mcp.example.com/mcp
+export SERA_MCP_TOKEN=... # sent as Authorization: Bearer … only to this MCP
+```
+
 ## Remote (Streamable HTTP) — copy/paste per framework
 
 ```python

@@ -168,7 +168,7 @@
       <p>A thin Express server that you run locally or deploy yourself, wrapping <code>sera-mcp</code> behind the <code>x402</code> payment protocol. The calling agent pays USDC over plain HTTP, the service performs the FX swap on Sera, and the recipient gets the target currency. No MCP host or SDK is required, but <code>agents.sera.cx</code> does not host this service.</p>
 
       <h3>5. Templates &amp; bundled agent</h3>
-      <p>Pre-wired starter projects (terminal chat, web chat, webhook responder) and a complete bundled <em>Sera Agent</em> — useful when you want one-command-to-run rather than configure-from-scratch.</p>
+      <p>Pre-wired starter projects (terminal chat, web chat, webhook responder) and a complete bundled <em>Sera Agent</em> — useful when you want one-command-to-run rather than configure-from-scratch. The three starters use a local stdio MCP by default; set <code>SERA_MCP_URL</code> to connect them to a Streamable HTTP MCP instead.</p>
 
       <h2 class="gradient-text">Two execution paths</h2>
 
@@ -184,6 +184,7 @@
       </ul>
 
       <h3>Path 2 — self-hosted x402</h3>
+
       <ul>
         <li>You run <code>x402-service</code> locally or deploy it; the caller hits <code>POST /x402/swap</code> on your service.</li>
         <li>Server returns <code>402 Payment Required</code> + a payment_id.</li>

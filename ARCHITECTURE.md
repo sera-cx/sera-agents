@@ -139,7 +139,7 @@ External — uses `sera-mcp` directly, no code in this repo. See `README.md` Pat
 
 - A single-file `agent.ts` or `server.ts` (the entire template body).
 - Uses [`@openai/agents`](https://www.npmjs.com/package/@openai/agents) (the OpenAI Agents SDK for JS/TS).
-- Spawns `sera-mcp` as a stdio subprocess via `MCPServerStdio`.
+- Defaults to a local `sera-mcp` stdio subprocess via `MCPServerStdio`; setting `SERA_MCP_URL` selects `MCPServerStreamableHttp` instead. When that endpoint needs Bearer authentication, `SERA_MCP_TOKEN` is sent only as its `Authorization` header.
 - Defines a system prompt + agent role; the agent decides which `sera.*` tools to call.
 
 Each template exposes one shape:
@@ -157,7 +157,7 @@ Templates do not bundle production-grade auth, rate limiting, or persistence. Th
 
 ## Path C — the bundled `sera-agent/` CLI
 
-A single-file interactive CLI built on the same OpenAI Agents SDK + stdio MCP pattern as the templates. Lower-friction than Path B because it's ready to run; higher-ceiling than running raw MCP tools by hand because the system prompt is pre-tuned for Sera workflows.
+A single-file interactive CLI built on the same OpenAI Agents SDK + local stdio MCP pattern as the templates. Lower-friction than Path B because it's ready to run; higher-ceiling than running raw MCP tools by hand because the system prompt is pre-tuned for Sera workflows.
 
 ## Path D — the x402 service
 
@@ -206,7 +206,7 @@ Programmatic single-task agents, not interactive:
 - `examples/invoice-payer/` — given `--owner`, `--recipient`, `--amount`, `--currency`, picks the cheapest source asset from the owner's holdings and executes the swap.
 - `examples/treasury-rebalancer/` — given multiple wallet addresses and target weights, plans and executes the trades to reach the target.
 
-Both use `MCPServerStdio` to spawn `sera-mcp` and call `sera.*` tools.
+Both use `MCPServerStdio` to spawn `sera-mcp` and call `sera.*` tools. The three Path B starters additionally accept `SERA_MCP_URL` and use `MCPServerStreamableHttp` when it is set.
 
 ## Integrations
 
@@ -226,9 +226,9 @@ GitHub Pages config:
 
 This repo does **not** vendor or duplicate `sera-mcp`. Every code path that invokes Sera goes through the published `sera-mcp` package (or a local clone at the user's path). The contract between repos:
 
-- `sera-agents` consumes `sera-mcp` via stdio (`MCPServerStdio` from `@openai/agents`).
+- `sera-agents` consumes `sera-mcp` via stdio by default (`MCPServerStdio` from `@openai/agents`); Path B starters can instead use Streamable HTTP via `SERA_MCP_URL` and optional Bearer authentication via `SERA_MCP_TOKEN`.
 - `sera-agents` does not import `sera-mcp` symbols or types.
 - `sera-mcp` does not depend on `sera-agents` for anything.
-- Both repos target the same MCP compatibility surface (stdio today; Streamable HTTP planned upstream first).
+- Both repos target the same MCP compatibility surface (stdio and Streamable HTTP; SSE is not used by the starters).
 
 If you find a bug in Sera tool behavior, file it against `sera-mcp`. If you find a bug in a template, agent, or x402 service, file it here.
