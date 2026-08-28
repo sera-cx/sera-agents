@@ -25,8 +25,13 @@ export interface CorridorsItem {
 }
 
 export interface QuoteResult {
+  /** Guaranteed executable output, net of fees — the swap's min output, not a gross mid estimate. */
   amount_out: string;
+  /** Same guaranteed floor as amount_out, named explicitly. */
+  min_output: string;
+  /** Effective executable rate (amount_out / amount); display-only, amount_out is authoritative. */
   mid_rate: string;
+  /** Real network/gas cost from the upstream fee breakdown (previously hardcoded "0"). */
   network_cost: string;
   quote_id: string;
   expires_at: string;
@@ -64,6 +69,9 @@ interface SeraQuote {
   amount_out?: string;
   min_output?: string;
   mid_rate?: string;
+  /** get_quote / prepare_swap surface human-readable amounts here. */
+  human?: { input?: string; min_output?: string; upstream_min_output?: string };
+  simulated?: boolean;
 }
 
 function parsePair(pair: string): { base: string; quote: string } {
@@ -166,21 +174,47 @@ export function makeHandlers(mcp: SeraMcpClient, cache: QuoteCache) {
     if (Number(amount) <= 0) {
       throw new GatewayError(400, "amount must be greater than zero");
     }
-    const rate = await mcp.callTool<SeraFxRate>("sera.get_fx_rate", {
-      base: from_token,
-      quote: to_token,
-    });
-    const rateStr = asString(rate.rate).trim();
-    // A bad upstream rate is our fault (502).
-    if (!DECIMAL.test(rateStr)) {
-      throw new Error("sera-mcp returned a non-numeric rate");
+    // Executable price via the live /swap/quote path (get_quote) — NOT the mid
+    // /fx/rate endpoint. simulate=true quotes keylessly against the burn address;
+    // gas_mode "receive_less" absorbs fees into the output token.
+    let q: SeraQuote;
+    try {
+      q = await mcp.callTool<SeraQuote>("sera.get_quote", {
+        from: from_token,
+        to: to_token,
+        amount,
+        simulate: true,
+        gas_mode: "receive_less",
+      });
+    } catch (e) {
+      // No route / resting liquidity for this pair is a caller-actionable
+      // condition, not a gateway fault → 422, not 502.
+      const msg = e instanceof Error ? e.message : String(e);
+      if (/no_liquidity|no liquidity|no route/i.test(msg)) {
+        throw new GatewayError(422, "no liquidity available for this pair/amount right now");
+      }
+      throw e;
     }
-    const amount_out = mulDecimal(amount.trim(), rateStr);
+    const amount_out = asString(q.human?.min_output ?? q.min_output ?? "").trim();
+    if (!DECIMAL.test(amount_out)) {
+      throw new Error("sera-mcp get_quote returned no usable output amount");
+    }
+    const network_cost = asString(
+      q.fee_breakdown?.gas_cost_from_token ?? q.fee_breakdown?.gas_cost_usd ?? "0",
+    );
+    // Effective executable rate for display; amount_out is authoritative.
+    const amt = Number(amount);
+    const out = Number(amount_out);
+    const mid_rate =
+      amt > 0 && Number.isFinite(amt) && Number.isFinite(out)
+        ? String(Number((out / amt).toPrecision(12)))
+        : "";
     const reservation = cache.issue({ from_token, to_token, amount });
     return {
       amount_out,
-      mid_rate: asString(rate.rate),
-      network_cost: "0",
+      min_output: amount_out,
+      mid_rate,
+      network_cost,
       quote_id: reservation.quote_id,
       expires_at: reservation.expires_at,
     };

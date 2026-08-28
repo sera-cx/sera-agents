@@ -1,9 +1,9 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
-import type { IncomingMessage, ServerResponse } from "node:http";
-import type { Handlers } from "./handlers.js";
 import { GatewayError } from "./errors.js";
+import type { Handlers } from "./handlers.js";
 import { PROXY_TOOLS } from "./proxy-tools.js";
 
 const PairsSchema = {
@@ -72,7 +72,7 @@ export function buildMcpServer(handlers: Handlers): McpServer {
   // handler param types below stay explicit, so app-level type safety is intact.
   (server.tool as any)(
     "fx_quote",
-    "Get a live FX quote between any pair of supported stablecoins. Returns amount_out, mid_rate, network_cost, and a quote_id that fx_settle consumes.",
+    "Get a live, executable FX quote between any pair of supported stablecoins — the guaranteed output net of fees (fees absorbed into the output token), not a reference mid. Returns amount_out (= min_output), the effective mid_rate, network_cost, and a quote_id that fx_settle consumes.",
     QuoteSchema,
     async (args: { from_token: string; to_token: string; amount: string }) =>
       run(() => handlers.quote(args)),
@@ -82,8 +82,7 @@ export function buildMcpServer(handlers: Handlers): McpServer {
     "fx_settle",
     "Build an unsigned EIP-712 settlement transaction from a quote. Returns typed_data the caller signs in their wallet.",
     SettleSchema,
-    async (args: { quote_id: string; signer: string }) =>
-      run(() => handlers.settle(args)),
+    async (args: { quote_id: string; signer: string }) => run(() => handlers.settle(args)),
   );
 
   (server.tool as any)(
@@ -97,14 +96,13 @@ export function buildMcpServer(handlers: Handlers): McpServer {
   for (const t of PROXY_TOOLS) {
     const hasInput = Object.keys(t.shape).length > 0;
     if (hasInput) {
-      (server.tool as any)(
-        t.name,
-        t.summary,
-        t.shape,
-        async (args: Record<string, unknown>) => run(() => handlers.proxy(t.upstream, args ?? {})),
+      (server.tool as any)(t.name, t.summary, t.shape, async (args: Record<string, unknown>) =>
+        run(() => handlers.proxy(t.upstream, args ?? {})),
       );
     } else {
-      (server.tool as any)(t.name, t.summary, async () => run(() => handlers.proxy(t.upstream, {})));
+      (server.tool as any)(t.name, t.summary, async () =>
+        run(() => handlers.proxy(t.upstream, {})),
+      );
     }
   }
 
@@ -131,7 +129,7 @@ export async function handleMcpRequest(
   req: IncomingMessage,
   res: ServerResponse,
 ): Promise<void> {
-  let body: unknown = undefined;
+  let body: unknown;
   if (req.method === "POST") {
     // Fast reject on a declared oversize length, then enforce while streaming
     // (Content-Length may be absent or wrong on chunked bodies).

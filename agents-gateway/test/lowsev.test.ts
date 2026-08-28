@@ -22,10 +22,15 @@ describe("mulDecimal — exact decimal product (no float artifacts)", () => {
 });
 
 describe("handlers — error status classification", () => {
-  function make(rate = "1.5") {
+  // quote() calls sera.get_quote (executable, simulated); settle() calls prepare_swap.
+  // Pass an Error as quoteResp to simulate get_quote throwing (e.g. no_liquidity).
+  function make(quoteResp: unknown = { human: { min_output: "1" }, fee_breakdown: {} }) {
     const mcp = {
       async callTool(name: string) {
-        if (name === "sera.get_fx_rate") return { rate } as any;
+        if (name === "sera.get_quote") {
+          if (quoteResp instanceof Error) throw quoteResp;
+          return quoteResp as any;
+        }
         if (name === "sera.prepare_swap") return { route_params: { ok: true } } as any;
         return {} as any;
       },
@@ -35,9 +40,15 @@ describe("handlers — error status classification", () => {
     return makeHandlers(mcp, makeQuoteCache());
   }
   const signer = `0x${"a".repeat(40)}`;
-  it("quote returns a precise amount_out and a quote_id", async () => {
-    const q = await make("1.5").quote({ from_token: "A", to_token: "B", amount: "0.2" });
+  it("quote returns the executable min_output as amount_out (+ cost, effective rate)", async () => {
+    const q = await make({
+      human: { min_output: "0.3" },
+      fee_breakdown: { gas_cost_from_token: "0.002" },
+    }).quote({ from_token: "A", to_token: "B", amount: "0.2" });
     expect(q.amount_out).toBe("0.3");
+    expect(q.min_output).toBe("0.3");
+    expect(q.network_cost).toBe("0.002");
+    expect(q.mid_rate).toBe("1.5"); // 0.3 / 0.2
     expect(q.quote_id).toBeTruthy();
   });
 
@@ -82,12 +93,20 @@ describe("handlers — error status classification", () => {
     expect(calls).toEqual([]); // rejected before any upstream RPC
   });
 
-  it("quote → plain Error (→502) on a non-numeric upstream rate", async () => {
-    const err = await make("not-a-number")
+  it("quote → plain Error (→502) when the upstream quote has no usable output", async () => {
+    const err = await make({ human: {} })
       .quote({ from_token: "A", to_token: "B", amount: "1" })
       .catch((e) => e);
     expect(err).toBeInstanceOf(Error);
     expect(err).not.toBeInstanceOf(GatewayError);
+  });
+
+  it("quote → 422 GatewayError when the upstream reports no_liquidity", async () => {
+    const err = await make(new Error('sera 400 (no_liquidity): {"success":false}'))
+      .quote({ from_token: "A", to_token: "B", amount: "1" })
+      .catch((e) => e);
+    expect(err).toBeInstanceOf(GatewayError);
+    expect(err.status).toBe(422);
   });
 
   it("settle → 404 GatewayError on unknown/expired quote_id", async () => {
@@ -107,7 +126,7 @@ describe("handlers — error status classification", () => {
   });
 
   it("quote → settle round-trips a reserved quote_id", async () => {
-    const h = make("2");
+    const h = make({ human: { min_output: "20" } });
     const q = await h.quote({ from_token: "A", to_token: "B", amount: "10" });
     expect(q.amount_out).toBe("20");
     const s = await h.settle({ quote_id: q.quote_id, signer });

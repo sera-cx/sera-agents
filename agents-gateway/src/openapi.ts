@@ -43,9 +43,23 @@ export const OPENAPI_DOC: {
                 schema: {
                   type: "object",
                   properties: {
-                    amount_out: { type: "string" },
-                    mid_rate: { type: "string" },
-                    network_cost: { type: "string" },
+                    amount_out: {
+                      type: "string",
+                      description:
+                        "Guaranteed executable output, net of fees (the swap's minimum output — not a gross mid estimate).",
+                    },
+                    min_output: {
+                      type: "string",
+                      description: "Same guaranteed floor as amount_out, named explicitly.",
+                    },
+                    mid_rate: {
+                      type: "string",
+                      description: "Effective executable rate (amount_out / amount); display-only.",
+                    },
+                    network_cost: {
+                      type: "string",
+                      description: "Real network/gas cost from the upstream fee breakdown.",
+                    },
                     quote_id: { type: "string" },
                     expires_at: { type: "string", format: "date-time" },
                   },
