@@ -27,25 +27,26 @@
  * See SECURITY-MODEL.md for the full hardening checklist + threat-model
  * coverage matrix.
  */
-import { Hono } from "hono";
+
+import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { serve } from "@hono/node-server";
-import { randomUUID } from "node:crypto";
+import { Hono } from "hono";
 import { z } from "zod";
 
 import { loadConfig } from "./env.js";
-import { makeStore, type PendingPayment } from "./state.js";
-import { makeSeraMcpClient } from "./sera-client.js";
 import {
-  verifyPayment,
   confirmPayment,
-  settlePayment,
   executeSwap,
-  transitionToVerified,
-  transitionToSettleFailed,
-  transitionToExecuting,
+  settlePayment,
   transitionToDelivered,
+  transitionToExecuting,
   transitionToFailedRefundable,
+  transitionToSettleFailed,
+  transitionToVerified,
+  verifyPayment,
 } from "./payment.js";
+import { makeSeraMcpClient } from "./sera-client.js";
+import { makeStore, type PendingPayment } from "./state.js";
 
 const cfg = loadConfig();
 const store = makeStore(cfg.stateDb, cfg.pendingMax);
@@ -132,12 +133,19 @@ async function quoteRecipientAmountViaMcp(
 }
 
 const MOCK_RATES_USD_PER_UNIT: Record<string, number> = {
-  USD: 1, USDC: 1, USDT: 1,
-  EUR: 1.08, EURC: 1.08,
-  GBP: 1.27, TGBP: 1.27,
-  SGD: 0.74, XSGD: 0.74,
-  JPY: 0.0064, JPYC: 0.0064,
-  MYR: 0.21, MYRT: 0.21,
+  USD: 1,
+  USDC: 1,
+  USDT: 1,
+  EUR: 1.08,
+  EURC: 1.08,
+  GBP: 1.27,
+  TGBP: 1.27,
+  SGD: 0.74,
+  XSGD: 0.74,
+  JPY: 0.0064,
+  JPYC: 0.0064,
+  MYR: 0.21,
+  MYRT: 0.21,
 };
 function mockUsdcForTarget(target: string, amount: number): number {
   return amount * (MOCK_RATES_USD_PER_UNIT[target.toUpperCase()] ?? 1);
@@ -161,7 +169,8 @@ const QuoteBody = z.object({
   recipient: EvmAddr,
 });
 
-const PAYMENT_ID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+const PAYMENT_ID_RE =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 // ── Service info ───────────────────────────────────────────────────────
 const SERVICE_INFO = {
@@ -171,8 +180,21 @@ const SERVICE_INFO = {
     "Dynamic FX delivery via x402. Pay USDC, deliver in any of 40+ stablecoins across 20+ fiats.",
   supported_inputs: ["USDC"],
   supported_outputs: [
-    "USDC", "USDT", "EURC", "XSGD", "JPYC", "MYRT", "TGBP",
-    "BRZ", "BRLV", "MXNT", "IDRT", "AUDD", "CADC", "NZDD", "ZARP",
+    "USDC",
+    "USDT",
+    "EURC",
+    "XSGD",
+    "JPYC",
+    "MYRT",
+    "TGBP",
+    "BRZ",
+    "BRLV",
+    "MXNT",
+    "IDRT",
+    "AUDD",
+    "CADC",
+    "NZDD",
+    "ZARP",
   ],
   protocol: "x402",
   mode: cfg.mode,
@@ -213,13 +235,23 @@ app.get("/health", (c) =>
   }),
 );
 
+// Constant-time string compare (SHA-256 then timingSafeEqual on equal-length
+// digests) so a token check can't leak match length via response timing.
+function timingSafeStrEqual(a: string, b: string): boolean {
+  const x = createHash("sha256").update(a).digest();
+  const y = createHash("sha256").update(b).digest();
+  return timingSafeEqual(x, y);
+}
+
 // Operator-only: list payments stuck in failed_refundable. Gate behind a
 // simple bearer header so this isn't public.
 app.get("/admin/refundables", (c) => {
   const adminToken = process.env.X402_ADMIN_TOKEN;
   if (!adminToken) return c.json({ error: "admin disabled (X402_ADMIN_TOKEN not set)" }, 503);
-  const auth = c.req.header("authorization");
-  if (auth !== `Bearer ${adminToken}`) return c.json({ error: "unauthorized" }, 401);
+  const auth = c.req.header("authorization") ?? "";
+  if (!timingSafeStrEqual(auth, `Bearer ${adminToken}`)) {
+    return c.json({ error: "unauthorized" }, 401);
+  }
   const limit = Math.min(Number(c.req.query("limit") ?? 100), 500);
   return c.json({ items: store.listFailedRefundable(limit) });
 });
@@ -237,7 +269,10 @@ app.post("/x402/swap", async (c) => {
   const parsed = SwapBody.safeParse(raw);
   if (!parsed.success) {
     return c.json(
-      { error: "invalid_body", issues: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) },
+      {
+        error: "invalid_body",
+        issues: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`),
+      },
       400,
     );
   }
@@ -368,18 +403,33 @@ app.post("/x402/swap", async (c) => {
       process.stderr.write(`[verify] ${pending.payment_id}: ${verifyResult.reason}\n`);
       return c.json({ error: "payment_verification_failed", reason: verifyResult.reason }, 402);
     }
-    // Atomic state transition. If another concurrent request already moved
-    // past `pending`, we lose the CAS and fall through to the next branch
-    // (which reloads the current state and acts accordingly).
+    // Atomic state transition. ONLY the request that wins pending→verified may
+    // settle — a CAS loser must never call the facilitator /settle again. (That,
+    // combined with the non-atomic full-row write this replaces, previously let a
+    // duplicate concurrent submission regress the state machine and execute the
+    // swap twice.) On CAS loss, reload and return an idempotent/retry response
+    // WITHOUT settling; the winning request owns settle + execute.
     if (!transitionToVerified(store, pending)) {
       const fresh = store.load(paymentId);
       if (fresh?.status === "delivered" && fresh.delivered_payload) {
         return c.json({ ...JSON.parse(fresh.delivered_payload), idempotent_replay: true }, 200);
       }
-      if (fresh?.status === "executing") {
-        return c.json({ error: "still_executing", retry_after_seconds: 5 }, 202);
+      if (fresh?.status === "settle_failed") {
+        return c.json({ error: "settle_failed", payment_id: paymentId, charged: false }, 409);
       }
-      // Fall through; treat as verified from here.
+      if (fresh?.status === "failed_refundable") {
+        return c.json(
+          {
+            error: "swap_failed_refundable",
+            payment_id: paymentId,
+            message: "Swap failed after payment settled. Contact operator for refund.",
+            last_error: fresh?.last_error,
+          },
+          502,
+        );
+      }
+      // executing, or verified (winner mid-flight) → retry; never settle here.
+      return c.json({ error: "still_executing", retry_after_seconds: 5 }, 202);
     }
     // Settle BEFORE releasing service (two-phase). In demo mode this is a no-op.
     const settleResult = await settlePayment(cfg, pending, authorization ?? "");
@@ -387,7 +437,11 @@ app.post("/x402/swap", async (c) => {
       // Settle failed after verify: no USDC was charged, so this is NOT a
       // refund case — mark it terminal `settle_failed` in a single CAS from
       // `verified` (never touches a concurrently-executing payment).
-      transitionToSettleFailed(store, pending, sanitizeForLog(settleResult.reason ?? "settle failed"));
+      transitionToSettleFailed(
+        store,
+        pending,
+        sanitizeForLog(settleResult.reason ?? "settle failed"),
+      );
       process.stderr.write(
         `[settle] ${pending.payment_id}: failed (no charge): ${sanitizeForLog(settleResult.reason ?? "")}\n`,
       );
@@ -396,9 +450,13 @@ app.post("/x402/swap", async (c) => {
         502,
       );
     }
-    // Persist the settlement payload (tx_hash + networkId) for audit.
-    pending.settlement_payload = JSON.stringify(settleResult);
-    store.save({ ...pending, status: "verified" });
+    // Persist the settlement payload atomically: a status-conditional CAS that
+    // writes settlement_payload only while still `verified`, so it can never
+    // rewind a concurrently executing/delivered row or blank delivered_payload
+    // (the previous full-row store.save did exactly that).
+    store.cas(pending.payment_id, "verified", "verified", {
+      settlement_payload: JSON.stringify(settleResult),
+    });
   }
 
   // ── verified → executing → delivered (or failed_refundable) ────────
@@ -442,10 +500,7 @@ app.post("/x402/swap", async (c) => {
       process.stderr.write(
         `[confirm] ${current.payment_id}: settle tx already consumed by another payment — refusing\n`,
       );
-      return c.json(
-        { error: "payment_proof_already_used", payment_id: current.payment_id },
-        402,
-      );
+      return c.json({ error: "payment_proof_already_used", payment_id: current.payment_id }, 402);
     }
 
     if (!transitionToExecuting(store, current)) {
@@ -486,9 +541,7 @@ app.post("/x402/swap", async (c) => {
         to: current.swap_request.recipient,
         ...swapResult,
       },
-      settlement: current.settlement_payload
-        ? JSON.parse(current.settlement_payload)
-        : null,
+      settlement: current.settlement_payload ? JSON.parse(current.settlement_payload) : null,
       mode: cfg.mode,
       demo: cfg.mode === "demo",
     };
@@ -516,7 +569,10 @@ app.post("/x402/quote", async (c) => {
   const parsed = QuoteBody.safeParse(raw);
   if (!parsed.success) {
     return c.json(
-      { error: "invalid_body", issues: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`) },
+      {
+        error: "invalid_body",
+        issues: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`),
+      },
       400,
     );
   }

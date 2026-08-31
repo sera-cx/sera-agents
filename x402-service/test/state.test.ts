@@ -5,13 +5,14 @@
  * (replay/idempotency) from arXiv:2605.11781. Every state transition MUST be
  * tested.
  */
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { makeStore, type PendingPayment } from "../state.js";
 
 function makePending(overrides: Partial<PendingPayment> = {}): PendingPayment {
   const now = Math.floor(Date.now() / 1000);
   return {
-    payment_id: overrides.payment_id ?? `00000000-0000-4000-8000-${Date.now().toString().padStart(12, "0")}`,
+    payment_id:
+      overrides.payment_id ?? `00000000-0000-4000-8000-${Date.now().toString().padStart(12, "0")}`,
     status: overrides.status ?? "pending",
     pay_to: overrides.pay_to ?? "0x" + "a".repeat(40),
     amount_usdc: overrides.amount_usdc ?? 100,
@@ -184,5 +185,49 @@ describe("StateStore — gcExpired", () => {
     store.save(expiredDelivered);
     store.gcExpired(Math.floor(Date.now() / 1000));
     expect(store.load("expired-delivered")?.status).toBe("delivered");
+  });
+});
+
+describe("double-swap regression — settlement write can't rewind the state machine", () => {
+  it("status-conditional settlement CAS is a no-op on an executing/delivered row", () => {
+    const store = makeStore(undefined, 100);
+    const p = makePending({ status: "verified" });
+    store.save(p);
+    // Winner progresses past verified.
+    expect(store.cas(p.payment_id, "verified", "executing")).toBe(true);
+    expect(
+      store.cas(p.payment_id, "executing", "delivered", { delivered_payload: '{"ok":true}' }),
+    ).toBe(true);
+    // The old bug used a full-row store.save that rewound status to "verified"
+    // and nulled delivered_payload, re-opening the execute gate → double swap.
+    // The status-conditional CAS must NOT touch a row past "verified".
+    const rewound = store.cas(p.payment_id, "verified", "verified", {
+      settlement_payload: '{"txHash":"0xabc"}',
+    });
+    expect(rewound).toBe(false);
+    const after = store.load(p.payment_id);
+    expect(after?.status).toBe("delivered");
+    expect(after?.delivered_payload).toBe('{"ok":true}');
+  });
+
+  it("verified→executing has exactly one winner (gate can't be re-opened)", () => {
+    const store = makeStore(undefined, 100);
+    const p = makePending({ status: "verified" });
+    store.save(p);
+    const first = store.cas(p.payment_id, "verified", "executing");
+    const second = store.cas(p.payment_id, "verified", "executing");
+    expect([first, second].filter(Boolean).length).toBe(1);
+  });
+
+  it("settlement CAS records the payload while still verified (winner path)", () => {
+    const store = makeStore(undefined, 100);
+    const p = makePending({ status: "verified" });
+    store.save(p);
+    expect(
+      store.cas(p.payment_id, "verified", "verified", { settlement_payload: '{"txHash":"0xabc"}' }),
+    ).toBe(true);
+    const after = store.load(p.payment_id);
+    expect(after?.settlement_payload).toBe('{"txHash":"0xabc"}');
+    expect(after?.status).toBe("verified");
   });
 });
