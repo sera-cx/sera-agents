@@ -1,6 +1,6 @@
 # ── stage 1: build sera-mcp from source ────────────────────────────────
 ARG SERA_MCP_REF=v0.8.3
-FROM node:20-alpine AS sera-mcp-build
+FROM node:26-alpine AS sera-mcp-build
 RUN apk add --no-cache git python3 make g++
 WORKDIR /opt
 RUN git clone --depth 1 --branch ${SERA_MCP_REF:-v0.8.3} https://github.com/sera-cx/sera-mcp.git sera-mcp
@@ -10,7 +10,7 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # ── stage 2: build the gateway ─────────────────────────────────────────
-FROM node:20-alpine AS gateway-build
+FROM node:26-alpine AS gateway-build
 WORKDIR /app
 
 COPY package.json package-lock.json* tsconfig.base.json ./
@@ -25,7 +25,7 @@ RUN npm run build --workspace=sera-agents-gateway
 RUN npm prune --omit=dev --workspace=sera-agents-gateway --include-workspace-root
 
 # ── stage 3: runtime ───────────────────────────────────────────────────
-FROM node:20-alpine
+FROM node:26-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 ENV SERA_MCP_PATH=/opt/sera-mcp/dist/index.js
