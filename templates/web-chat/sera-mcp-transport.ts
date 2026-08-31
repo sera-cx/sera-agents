@@ -90,6 +90,8 @@ export interface SeraMcpStdioEnv {
   LOG_LEVEL?: string;
   SERA_API_KEY?: string;
   SERA_API_SECRET?: string;
+  SERA_ENABLE_EXECUTION_TOOLS?: string;
+  SERA_SIGNER_MODE?: string;
 }
 
 /**
@@ -119,6 +121,10 @@ export function buildSeraMcpServer(
       LOG_LEVEL: stdioEnv.LOG_LEVEL ?? "warn",
       ...(stdioEnv.SERA_API_KEY ? { SERA_API_KEY: stdioEnv.SERA_API_KEY } : {}),
       ...(stdioEnv.SERA_API_SECRET ? { SERA_API_SECRET: stdioEnv.SERA_API_SECRET } : {}),
+      ...(stdioEnv.SERA_ENABLE_EXECUTION_TOOLS
+        ? { SERA_ENABLE_EXECUTION_TOOLS: stdioEnv.SERA_ENABLE_EXECUTION_TOOLS }
+        : {}),
+      ...(stdioEnv.SERA_SIGNER_MODE ? { SERA_SIGNER_MODE: stdioEnv.SERA_SIGNER_MODE } : {}),
     },
     name: "sera",
   });
