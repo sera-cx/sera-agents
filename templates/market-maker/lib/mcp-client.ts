@@ -5,7 +5,7 @@
  * `tool(name, args)` helper. No OpenAI Agents SDK — the inner loop is
  * deterministic; an LLM bridge would only add latency and failure modes.
  */
-import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 
 export interface SeraMcpClientOptions {
   mcpPath: string;
@@ -29,16 +29,40 @@ export async function startSeraMcp(opts: SeraMcpClientOptions): Promise<SeraMcpC
   const pending = new Map<number, { resolve: (v: any) => void; reject: (e: any) => void }>();
   const requestTimeout = opts.requestTimeoutMs ?? 30_000;
 
+  // Forward only what the sera-mcp child legitimately needs — never spread the
+  // full parent env. This bot signs Order structs client-side with
+  // SIGNER_PRIVATE_KEY (the server-side signer is unused), so the hot wallet key
+  // (and unrelated secrets like OPENAI_API_KEY) must not reach the subprocess:
+  // it widens the blast radius of any leak/compromise in sera-mcp for no benefit.
+  // The caller passes SERA_NETWORK / signer-mode / execution / policy via
+  // opts.env; SERA_API_KEY/SECRET are passed through in case order placement
+  // needs them.
+  const ENV_PASSTHROUGH = [
+    "PATH",
+    "HOME",
+    "LOGNAME",
+    "SHELL",
+    "TERM",
+    "USER",
+    "SERA_API_KEY",
+    "SERA_API_SECRET",
+  ];
+
   function start() {
-    const env: NodeJS.ProcessEnv = { ...process.env, ...opts.env };
+    const base: NodeJS.ProcessEnv = {};
+    for (const k of ENV_PASSTHROUGH) {
+      if (process.env[k] !== undefined) base[k] = process.env[k];
+    }
+    const env: NodeJS.ProcessEnv = { ...base, ...opts.env };
     const p = spawn("node", [opts.mcpPath], { env, stdio: ["pipe", "pipe", "pipe"] });
     let buf = "";
     p.stdout.on("data", (chunk) => {
       buf += chunk.toString("utf8");
-      let nl: number;
-      while ((nl = buf.indexOf("\n")) !== -1) {
+      let nl = buf.indexOf("\n");
+      while (nl !== -1) {
         const line = buf.slice(0, nl);
         buf = buf.slice(nl + 1);
+        nl = buf.indexOf("\n");
         if (!line.trim()) continue;
         try {
           const msg = JSON.parse(line);
@@ -66,7 +90,7 @@ export async function startSeraMcp(opts: SeraMcpClientOptions): Promise<SeraMcpC
   function rpc(method: string, params: unknown = {}): Promise<any> {
     if (!proc) throw new Error("mcp not running");
     const id = ++reqId;
-    const payload = JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n";
+    const payload = `${JSON.stringify({ jsonrpc: "2.0", id, method, params })}\n`;
     return new Promise((resolve, reject) => {
       pending.set(id, { resolve, reject });
       proc!.stdin.write(payload);
