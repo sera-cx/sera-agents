@@ -122,9 +122,10 @@ export function buildSeraMcpServer(
       ...(stdioEnv.SERA_API_KEY ? { SERA_API_KEY: stdioEnv.SERA_API_KEY } : {}),
       ...(stdioEnv.SERA_API_SECRET ? { SERA_API_SECRET: stdioEnv.SERA_API_SECRET } : {}),
       // Enforce the non-custodial posture in the template rather than inheriting
-      // sera-mcp's default — a multi-user browser chat must not be able to move
-      // funds via prompt injection. Pin the external signer (agent can only emit
-      // unsigned intents) and default execution tools OFF unless explicitly on.
+      // sera-mcp's default — an agent driven by untrusted input must not be able
+      // to move funds via prompt injection. Pin the external signer (the agent
+      // can only emit unsigned intents) and default execution tools OFF unless an
+      // operator explicitly enables them.
       SERA_SIGNER_MODE: "external",
       SERA_ENABLE_EXECUTION_TOOLS:
         stdioEnv.SERA_ENABLE_EXECUTION_TOOLS === "true" ? "true" : "false",
