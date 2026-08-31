@@ -21,6 +21,18 @@
 agents.sera.cx {
 	encode zstd gzip
 
+	# Baseline security response headers (defence-in-depth). The API returns JSON
+	# and the static landing is same-origin, so these are cheap wins: HSTS pins
+	# TLS after the first visit, nosniff/frame-deny harden the landing page, and
+	# the Server banner is dropped.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+
 	# Dynamic — the gateway.
 	@gateway path /mcp /mcp/* /openapi.json /health /quote /settle /corridors /rates
 	handle @gateway {

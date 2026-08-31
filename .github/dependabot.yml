@@ -1,0 +1,39 @@
+# Keeps the supply chain current, addressing the "mutable tags, not SHAs" finding
+# from the security audit: Dependabot opens PRs to bump GitHub Actions, Docker
+# base images, and npm deps as new versions ship (and, once actions/images are
+# pinned to digests, keeps those digests updated). CI (fork-safe: pull_request
+# only, no secrets) gates every bump.
+version: 2
+updates:
+  # GitHub Actions used by the workflows (checkout, setup-node, codeql, docker/*).
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+
+  # Docker base images across the three Dockerfiles.
+  - package-ecosystem: "docker"
+    directories:
+      - "/"
+      - "/agents-gateway"
+      - "/agents-gateway/deploy"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "docker"
+
+  # npm workspaces (root lockfile). Grouped to reduce PR churn.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
