@@ -24,11 +24,23 @@ const gasMode = z
   .enum(["receive_less", "pay_more"])
   .optional()
   .describe("Whether fees are absorbed into the output (receive_less) or added on top (pay_more).");
-const ccy = z.string().min(1).describe("ISO fiat code (e.g. 'USD') or a Sera token symbol (e.g. 'USDC').");
+const ccy = z
+  .string()
+  .min(1)
+  .describe("ISO fiat code (e.g. 'USD') or a Sera token symbol (e.g. 'USDC').");
+// Bounds on caller-driven fan-out. The gateway is keyless and unauthenticated,
+// so an uncapped array/limit is a request-amplification vector (one HTTP call →
+// N upstream RPCs) — mirror the /rates MAX_PAIRS posture. sera-mcp enforces its
+// own caps too; these are the edge ceiling.
 const pairList = z
   .array(z.object({ base: z.string(), quote: z.string() }))
+  .max(50)
   .optional()
-  .describe("Explicit pair list. If omitted, enumerates from /markets and applies max_pairs.");
+  .describe(
+    "Explicit pair list (max 50). If omitted, enumerates from /markets and applies max_pairs.",
+  );
+const maxPairs = z.number().int().positive().max(100).optional();
+const maxConcurrency = z.number().int().positive().max(20).optional();
 
 export interface ProxyTool {
   /** Gateway tool name + REST path segment (POST /<name>). */
@@ -71,7 +83,11 @@ export const PROXY_TOOLS: ProxyTool[] = [
     upstream: "sera.spread_radar",
     summary: "Flag pair asymmetry and triangular drift across a fiat basket. No liquidity needed.",
     shape: {
-      currencies: z.array(z.string()).optional().describe("ISO fiat codes to scan. Default USD/SGD/MYR/EUR/GBP/JPY."),
+      currencies: z
+        .array(z.string())
+        .max(30)
+        .optional()
+        .describe("ISO fiat codes to scan (max 30). Default USD/SGD/MYR/EUR/GBP/JPY."),
       spread_alert_bps: z.number().nonnegative().optional(),
       triangular_alert_bps: z.number().nonnegative().optional(),
       include_triangles: z.boolean().optional(),
@@ -84,8 +100,8 @@ export const PROXY_TOOLS: ProxyTool[] = [
     shape: {
       pairs: pairList,
       notional_per_quote: z.number().positive().optional(),
-      max_pairs: z.number().int().positive().optional(),
-      max_concurrency: z.number().int().positive().optional(),
+      max_pairs: maxPairs,
+      max_concurrency: maxConcurrency,
       only_policy_allowed: z.boolean().optional(),
       min_deviation_bps: z.number().nonnegative().optional(),
       gas_mode: gasMode,
@@ -99,8 +115,8 @@ export const PROXY_TOOLS: ProxyTool[] = [
     shape: {
       pairs: pairList,
       notional_per_quote: z.number().positive().optional(),
-      max_pairs: z.number().int().positive().optional(),
-      max_concurrency: z.number().int().positive().optional(),
+      max_pairs: maxPairs,
+      max_concurrency: maxConcurrency,
     },
   },
   {
@@ -110,9 +126,13 @@ export const PROXY_TOOLS: ProxyTool[] = [
     shape: {
       from: ccy,
       to: ccy,
-      sizes: z.array(z.number().positive()).optional().describe("Human input sizes. Default [100,1000,10000,100000]."),
+      sizes: z
+        .array(z.number().positive())
+        .max(20)
+        .optional()
+        .describe("Human input sizes (max 20). Default [100,1000,10000,100000]."),
       gas_mode: gasMode,
-      max_concurrency: z.number().int().positive().optional(),
+      max_concurrency: maxConcurrency,
     },
   },
   {
@@ -134,7 +154,11 @@ export const PROXY_TOOLS: ProxyTool[] = [
     shape: {
       target: ccy,
       target_amount: z.number().positive(),
-      sources: z.array(z.string()).min(1).describe("Candidate source token symbols to compare."),
+      sources: z
+        .array(z.string())
+        .min(1)
+        .max(30)
+        .describe("Candidate source token symbols to compare (max 30)."),
       max_concurrency: z.number().int().positive().max(10).optional(),
       gas_mode: gasMode,
     },
@@ -150,7 +174,7 @@ export const PROXY_TOOLS: ProxyTool[] = [
       role: z.enum(["maker_sell_base", "maker_buy_base"]).optional(),
       mid: z.number().positive().optional(),
       mid_source: z.enum(["multi_source", "sera"]).optional(),
-      spreads_bps: z.array(z.number().positive()).optional(),
+      spreads_bps: z.array(z.number().positive()).max(50).optional(),
     },
   },
   {

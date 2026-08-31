@@ -1,9 +1,9 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
-import type { IncomingMessage, ServerResponse } from "node:http";
-import type { Handlers } from "./handlers.js";
 import { GatewayError } from "./errors.js";
+import type { Handlers } from "./handlers.js";
 import { PROXY_TOOLS } from "./proxy-tools.js";
 
 const PairsSchema = {
@@ -21,7 +21,10 @@ const QuoteSchema = {
 
 const SettleSchema = {
   quote_id: z.string().describe("quote_id returned by fx_quote"),
-  signer: z.string().describe("Caller wallet address (0x-prefixed)"),
+  signer: z
+    .string()
+    .regex(/^0x[0-9a-fA-F]{40}$/, "signer must be a 0x-prefixed 40-hex address")
+    .describe("Caller wallet address (0x-prefixed 40-hex)"),
 };
 
 const CorridorsSchema = {};
@@ -60,7 +63,16 @@ async function run<T>(fn: () => Promise<T> | T) {
         content: [{ type: "text" as const, text: `${e.status}: ${e.message}${hint}` }],
       };
     }
-    throw e;
+    // Don't leak internal/upstream error text to unauthenticated MCP clients —
+    // mirror the REST failure() masking (GatewayError above is deliberate and
+    // caller-facing; anything else is internal). Log the detail server-side.
+    process.stderr.write(
+      `[agents-gateway] mcp tool error: ${e instanceof Error ? (e.stack ?? e.message) : e}\n`,
+    );
+    return {
+      isError: true as const,
+      content: [{ type: "text" as const, text: "internal error" }],
+    };
   }
 }
 
@@ -82,8 +94,7 @@ export function buildMcpServer(handlers: Handlers): McpServer {
     "fx_settle",
     "Build an unsigned EIP-712 settlement transaction from a quote. Returns typed_data the caller signs in their wallet.",
     SettleSchema,
-    async (args: { quote_id: string; signer: string }) =>
-      run(() => handlers.settle(args)),
+    async (args: { quote_id: string; signer: string }) => run(() => handlers.settle(args)),
   );
 
   (server.tool as any)(
@@ -97,14 +108,13 @@ export function buildMcpServer(handlers: Handlers): McpServer {
   for (const t of PROXY_TOOLS) {
     const hasInput = Object.keys(t.shape).length > 0;
     if (hasInput) {
-      (server.tool as any)(
-        t.name,
-        t.summary,
-        t.shape,
-        async (args: Record<string, unknown>) => run(() => handlers.proxy(t.upstream, args ?? {})),
+      (server.tool as any)(t.name, t.summary, t.shape, async (args: Record<string, unknown>) =>
+        run(() => handlers.proxy(t.upstream, args ?? {})),
       );
     } else {
-      (server.tool as any)(t.name, t.summary, async () => run(() => handlers.proxy(t.upstream, {})));
+      (server.tool as any)(t.name, t.summary, async () =>
+        run(() => handlers.proxy(t.upstream, {})),
+      );
     }
   }
 
@@ -131,7 +141,7 @@ export async function handleMcpRequest(
   req: IncomingMessage,
   res: ServerResponse,
 ): Promise<void> {
-  let body: unknown = undefined;
+  let body: unknown;
   if (req.method === "POST") {
     // Fast reject on a declared oversize length, then enforce while streaming
     // (Content-Length may be absent or wrong on chunked bodies).
