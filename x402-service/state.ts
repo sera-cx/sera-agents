@@ -37,6 +37,17 @@ export interface PendingPayment {
     amount: number;
     recipient: string;
   };
+  /**
+   * True when this payment was created under X402_MODE=demo.
+   *
+   * Persisted on the row rather than inferred from the response header, so a
+   * reconciler reading the store directly can separate demo from live without
+   * the header that produced the row still being in scope. Rows written before
+   * this column existed read back as `false` — see the migration note in
+   * `makeStore`, which refuses to open a pre-existing demo store in live mode
+   * rather than let an unmarked row be read as live.
+   */
+  demo: boolean;
   created_at: number;        // unix seconds
   expires_at: number;
   /** JSON body returned on idempotent replay after a successful delivery. */
@@ -65,7 +76,19 @@ export interface StateStore {
   gcExpired(now: number): void;
 }
 
-export function makeStore(stateDbPath: string | undefined, pendingMax: number): StateStore {
+/** Thrown when a state file already holds rows written under the other mode. */
+export class MixedModeStateError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "MixedModeStateError";
+  }
+}
+
+export function makeStore(
+  stateDbPath: string | undefined,
+  pendingMax: number,
+  demoMode = false,
+): StateStore {
   const mem = new Map<string, PendingPayment>();
   const memTxClaims = new Map<string, string>();
   let db: Database.Database | null = null;
@@ -85,6 +108,7 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
           to_currency TEXT NOT NULL,
           amount REAL NOT NULL,
           recipient TEXT NOT NULL,
+          demo INTEGER NOT NULL DEFAULT 0,
           created_at INTEGER NOT NULL,
           expires_at INTEGER NOT NULL,
           delivered_payload TEXT,
@@ -100,8 +124,47 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
           claimed_at INTEGER NOT NULL
         );
       `);
+
+      // Migration for stores created before `demo` existed. SQLite has no
+      // ADD COLUMN IF NOT EXISTS, so the column list decides.
+      const columns = db.prepare(`PRAGMA table_info(payments)`).all() as Array<{ name: string }>;
+      if (!columns.some((col) => col.name === "demo")) {
+        db.exec(`ALTER TABLE payments ADD COLUMN demo INTEGER NOT NULL DEFAULT 0`);
+        // Pre-migration rows default to 0, i.e. "live". That is the wrong
+        // answer for a file that was in fact a demo store, which is precisely
+        // why the guard below refuses to reuse one across modes.
+        process.stderr.write(
+          `x402: migrated ${stateDbPath} — added payments.demo (existing rows default to live)\n`,
+        );
+      }
+      // Indexed only once the column is guaranteed to exist — creating it
+      // inside the CREATE TABLE block above would fail on a pre-migration file,
+      // and that failure is swallowed into the memory-store fallback.
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_payments_demo ON payments(demo)`);
+
+      // Point 3 of the hardening: make co-mingling structurally impossible
+      // rather than merely visible. One file holds one mode's payments for its
+      // whole life; pointing a live deploy at a file that already contains demo
+      // rows (or the reverse) is a misconfiguration, not something to reconcile
+      // after the fact. Refusing at startup is cheap; a mixed ledger is not.
+      const foreign = db
+        .prepare(`SELECT COUNT(*) AS n FROM payments WHERE demo = ?`)
+        .get(demoMode ? 0 : 1) as { n: number };
+      if (foreign.n > 0) {
+        throw new MixedModeStateError(
+          `refusing to start: ${stateDbPath} holds ${foreign.n} ${demoMode ? "live" : "demo"} ` +
+            `payment(s) and X402_MODE=${demoMode ? "demo" : "live"}.\n` +
+            `A state file belongs to exactly one mode. Point X402_STATE_DB at a separate ` +
+            `file per mode (e.g. state.demo.db / state.live.db), or move the existing one aside.`,
+        );
+      }
+
       process.stderr.write(`x402: payment state persisted to ${stateDbPath}\n`);
     } catch (e: any) {
+      // A mode collision is an operator error that must stop the process — it
+      // must never degrade to a memory store, which would silently drop the
+      // durability the live-mode anti-replay ledger depends on.
+      if (e instanceof MixedModeStateError) throw e;
       process.stderr.write(
         `x402: failed to open ${stateDbPath} (${e?.message}); falling back to memory only\n`,
       );
@@ -114,11 +177,11 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
     db.prepare(
       `INSERT INTO payments
          (payment_id, status, pay_to, amount_usdc, chain, from_currency, to_currency, amount,
-          recipient, created_at, expires_at, delivered_payload, settlement_payload, last_error,
+          recipient, demo, created_at, expires_at, delivered_payload, settlement_payload, last_error,
           last_status_change)
        VALUES
          (@payment_id, @status, @pay_to, @amount_usdc, @chain, @from_currency, @to_currency, @amount,
-          @recipient, @created_at, @expires_at, @delivered_payload, @settlement_payload, @last_error,
+          @recipient, @demo, @created_at, @expires_at, @delivered_payload, @settlement_payload, @last_error,
           @last_status_change)
        ON CONFLICT(payment_id) DO UPDATE SET
          status = excluded.status,
@@ -136,6 +199,7 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
       to_currency: p.swap_request.to_currency,
       amount: p.swap_request.amount,
       recipient: p.swap_request.recipient,
+      demo: p.demo ? 1 : 0,
       created_at: p.created_at,
       expires_at: p.expires_at,
       delivered_payload: p.delivered_payload ?? null,
@@ -162,6 +226,7 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
         amount: row.amount,
         recipient: row.recipient,
       },
+      demo: !!row.demo,
       created_at: row.created_at,
       expires_at: row.expires_at,
       delivered_payload: row.delivered_payload ?? undefined,
@@ -283,6 +348,7 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
           amount: row.amount,
           recipient: row.recipient,
         },
+        demo: !!row.demo,
         created_at: row.created_at,
         expires_at: row.expires_at,
         delivered_payload: row.delivered_payload ?? undefined,
