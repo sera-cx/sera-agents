@@ -15,7 +15,7 @@ For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.m
 | Path | For | Artifact |
 |---|---|---|
 | **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | [`sera-mcp`](https://github.com/sera-cx/sera-mcp) (the MCP) |
-| **B — Build** | Engineering a new agent product | `templates/{chat-cli, web-chat, webhook-agent, slack-agent, market-maker, withdraw-cli}` |
+| **B — Build** | Engineering a new agent product | `templates/{chat-cli, discord-agent, web-chat, webhook-agent, slack-agent, market-maker, withdraw-cli}` |
 | **C — Run** | Want it ready out of the box | `sera-agent/` (interactive CLI) |
 | **D — Self-host** | Agent speaks x402 HTTP | `x402-service/` (run locally or deploy yourself) |
 
@@ -41,6 +41,7 @@ sera-agents/
 │   ├── web-chat/                 Express + browser chat UI.
 │   ├── webhook-agent/            HTTP endpoint that triggers an agent task.
 │   ├── slack-agent/              Slack bot worker (Bolt, Socket/HTTP).
+│   ├── discord-agent/            Discord bot AI Agent.
 │   ├── market-maker/             Deterministic two-sided spread bot.
 │   └── withdraw-cli/             Dual-sig instant-withdrawal walkthrough.
 │
