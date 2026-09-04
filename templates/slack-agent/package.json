@@ -10,7 +10,7 @@
     "audit": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
-    "@openai/agents": "^0.3.0",
+    "@openai/agents": "^0.17.0",
     "@slack/bolt": "^3.21.0"
   },
   "devDependencies": {
