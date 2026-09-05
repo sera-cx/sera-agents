@@ -279,3 +279,6 @@ CI runs the same checks on every PR — see [`.github/workflows/ci.yml`](.github
 ## License
 
 MIT.
+
+
+<!-- Security scan triggered at 2026-09-05 07:40:53 -->
