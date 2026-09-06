@@ -63,6 +63,29 @@ curl -X POST http://localhost:4000/trigger \
 
 The agent runs the task and returns its summary in the response.
 
+## Rate limiting
+
+The endpoint is protected by two `express-rate-limit` layers, both evaluated
+**before** the request body is read or parsed — abusive traffic is rejected
+without allocating buffers or spending CPU on JSON parsing / HMAC hashing:
+
+| Tier | Scope | Default | Env var | Description |
+| --- | --- | --- | --- | --- |
+| 1. Per-client | each client IP across all routes | 60 req/min | `WEBHOOK_RATE_LIMIT_PER_MIN` | Evaluated first across all routes (`/health`, `/trigger`) to ensure a single abusive source cannot drain the global quota and lock out other clients |
+| 2. Global burst | entire server, all clients combined | 300 req/min | `WEBHOOK_GLOBAL_RATE_LIMIT` | Server-wide aggregate ceiling protecting the event loop, socket backlog, and LLM spend from distributed floods |
+
+- Every response carries standard `RateLimit-Limit`, `RateLimit-Remaining`,
+  and `RateLimit-Reset` headers; rejected requests also include `Retry-After`.
+- Client IPs come from the direct socket address. Set `WEBHOOK_TRUST_PROXY=true`
+  only when running behind a reverse proxy you control — it then honors
+  `X-Forwarded-For` from a single hop. On direct deployments leave it false,
+  or clients can spoof their quota identity.
+- Limit env vars must be finite positive integers; invalid values abort startup.
+- **Counters are in-process.** Behind multiple replicas each instance enforces
+  its own budget — attach a shared store such as
+  [rate-limit-redis](https://github.com/express-rate-limit/rate-limit-redis)
+  when you need exact limits across instances.
+
 ## Customize
 
 - **Mapping events to tasks** — edit `TASK_BUILDER` in `server.ts`. Examples included for Stripe `invoice.paid`, GitHub release events, cron ticks.
