@@ -18,7 +18,7 @@
     "better-sqlite3": "^12.10.0",
     "hono": "^4.6.0",
     "viem": "^2.55.19",
-    "zod": "^4.4.3"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
