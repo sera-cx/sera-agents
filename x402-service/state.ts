@@ -47,6 +47,25 @@ export interface PendingPayment {
   last_status_change: number;
 }
 
+/** Raw shape of a `payments` row as returned by better-sqlite3. */
+interface PaymentRow {
+  payment_id: string;
+  status: string;
+  pay_to: string;
+  amount_usdc: number;
+  chain: number;
+  from_currency: string;
+  to_currency: string;
+  amount: number;
+  recipient: string;
+  created_at: number;
+  expires_at: number;
+  delivered_payload: string | null;
+  settlement_payload: string | null;
+  last_error: string | null;
+  last_status_change: number;
+}
+
 export interface StateStore {
   save(p: PendingPayment): void;
   load(id: string): PendingPayment | undefined;
@@ -109,6 +128,29 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
     }
   }
 
+  function rowToPayment(row: PaymentRow): PendingPayment {
+    return {
+      payment_id: row.payment_id,
+      status: row.status as PaymentStatus,
+      pay_to: row.pay_to,
+      amount_usdc: row.amount_usdc,
+      asset: "USDC",
+      chain: row.chain as 1,
+      swap_request: {
+        from_currency: row.from_currency,
+        to_currency: row.to_currency,
+        amount: row.amount,
+        recipient: row.recipient,
+      },
+      created_at: row.created_at,
+      expires_at: row.expires_at,
+      delivered_payload: row.delivered_payload ?? undefined,
+      settlement_payload: row.settlement_payload ?? undefined,
+      last_error: row.last_error ?? undefined,
+      last_status_change: row.last_status_change,
+    };
+  }
+
   function writeRow(p: PendingPayment): void {
     if (!db) return;
     db.prepare(
@@ -147,28 +189,11 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
 
   function readRow(id: string): PendingPayment | undefined {
     if (!db) return undefined;
-    const row = db.prepare(`SELECT * FROM payments WHERE payment_id = ?`).get(id) as any;
+    const row = db.prepare(`SELECT * FROM payments WHERE payment_id = ?`).get(id) as
+      | PaymentRow
+      | undefined;
     if (!row) return undefined;
-    return {
-      payment_id: row.payment_id,
-      status: row.status,
-      pay_to: row.pay_to,
-      amount_usdc: row.amount_usdc,
-      asset: "USDC",
-      chain: row.chain,
-      swap_request: {
-        from_currency: row.from_currency,
-        to_currency: row.to_currency,
-        amount: row.amount,
-        recipient: row.recipient,
-      },
-      created_at: row.created_at,
-      expires_at: row.expires_at,
-      delivered_payload: row.delivered_payload ?? undefined,
-      settlement_payload: row.settlement_payload ?? undefined,
-      last_error: row.last_error ?? undefined,
-      last_status_change: row.last_status_change,
-    };
+    return rowToPayment(row);
   }
 
   return {
@@ -269,27 +294,8 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
           `SELECT * FROM payments WHERE status = 'failed_refundable'
            ORDER BY last_status_change DESC LIMIT ?`,
         )
-        .all(limit) as any[];
-      return rows.map((row) => ({
-        payment_id: row.payment_id,
-        status: row.status as PaymentStatus,
-        pay_to: row.pay_to,
-        amount_usdc: row.amount_usdc,
-        asset: "USDC" as const,
-        chain: row.chain,
-        swap_request: {
-          from_currency: row.from_currency,
-          to_currency: row.to_currency,
-          amount: row.amount,
-          recipient: row.recipient,
-        },
-        created_at: row.created_at,
-        expires_at: row.expires_at,
-        delivered_payload: row.delivered_payload ?? undefined,
-        settlement_payload: row.settlement_payload ?? undefined,
-        last_error: row.last_error ?? undefined,
-        last_status_change: row.last_status_change,
-      }));
+        .all(limit) as PaymentRow[];
+      return rows.map(rowToPayment);
     },
     size() {
       return mem.size;
