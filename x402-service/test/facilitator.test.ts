@@ -183,6 +183,12 @@ describe("facilitatorVerify", () => {
     expect(result.invalidReason).toBe("expired signature");
   });
 
+  it("fails closed when a 2xx verify response omits isValid:true", async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) });
+    const result = await facilitatorVerify(CFG, "payload", REQUIREMENTS);
+    expect(result.isValid).toBe(false);
+  });
+
   it("returns isValid:false on facilitator HTTP error", async () => {
     fetchMock.mockResolvedValue({
       ok: false,
@@ -250,6 +256,12 @@ describe("facilitatorSettle", () => {
     expect(result.success).toBe(true);
     expect(result.txHash).toBe("0xabc");
     expect(result.networkId).toBe("base");
+  });
+
+  it("fails closed when a 2xx settle response omits success:true", async () => {
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) });
+    const result = await facilitatorSettle(CFG, "p", REQUIREMENTS);
+    expect(result.success).toBe(false);
   });
 
   it("returns success:false on facilitator HTTP error", async () => {

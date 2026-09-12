@@ -28,7 +28,8 @@ export interface PendingPayment {
   payment_id: string;
   status: PaymentStatus;
   pay_to: string;
-  amount_usdc: number;
+  /** Exact USDC atomic units (six decimals), never a floating-point value. */
+  amount_usdc: string;
   asset: "USDC";
   chain: 1;
   swap_request: {
@@ -79,7 +80,7 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
           payment_id TEXT PRIMARY KEY,
           status TEXT NOT NULL,
           pay_to TEXT NOT NULL,
-          amount_usdc REAL NOT NULL,
+          amount_usdc TEXT NOT NULL,
           chain INTEGER NOT NULL,
           from_currency TEXT NOT NULL,
           to_currency TEXT NOT NULL,
@@ -153,7 +154,7 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
       payment_id: row.payment_id,
       status: row.status,
       pay_to: row.pay_to,
-      amount_usdc: row.amount_usdc,
+      amount_usdc: String(row.amount_usdc),
       asset: "USDC",
       chain: row.chain,
       swap_request: {
@@ -274,7 +275,7 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
         payment_id: row.payment_id,
         status: row.status as PaymentStatus,
         pay_to: row.pay_to,
-        amount_usdc: row.amount_usdc,
+        amount_usdc: String(row.amount_usdc),
         asset: "USDC" as const,
         chain: row.chain,
         swap_request: {

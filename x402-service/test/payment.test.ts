@@ -42,6 +42,7 @@ function demoConfig(): X402Config {
     cdpNetwork: "base",
     confirmationDepth: 3,
     liveAck: false,
+    mainnetAck: false,
   };
 }
 
@@ -50,6 +51,8 @@ function liveConfig(): X402Config {
     ...demoConfig(),
     mode: "live",
     liveAck: true,
+    mainnetAck: true,
+    e2eAttestationId: "base-sepolia-e2e-2026-08-25",
     facilitatorUrl: "https://test-facilitator",
     cdpApiKeyId: "id",
     cdpApiKeySecret: TEST_PRIVATE_KEY_PEM,
@@ -63,7 +66,7 @@ function makePending(): PendingPayment {
     payment_id: `00000000-0000-4000-8000-${now.toString().padStart(12, "0")}`,
     status: "pending",
     pay_to: "0x" + "a".repeat(40),
-    amount_usdc: 100,
+    amount_usdc: "100000000",
     asset: "USDC",
     chain: 1,
     swap_request: {

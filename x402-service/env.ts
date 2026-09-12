@@ -42,7 +42,9 @@ export interface X402Config {
   usdcName: string; // EIP-712 domain name of the payment token (USDC default)
   usdcVersion: string; // EIP-712 domain version
   // Operator gates
-  liveAck: boolean; // set true to acknowledge wired-but-not-production-tested live mode
+  liveAck: boolean;          // set true to acknowledge wired-but-not-production-tested live mode
+  mainnetAck: boolean;       // separate acknowledgement required before Base mainnet boot
+  e2eAttestationId?: string; // Base Sepolia E2E attestation reviewed by the operator
 }
 
 export function loadConfig(): X402Config {
@@ -97,6 +99,8 @@ export function loadConfig(): X402Config {
     usdcName: process.env.X402_USDC_NAME ?? "USD Coin",
     usdcVersion: process.env.X402_USDC_VERSION ?? "2",
     liveAck: bool("X402_LIVE_ACK", false),
+    mainnetAck: bool("X402_MAINNET_ACK", false),
+    e2eAttestationId: process.env.X402_E2E_ATTESTATION_ID?.trim() || undefined,
   };
 
   enforceSafetyGates(cfg);
@@ -229,6 +233,13 @@ function enforceSafetyGates(cfg: X402Config): void {
         `\nrefusing to start: X402_CONFIRMATION_DEPTH=${cfg.confirmationDepth} is below 3.\n` +
           `Per arXiv:2605.11781 ('Five Attacks on x402'), revert-grant attack RGP is\n` +
           `5.18% at k<3 confirmations on Base. Set X402_CONFIRMATION_DEPTH=3 minimum.\n\n`,
+      );
+    }
+    if (cfg.cdpNetwork === "base" && (!cfg.mainnetAck || !cfg.e2eAttestationId)) {
+      fail(
+        `\nrefusing to start: Base mainnet requires a completed Base Sepolia E2E attestation.\n` +
+          `Set X402_MAINNET_ACK=true and X402_E2E_ATTESTATION_ID=<attestation-id>.\n` +
+          `X402_LIVE_ACK alone is not sufficient for mainnet.\n\n`,
       );
     }
   }
