@@ -49,7 +49,7 @@ import { makeSeraMcpClient } from "./sera-client.js";
 import { makeStore, type PendingPayment } from "./state.js";
 
 const cfg = loadConfig();
-const store = makeStore(cfg.stateDb, cfg.pendingMax);
+const store = makeStore(cfg.stateDb, cfg.pendingMax, cfg.mode === "demo");
 const mcp = makeSeraMcpClient({
   mcpPath: cfg.seraMcpPath,
   network: process.env.SERA_NETWORK,
@@ -323,6 +323,7 @@ app.post("/x402/swap", async (c) => {
       asset: "USDC",
       chain: 1,
       swap_request: { from_currency, to_currency, amount, recipient },
+      demo: cfg.mode === "demo",
       created_at: now,
       expires_at: now + cfg.pendingTtlSeconds,
       last_status_change: now,
@@ -496,7 +497,11 @@ app.post("/x402/swap", async (c) => {
     // Anti-replay: one on-chain settle tx authorizes at most one delivery.
     // Atomic claim (idempotent for retries of this same payment). Skipped
     // only when no real confirm ran (demo / explicit opt-out => no txHash).
-    if (settleTxHash && !store.claimTx(settleTxHash, current.payment_id)) {
+    // Demo settle hashes are synthetic and derived from the payment_id, so a
+    // claim would always succeed and only add demo rows to a ledger whose whole
+    // purpose is live anti-replay. Skip by mode rather than by the hash being
+    // absent — it no longer is.
+    if (!current.demo && settleTxHash && !store.claimTx(settleTxHash, current.payment_id)) {
       process.stderr.write(
         `[confirm] ${current.payment_id}: settle tx already consumed by another payment — refusing\n`,
       );
@@ -611,8 +616,8 @@ process.stderr.write(
 if (cfg.mode === "demo" && cfg.demoPublicOk) {
   process.stderr.write(
     `WARNING: demo mode is exposed publicly via X402_DEMO_PUBLIC=true.\n` +
-      `         Returns demo:true + tx_hash:null + X-Sera-Demo-Mode header so consumers\n` +
-      `         can tell they're not real settlement data. Don't ship like this.\n`,
+      `         Returns demo:true + tx_hash:demo_<payment_id> + X-Sera-Demo-Mode header so\n` +
+      `         consumers can tell they're not real settlement data. Don't ship like this.\n`,
   );
 }
 if (cfg.mode === "live") {

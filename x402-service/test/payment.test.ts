@@ -9,7 +9,10 @@ import { generateKeyPairSync } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { X402Config } from "../env.js";
 import {
+  DEMO_TX_PREFIX,
+  demoTxHash,
   executeSwap,
+  isDemoTxHash,
   settlePayment,
   transitionToDelivered,
   transitionToExecuting,
@@ -72,6 +75,7 @@ function makePending(): PendingPayment {
       amount: 100,
       recipient: "0x" + "b".repeat(40),
     },
+    demo: false,
     created_at: now,
     expires_at: now + 300,
     last_status_change: now,
@@ -159,9 +163,14 @@ describe("executeSwap", () => {
   });
 
   it("demo mode: returns mock result without calling MCP", async () => {
-    const result = await executeSwap(demoConfig(), mcpMock, makePending());
+    const pending = makePending();
+    const result = await executeSwap(demoConfig(), mcpMock, pending);
     expect(result.demo).toBe(true);
-    expect(result.tx_hash).toBeNull();
+    // Was `null`. A demo receipt now names itself in the value, so a record
+    // copied into a ledger without the X-Sera-Demo-Mode header still reads as
+    // demo — and can never be mistaken for a live 0x-prefixed tx hash.
+    expect(result.tx_hash).toBe(`demo_${pending.payment_id}`);
+    expect(isDemoTxHash(result.tx_hash)).toBe(true);
     expect(mcpMock.call).not.toHaveBeenCalled();
   });
 

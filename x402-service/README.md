@@ -35,7 +35,7 @@ npm install
 npm run demo                # X402_MODE=demo, listens on 127.0.0.1:8402 only
 ```
 
-Demo mode binds to **localhost** by default. To expose demo mode publicly (e.g. for a hosted demo), set `X402_DEMO_PUBLIC=true` AND `HOST=0.0.0.0`. Risky — demo mode mocks payment verification AND the swap leg, returning a fake `tx_hash` indistinguishable from a real one. The `X-Sera-Demo-Mode: true` response header is the only safety net.
+Demo mode binds to **localhost** by default. To expose demo mode publicly (e.g. for a hosted demo), set `X402_DEMO_PUBLIC=true` AND `HOST=0.0.0.0`. Risky — demo mode mocks payment verification AND the swap leg. Demo settlements are self-identifying in the record itself: every demo `tx_hash` is `demo_<payment_id>`, which matches no live hash shape, and the persisted row carries `demo = 1`. The `X-Sera-Demo-Mode: true` response header remains, but it is no longer the only thing distinguishing demo from live.
 
 Test from another terminal:
 
@@ -53,7 +53,7 @@ curl -i -X POST http://localhost:8402/x402/swap \
   -H 'X-PAYMENT: <PAYMENT_ID>:demo-authorization' \
   -d '{"from_currency":"USD","to_currency":"MYR","amount":100,"recipient":"0xVendor"}'
 
-# Response is 200 with mocked trade_id, tx_hash:null, X-Sera-Demo-Mode header.
+# Response is 200 with mocked trade_id, tx_hash:"demo_<payment_id>", X-Sera-Demo-Mode header.
 ```
 
 ## Run live (Coinbase CDP facilitator)
