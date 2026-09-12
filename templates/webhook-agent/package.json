@@ -13,7 +13,7 @@
   "dependencies": {
     "@openai/agents": "^0.3.0",
     "express": "^4.21.0",
-    "helmet": "^8.1.0"
+    "helmet": "^8.3.0"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.18.0",
