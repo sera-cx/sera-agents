@@ -65,7 +65,7 @@ export interface StateStore {
   gcExpired(now: number): void;
 }
 
-export function makeStore(stateDbPath: string | undefined, pendingMax: number): StateStore {
+export function makeStore(stateDbPath: string | undefined): StateStore {
   const mem = new Map<string, PendingPayment>();
   const memTxClaims = new Map<string, string>();
   let db: Database.Database | null = null;
@@ -301,8 +301,6 @@ export function makeStore(stateDbPath: string | undefined, pendingMax: number): 
           mem.delete(k);
         }
       }
-      // Caller can opportunistically check pendingMax cap.
-      void pendingMax;
     },
   };
 }

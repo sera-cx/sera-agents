@@ -56,7 +56,7 @@ describe("parsePaymentAuthorization", () => {
 
 describe("claimTx — one settle tx authorizes at most one delivery", () => {
   it("first claim wins; same payment may re-claim (retry-idempotent); others are refused", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     expect(store.claimTx("0xABC", "payment-1")).toBe(true);
     expect(store.claimTx("0xabc", "payment-1")).toBe(true); // case-insensitive idempotent retry
     expect(store.claimTx("0xABC", "payment-2")).toBe(false); // replay across payments refused

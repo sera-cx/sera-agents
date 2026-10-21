@@ -49,7 +49,7 @@ import { makeSeraMcpClient } from "./sera-client.js";
 import { makeStore, type PendingPayment } from "./state.js";
 
 const cfg = loadConfig();
-const store = makeStore(cfg.stateDb, cfg.pendingMax);
+const store = makeStore(cfg.stateDb);
 const mcp = makeSeraMcpClient({
   mcpPath: cfg.seraMcpPath,
   network: process.env.SERA_NETWORK,
