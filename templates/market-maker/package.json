@@ -15,9 +15,9 @@
     "ethers": "^6.13.4"
   },
   "devDependencies": {
-    "@types/node": "^22.7.5",
-    "tsx": "^4.0.0",
-    "typescript": "^5.4.0",
-    "vitest": "^4.1.9"
+    "@types/node": "^26.4.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
   }
 }
