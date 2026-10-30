@@ -13,7 +13,9 @@
   "dependencies": {
     "@openai/agents": "^0.3.0",
     "express": "^4.21.0",
-    "helmet": "^8.1.0"
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "sera-agents": "file:../.."
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.18.0",
