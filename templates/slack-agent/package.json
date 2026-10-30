@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@openai/agents": "^0.3.0",
-    "@slack/bolt": "^3.21.0"
+    "@slack/bolt": "^5.1.0"
   },
   "devDependencies": {
     "tsx": "^4.0.0",
