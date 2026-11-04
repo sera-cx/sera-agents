@@ -32,7 +32,7 @@
     "check:css": "npm run build:css && git diff --exit-code -- assets/tailwind.css"
   },
   "overrides": {
-    "@hono/node-server": "^1.19.15",
+    "@hono/node-server": "^2.1.6",
     "axios": "^1.21.0",
     "fast-uri": "^3.1.9",
     "follow-redirects": "^1.16.2",
@@ -44,7 +44,7 @@
     "ws": "^8.21.0"
   },
   "engines": {
-    "node": ">=18.17"
+    "node": ">=20"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.7",
