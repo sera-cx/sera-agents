@@ -35,17 +35,16 @@ agents.sera.cx {
 		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
 		Cross-Origin-Opener-Policy "same-origin"
 		Cross-Origin-Resource-Policy "cross-origin"
-		# CSP with no 'unsafe-inline' anywhere. Tailwind is compiled at build
-		# time into assets/tailwind.css, each page's former inline <style> lives
-		# in assets/css/<page>.css, and the landing page's script is
-		# assets/app.js — so every script and stylesheet is same-origin and
-		# externally loaded. The only third-party origin left is Google Fonts
-		# (a stylesheet plus its gstatic font files); self-hosting those would
-		# let style-src and font-src drop to 'self' as well.
+		# CSP with no 'unsafe-inline' and no third-party origin at all: every
+		# script, stylesheet, font and image the pages load is same-origin.
+		# Tailwind is compiled at build time into assets/tailwind.css, each
+		# page's former inline <style> is assets/css/<page>.css, the landing
+		# page's script is assets/app.js, and the fonts are self-hosted under
+		# assets/fonts/ via assets/css/fonts.css.
 		# Note: assets/app.js assigns element.style.transform for the carousel.
 		# That is CSSOM, which CSP does not govern, so it needs no style-src
-		# exception.
-		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+		# exception. img-src keeps data: for the .grain SVG noise texture.
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
 		-Server
 	}
 

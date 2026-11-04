@@ -29,9 +29,14 @@
   <meta name="twitter:title" content="Docs — Sera for Agents" />
   <meta name="twitter:description" content="Build anything that needs FX or settlement: tutorials, API reference, recipes, architecture, and core concepts for Sera for Agents." />
   <meta name="twitter:image" content="https://agents.sera.cx/og-image.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Self-hosted fonts (see assets/css/fonts.css). Replaces the Google
+       Fonts stylesheet + preconnects, which were the last third-party
+       origins on the page and the last reason the CSP could not be
+       style-src 'self' / font-src 'self'. Preloads stand in for the
+       preconnects they replace. -->
+  <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/assets/fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/assets/css/fonts.css" />
 
   <!-- Compiled at build time (npm run build:css); replaces the Play CDN
        and the inline tailwind.config, so the page needs no third-party
