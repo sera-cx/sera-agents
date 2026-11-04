@@ -38,6 +38,14 @@ RUN npm run build --workspace=sera-agents-gateway
 
 RUN npm prune --omit=dev --workspace=sera-agents-gateway --include-workspace-root
 
+# npm only creates a workspace-local node_modules when a dependency can't be
+# hoisted to the root. With the current lockfile every version is unified, so
+# nothing nests here and the directory is absent — which made the runtime stage's
+# COPY fail with "/app/agents-gateway/node_modules: not found". Create it so the
+# COPY is stable either way: empty when everything hoists, populated when a
+# future version conflict forces nesting.
+RUN mkdir -p /app/agents-gateway/node_modules
+
 # ── stage 3: runtime ───────────────────────────────────────────────────
 FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293
 WORKDIR /app
