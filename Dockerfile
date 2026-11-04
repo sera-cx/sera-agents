@@ -23,8 +23,9 @@ COPY docs /usr/share/nginx/html/docs/
 COPY favicon-32.png /usr/share/nginx/html/ 
 COPY favicon-512.png /usr/share/nginx/html/ 
 COPY logo.png /usr/share/nginx/html/ 
-# Same-origin third-party assets (Tailwind) — see vendor/README.md
-COPY vendor /usr/share/nginx/html/vendor/
+# Compiled CSS (npm run build:css), per-page CSS, and the landing page's JS.
+# These are same-origin so the CSP needs no 'unsafe-inline' and no CDN origin.
+COPY assets /usr/share/nginx/html/assets/
 COPY robots.txt /usr/share/nginx/html/
 COPY sitemap.xml /usr/share/nginx/html/
 # Discovery manifests: agent card + MCP catalog served at /.well-known/*

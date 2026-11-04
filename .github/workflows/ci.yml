@@ -28,6 +28,11 @@ jobs:
         run: npm run biome:check
       - name: typecheck (all packages)
         run: npm run typecheck
+      - name: css is in sync with markup
+        # assets/tailwind.css is committed (the VM builds the static image from
+        # the repo and has no Node), so it can drift when markup adds classes.
+        # Rebuild and fail if the result differs from what's checked in.
+        run: npm run check:css
       - name: test (workspaces, if-present)
         run: npm test
       - name: audit (production deps, high+)

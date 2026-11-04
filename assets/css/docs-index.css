@@ -1,0 +1,26 @@
+/* Extracted from docs/index.html's inline <style> so the CSP can drop
+   style-src 'unsafe-inline'. Page-specific; shared utilities are in
+   assets/tailwind.css. */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+html, body { background:#06070A; color:#F8F8F4; }
+body { overflow-x: hidden; }
+.glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+.gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.ring-soft-hover:hover { box-shadow: inset 0 0 0 1px rgba(125,249,194,.4), 0 0 60px -10px rgba(61,232,160,.2); transform: translateY(-2px); }
+.ring-soft-hover { transition: transform .18s ease, box-shadow .18s ease; }
+.bento { transition: all .2s ease; }
+.bento:hover { background: rgba(11,13,18,.85); border-color: rgba(125,249,194,.2); }
+a { color: inherit; }
+.codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:12px; }
+.codeblock pre { font-size: 13px; }
+
+.sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+.sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+.sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+.sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+
+.num-badge { width:28px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; background:rgba(125,249,194,.08); color:#7DF9C2; border:1px solid rgba(125,249,194,.2); }
+.cost-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-family:'JetBrains Mono',monospace; font-size:11px; background:rgba(61,232,160,.08); color:#7DF9C2; border:1px solid rgba(61,232,160,.18); }

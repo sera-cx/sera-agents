@@ -27,7 +27,9 @@
     "test": "node --test test/*.test.mjs && npm run test --workspaces --if-present",
     "audit": "npm audit --workspaces --audit-level=high",
     "check": "npm run biome:check && npm run typecheck && npm run audit",
-    "ci": "npm ci && npm run biome:check && npm run typecheck && npm run build && npm run test && npm run audit"
+    "ci": "npm ci && npm run biome:check && npm run typecheck && npm run build && npm run test && npm run audit",
+    "build:css": "tailwindcss -c tailwind.config.js -i src/styles/tailwind.css -o assets/tailwind.css --minify",
+    "check:css": "npm run build:css && git diff --exit-code -- assets/tailwind.css"
   },
   "overrides": {
     "@hono/node-server": "^1.19.15",
@@ -45,6 +47,7 @@
     "node": ">=18.17"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.7"
+    "@biomejs/biome": "^2.5.7",
+    "tailwindcss": "3.4.17"
   }
 }

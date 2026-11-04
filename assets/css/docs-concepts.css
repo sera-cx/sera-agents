@@ -1,0 +1,29 @@
+/* Extracted from docs/concepts.html's inline <style> so the CSP can drop
+   style-src 'unsafe-inline'. Page-specific; shared utilities are in
+   assets/tailwind.css. */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+html, body { background:#06070A; color:#F8F8F4; }
+body { overflow-x: hidden; }
+.glass { backdrop-filter: blur(12px); background: rgba(11,13,18,.7); }
+.gradient-text { background: linear-gradient(180deg,#F8F8F4,#A4A89C); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.accent-text { background: linear-gradient(90deg,#7DF9C2,#3DE8A0); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.ring-soft { box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+a { color: inherit; }
+.codeblock { font-family: 'JetBrains Mono', monospace; background:#0B0D12; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding: 18px 22px; }
+.codeblock pre { font-size: 12.5px; line-height: 1.55; }
+.prose h2 { font-size: 1.75rem; font-weight: 700; margin-top: 3rem; margin-bottom: 1rem; }
+.prose h3 { font-size: 1.2rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: .65rem; color:#F8F8F4; }
+.prose p { color:#A4A89C; line-height:1.7; margin-bottom: 1rem; }
+.prose ul { color:#A4A89C; margin-bottom: 1rem; padding-left: 1.25rem; }
+.prose li { margin-bottom: .35rem; line-height: 1.6; }
+.prose code { font-family:'JetBrains Mono',monospace; font-size: .85em; color:#7DF9C2; background: rgba(125,249,194,.08); padding: 2px 6px; border-radius: 4px; }
+.prose strong { color:#F8F8F4; font-weight: 600; }
+.prose a { color:#7DF9C2; text-decoration: underline; text-underline-offset: 2px; }
+.sidebar a { display:block; padding:6px 10px; border-radius:6px; font-size:13.5px; color:#A4A89C; transition: all .12s; }
+.sidebar a:hover { color:#F8F8F4; background: rgba(255,255,255,.04); }
+.sidebar a.active { color:#7DF9C2; background: rgba(61,232,160,.08); }
+.sidebar .group-label { font-family:'JetBrains Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:#6B7180; padding:14px 10px 6px; }
+.anchor-jump { font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180; }
+.anchor-jump a { color:#A4A89C; }
+.anchor-jump a:hover { color:#7DF9C2; }

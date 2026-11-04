@@ -11,7 +11,9 @@
       "!docs",
       "!.codex",
       "!.codegraph",
-      "!.serena"
+      "!.serena",
+      "!assets/**/*.css",
+      "!src/styles/*.css"
     ]
   },
   "vcs": {
