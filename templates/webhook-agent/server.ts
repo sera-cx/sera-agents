@@ -3,6 +3,7 @@
  *
  * Express endpoint that triggers a Sera-MCP-using agent in response to an
  * incoming HTTP event. Hardened defaults:
+ *   - Strict fail-fast Zod environment validation (env.ts)
  *   - WEBHOOK_SECRET required (or explicit loopback opt-in)
  *   - Constant-time bearer comparison
  *   - Optional provider HMAC verification (Stripe, GitHub, generic)
@@ -13,11 +14,11 @@
  *   - Concurrency limit on agent runs
  *   - Allowlisted task mapper — replace with your own once you know the schema
  */
-
 import { timingSafeEqual } from "node:crypto";
 import { Agent, run, user } from "@openai/agents";
 import express from "express";
 import helmet from "helmet";
+import { loadEnv } from "./env.js";
 import { type HmacProvider, makeNonceStore, verifyHmac as verifyHmacImpl } from "./hmac.js";
 import {
   buildSeraMcpServer,
@@ -25,51 +26,25 @@ import {
   type SeraMcpTransport,
 } from "./sera-mcp-transport.js";
 
-const PORT = Number(process.env.PORT ?? 4000);
-const HOST = process.env.HOST ?? "127.0.0.1";
-
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
-const ALLOW_NO_AUTH = (process.env.WEBHOOK_ALLOW_NO_AUTH ?? "false").toLowerCase() === "true";
-const TRUST_PROXY = (process.env.WEBHOOK_TRUST_PROXY ?? "false").toLowerCase() === "true";
-
-// Optional HMAC verification — set the right one for your provider.
-//   stripe → Stripe-Signature header, secret = whsec_...
-//   github → X-Hub-Signature-256 header, secret = your repo secret
-//   generic → X-Webhook-Signature header (sha256 of body)
-const HMAC_PROVIDER = (process.env.WEBHOOK_HMAC_PROVIDER ?? "none").toLowerCase() as HmacProvider;
-const HMAC_SECRET = process.env.WEBHOOK_HMAC_SECRET;
-const HMAC_TOLERANCE_SECONDS = Number(process.env.WEBHOOK_HMAC_TOLERANCE_SECONDS ?? 300);
-
-const MAX_CONCURRENT = Number(process.env.WEBHOOK_MAX_CONCURRENT ?? 4);
-const RL_PER_IP_PER_MIN = Number(process.env.WEBHOOK_RATE_LIMIT_PER_MIN ?? 60);
-
-if (!WEBHOOK_SECRET && !ALLOW_NO_AUTH) {
-  process.stderr.write(
-    `\nrefusing to start: WEBHOOK_SECRET not set.\n` +
-      `This endpoint runs an LLM agent with full Sera tool access — open by\n` +
-      `default would let anyone trigger arbitrary swaps, treasury actions, etc.\n\n` +
-      `Pick one:\n` +
-      `  1. Set WEBHOOK_SECRET=<long-random-string> (recommended)\n` +
-      `  2. Bind to localhost only:  HOST=127.0.0.1  AND  WEBHOOK_ALLOW_NO_AUTH=true\n\n`,
-  );
-  process.exit(1);
-}
-if (ALLOW_NO_AUTH && !WEBHOOK_SECRET) {
-  if (HOST !== "127.0.0.1" && HOST !== "localhost") {
-    process.stderr.write(
-      `\nrefusing to start: WEBHOOK_ALLOW_NO_AUTH=true requires HOST=127.0.0.1.\n` +
-        `Bound to ${HOST}, which is reachable from outside this machine.\n\n`,
-    );
-    process.exit(1);
-  }
-  process.stderr.write(`WARNING: webhook-agent running with NO AUTH (loopback-only).\n`);
-}
-if (HMAC_PROVIDER !== "none" && !HMAC_SECRET) {
-  process.stderr.write(
-    `refusing to start: WEBHOOK_HMAC_PROVIDER=${HMAC_PROVIDER} but WEBHOOK_HMAC_SECRET is unset.\n`,
-  );
-  process.exit(1);
-}
+const env = loadEnv();
+const {
+  PORT,
+  HOST,
+  WEBHOOK_SECRET,
+  TRUST_PROXY,
+  HMAC_PROVIDER,
+  HMAC_SECRET,
+  HMAC_TOLERANCE_SECONDS,
+  MAX_CONCURRENT,
+  RL_PER_IP_PER_MIN,
+} = {
+  ...env,
+  HMAC_PROVIDER: env.WEBHOOK_HMAC_PROVIDER as HmacProvider,
+  HMAC_SECRET: env.WEBHOOK_HMAC_SECRET,
+  HMAC_TOLERANCE_SECONDS: env.WEBHOOK_HMAC_TOLERANCE_SECONDS,
+  MAX_CONCURRENT: env.WEBHOOK_MAX_CONCURRENT,
+  RL_PER_IP_PER_MIN: env.WEBHOOK_RATE_LIMIT_PER_MIN,
+};
 
 const SYSTEM_PROMPT = `
 You are an event-driven multi-currency settlement agent. You receive a task
@@ -146,13 +121,13 @@ function ipRateLimit(ip: string): boolean {
 async function main() {
   let transport: SeraMcpTransport;
   try {
-    transport = resolveSeraMcpTransport(process.env);
+    transport = resolveSeraMcpTransport(env);
   } catch (e: any) {
     console.error(e.message);
     process.exit(1);
   }
 
-  const sera = buildSeraMcpServer(transport);
+  const sera = buildSeraMcpServer(transport, env);
   await sera.connect();
 
   const agent = new Agent({
