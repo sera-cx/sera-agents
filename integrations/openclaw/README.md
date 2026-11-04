@@ -48,7 +48,7 @@ Skeleton:
 ```
 @openclaw/sera/
 ├── openclaw.plugin.json    # plugin manifest (id: sera, channel: sera, capabilities)
-├── package.json            # @openclaw/sera, dep: @josh-sera/sera-mcp
+├── package.json            # @openclaw/sera, dep: @sera-cx/sera-mcp
 ├── src/
 │   ├── index.ts            # plugin entry — wires MCP + slash commands
 │   ├── commands/           # /sera-quote, /sera-pay, etc.
@@ -63,14 +63,14 @@ Skeleton:
   "id": "sera",
   "name": "Sera Multi-Currency Settlement",
   "description": "Quote, swap, treasury, FX analytics across 40 stablecoins.",
-  "version": "0.4.0",
+  "version": "0.7.3",
   "channel": { "id": "sera" },
   "install": { "npmSpec": "@openclaw/sera" },
   "capabilities": ["mcp-tool-provider", "policy-aware"],
   "manifest": {
     "mcpServer": {
       "command": "node",
-      "args": ["./node_modules/@josh-sera/sera-mcp/dist/index.js"]
+      "args": ["./node_modules/@sera-cx/sera-mcp/dist/index.js"]
     }
   }
 }
