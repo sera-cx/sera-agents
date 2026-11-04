@@ -26,10 +26,23 @@ agents.sera.cx {
 	# TLS after the first visit, nosniff/frame-deny harden the landing page, and
 	# the Server banner is dropped.
 	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
 		Referrer-Policy "no-referrer"
+		# Deny browser features the landing page and JSON API never use, so an
+		# injected script can't reach them either.
+		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		Cross-Origin-Resource-Policy "cross-origin"
+		# CSP. No third-party script origins at all — Tailwind is vendored and
+		# served from this origin; only fonts come from Google. 'unsafe-inline' is
+		# still required for the inline tailwind.config block and the
+		# Tailwind-injected <style> elements — removing it means compiling
+		# Tailwind at build time, which is the real fix. Even with
+		# 'unsafe-inline', this blocks loading script from any other origin and
+		# shuts down object/base/frame injection.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
 		-Server
 	}
 

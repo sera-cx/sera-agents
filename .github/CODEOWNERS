@@ -1,0 +1,27 @@
+# Code owners for sera-agents.
+#
+# CODEOWNERS only *requests* review by itself. To make it binding, enable
+# branch protection on `main` with "Require a pull request before merging" +
+# "Require review from Code Owners" (see SECURITY.md § CI/CD supply chain).
+#
+# The CI paths below are deliberately the tightest: a workflow file can read
+# every secret the repository can see, so changes there must be reviewed by an
+# admin. This path was the vector for the 2026-09-05 credential-exfiltration
+# incident, which reached `main` as a direct push with no review.
+
+# Default — any change gets admin review.
+*                       @douglasgan @dev-sera
+
+# CI / CD and anything that can execute with repository secrets.
+/.github/               @douglasgan @dev-sera
+/.github/workflows/     @douglasgan @dev-sera
+
+# Deployment + edge configuration (TLS, ingress, container topology).
+/docker-compose.yml     @douglasgan @dev-sera
+/Dockerfile             @douglasgan @dev-sera
+/agents-gateway/deploy/ @douglasgan @dev-sera
+
+# Anything that touches keys, payments, or the published security posture.
+/x402-service/          @douglasgan @dev-sera
+/SECURITY.md            @douglasgan @dev-sera
+/SECURITY-MODEL.md      @douglasgan @dev-sera

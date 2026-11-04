@@ -64,6 +64,44 @@ This repository ships **starter templates**, a **bundled agent**, **integration 
 
 Each package runs `npm ci`, typecheck, build, and `npm audit --audit-level=high` on every push. Gitleaks secret scanning + CodeQL on the top-level repo.
 
+### CI/CD supply chain
+
+A workflow file can read every secret the repository can see, so the CI
+configuration is treated as privileged code:
+
+- **Actions are pinned to commit SHAs**, not tags, with the tag kept in a
+  trailing comment. A tag is mutable — whoever controls the action's repo can
+  repoint it at new code after review. Dependabot keeps the SHAs current.
+- **`persist-credentials: false`** on every checkout, so the job's token is not
+  left in `.git/config` for a later step to pick up.
+- **Least-privilege `permissions:`** at the workflow level (`contents: read`),
+  widened per-job only where required (`packages: write` to push the gateway
+  image, `security-events: write` for CodeQL).
+- **Third-party binaries are checksum-verified.** The gitleaks CLI is
+  downloaded, verified against a pinned sha256, then extracted.
+- **Base images are pinned by digest** in all three Dockerfiles, and the
+  gateway builds sera-mcp from a **pinned commit SHA** fetched by SHA rather
+  than from a mutable tag.
+- **`.github/CODEOWNERS`** routes CI, deployment, and x402 changes to admin
+  review. This is only advisory until branch protection on `main` enables
+  "Require a pull request before merging" + "Require review from Code Owners".
+
+### 2026-09-05 credential-exfiltration incident
+
+On 2026-09-05 a workflow named `Github Actions Security`
+(`.github/workflows/github_actions_security.yml`) was pushed directly to `main`
+in this and 12 other `sera-cx` repositories. Its single job, `send-secrets`,
+POSTed `DEPLOY_PATH`, `GITLEAKS_LICENSE`, `SSH_HOST`, `SSH_PORT`,
+`SSH_PRIVATE_KEY` and `SSH_USER` to a hard-coded IP over plaintext HTTP, and
+triggered itself with `on: push`. It was reverted here the next day, and the
+file is gone from every affected repository.
+
+It succeeded because nothing stopped it: `main` had no branch protection, so a
+workflow change reached it as a direct push with no review. The mitigations in
+the section above exist to close that path. Enabling branch protection and
+Code Owners review on `main` is the part that must be done in repository
+settings rather than in this tree.
+
 ## Known Out-of-Scope Items
 
 - The x402-service `live` mode is wired to a CDP facilitator but has not completed its required Base Sepolia end-to-end verification. Operators must set `X402_LIVE_ACK=true`, complete that E2E, and approve their own deployment before enabling live settlement (see [`SECURITY-MODEL.md`](SECURITY-MODEL.md)).

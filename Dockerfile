@@ -1,10 +1,11 @@
 # Use the official Nginx image from the Docker Hub
-FROM nginx:alpine
+FROM nginx:alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76a53fe41f8588c6698d2aed0606
 
 # Create static file server config
 RUN echo 'server { \
     listen 80; \
     server_name localhost; \
+    server_tokens off; \
     root /usr/share/nginx/html; \
     index index.html; \
     location / { \
@@ -22,6 +23,8 @@ COPY docs /usr/share/nginx/html/docs/
 COPY favicon-32.png /usr/share/nginx/html/ 
 COPY favicon-512.png /usr/share/nginx/html/ 
 COPY logo.png /usr/share/nginx/html/ 
+# Same-origin third-party assets (Tailwind) — see vendor/README.md
+COPY vendor /usr/share/nginx/html/vendor/
 COPY robots.txt /usr/share/nginx/html/
 COPY sitemap.xml /usr/share/nginx/html/
 # Discovery manifests: agent card + MCP catalog served at /.well-known/*

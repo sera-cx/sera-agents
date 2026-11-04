@@ -35,7 +35,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Served from our own origin (see vendor/README.md). Was
+       https://cdn.tailwindcss.com — unversioned third-party JS running on
+       this origin, which SRI cannot secure because that host sends no CORS
+       header. Vendoring removes the third-party origin from the page. -->
+  <script src="/vendor/tailwindcss-3.4.17.js"></script>
   <script>
     tailwind.config = {
       theme: {

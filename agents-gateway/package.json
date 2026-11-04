@@ -14,9 +14,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
-    "@modelcontextprotocol/sdk": "^1.18.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "hono": "^4.6.0",
-    "zod": "^3.23.8"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "tsx": "^4.0.0",
