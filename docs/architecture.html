@@ -159,7 +159,7 @@
       <p><strong>Why an MCP?</strong> Because every modern agent host (Claude, Cursor, ChatGPT, OpenClaw, Hermes, NanoClaw) speaks MCP natively. Three lines of config and your agent has 55 FX tools.</p>
 
       <h3>4. x402 (HTTP payments)</h3>
-      <p>For callers that speak HTTP rather than MCP. Because settlement is now Sera's own chain, Sera can be the x402 facilitator itself: there is a managed endpoint on <code>agents.sera.cx</code> and nothing to deploy. <code>x402-service</code> remains in the repo as a thin Express server for operators who want to hold their own key; run it against the appchain testnet with <code>npm run testnet</code>, which exercises the production code path rather than mocking the payment and swap legs.</p>
+      <p>For callers that speak HTTP rather than MCP. Because settlement is now Sera's own chain, Sera is the x402 facilitator itself: a managed endpoint arrives on <code>agents.sera.cx</code> at appchain launch, with nothing to deploy. <code>x402-service</code> remains in the repo as a thin Express server for operators who want to hold their own key; run it against the appchain testnet with <code>npm run testnet</code>, which exercises the production code path rather than mocking the payment and swap legs.</p>
       <p>Two directions matter. <strong>Receiving:</strong> an agent on Base or Ethereum mainnet pays USDC over plain x402 with no Sera account, the payment lands in Sera's gateway, converts in-ledger, and credits the merchant in its own currency. <strong>Native:</strong> two Sera accounts settle a 402 invoice in-ledger — instant, no bridge, fee in the stablecoin paid.</p>
 
       <h3>5. Templates &amp; bundled agent</h3>

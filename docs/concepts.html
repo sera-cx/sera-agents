@@ -175,7 +175,7 @@
       <p>An open agent-payment standard layered on top of HTTP. The server returns <code>402 Payment Required</code> with payment instructions. The client pays (USDC, on-chain). The client retries with an <code>X-PAYMENT</code> header. The server verifies and returns <code>200 OK</code> with the goods. Idempotent, stateless, cache-friendly.</p>
 
       <h3>Managed, or your own</h3>
-      <p>Some agents don't speak MCP — they speak HTTP. With settlement on the appchain, Sera can act as the x402 facilitator itself, so there is a managed endpoint on <code>agents.sera.cx</code>. Self-hosting <code>x402-service</code> stays available for operators who want to hold their own key; point it at the appchain testnet with <code>npm run testnet</code>, which exercises the same code path as production rather than mocking it.</p>
+      <p>Some agents don't speak MCP — they speak HTTP. With settlement on the appchain, Sera acts as the x402 facilitator itself, so a managed endpoint arrives on <code>agents.sera.cx</code> at appchain launch. Self-hosting <code>x402-service</code> stays available for operators who want to hold their own key; point it at the appchain testnet with <code>npm run testnet</code>, which exercises the same code path as production rather than mocking it.</p>
 
       <h3>Two flows, not one</h3>
       <ul>
