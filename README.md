@@ -10,7 +10,7 @@ Multi-currency settlement infrastructure for AI agents. Your agent holds an acco
 
 Agents never see a chain ID, an RPC or a gas price. Owners authorise agent keys with a **mandate** — a notional cap in the owner's home currency, a pair allowlist, a destination allowlist, an expiry — and the chain enforces it, not the client.
 
-For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.md`](SECURITY-MODEL.md), and [`CHANGELOG.md`](CHANGELOG.md).
+For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.md`](SECURITY-MODEL.md), and [`CHANGELOG.md`](CHANGELOG.md). The appchain tool surface is specified in [`MCP-V2-SPEC.md`](MCP-V2-SPEC.md).
 
 ## Four paths
 
@@ -23,7 +23,7 @@ For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.m
 
 Paths A–C are available through their listed artifacts. For Path D, Sera acts as the x402 facilitator on the appchain, so the managed endpoint needs nothing deployed; `x402-service/` remains for operators who want to hold their own key, and self-hosted live mode requires appchain-testnet E2E verification plus explicit operator approval. See [`x402-service/README.md`](x402-service/README.md) and [`SECURITY-MODEL.md`](SECURITY-MODEL.md).
 
-> **Rollout status.** The managed `agents.sera.cx/x402/*` routes and the appchain tool groups (`create_account`, `set_mandate`, `get_receipt`, `verify_receipt`, `request_forced_withdrawal`, …) are MCP `v2`. `v1` targets mainnet as it works today and existing installs keep working untouched. `x402-service`'s own live mode still carries the Coinbase CDP / Base Sepolia wiring described in [`SECURITY-MODEL.md`](SECURITY-MODEL.md) until that retarget lands, and the `testnet` run mode the site describes (`npm run testnet` / `X402_MODE=testnet`) is not implemented yet — today the service offers `demo` and `live`.
+> **Rollout status.** The managed `agents.sera.cx/x402/*` routes and the appchain tool groups (`create_account`, `set_mandate`, `get_receipt`, `verify_receipt`, `request_forced_withdrawal`, …) are MCP `v2` — specified in [`MCP-V2-SPEC.md`](MCP-V2-SPEC.md). `v1` targets mainnet as it works today and existing installs keep working untouched. `x402-service`'s own live mode still carries the Coinbase CDP / Base Sepolia wiring described in [`SECURITY-MODEL.md`](SECURITY-MODEL.md) until that retarget lands, and the `testnet` run mode the site describes (`npm run testnet` / `X402_MODE=testnet`) is not implemented yet — today the service offers `demo` and `live`.
 
 ## Repository contents
 
