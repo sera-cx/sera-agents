@@ -1,7 +1,7 @@
 {
   "protocolVersion": "1.0",
   "name": "Sera FX",
-  "description": "Cross-border stablecoin FX for autonomous agents: live rates, corridors, deal scanning, quotes, and non-custodial EIP-712 settlement intents. Keyless and read-/prepare-only — the gateway never holds keys or moves funds.",
+  "description": "Multi-currency stablecoin FX for autonomous agents, settled on the Sera appchain: live rates, corridors, deal scanning, quotes, and non-custodial EIP-712 settlement intents. Instant finality and a signed receipt for every settlement. Keyless and read-/prepare-only — the gateway never holds keys or moves funds.",
   "url": "https://agents.sera.cx",
   "preferredTransport": "HTTP+JSON",
   "additionalInterfaces": [

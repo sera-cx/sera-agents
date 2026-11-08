@@ -6,6 +6,10 @@ How `sera-agents` is laid out. For setup and usage, see [`README.md`](README.md)
 
 This repo is the public companion to `sera-mcp`. It contains everything someone needs to actually use Sera's MCP layer in real agent products — but no engine code lives here. Engine code lives in `sera-mcp`.
 
+**Settlement target.** Sera settles on its own appchain. The central limit order book is the chain's state machine rather than a contract on a general-purpose chain, so a fill is final in the block that contains it; accounts, agent keys and mandates are native objects, and a mandate is checked as part of state-transition validity rather than by the calling client. Fees are taken in the stablecoin being swapped — there is no gas token. Deposits arrive through an L1 deposit contract on Ethereum, withdrawals leave to L1, every state transition carries a validity proof settled on L1, and `request_forced_withdrawal` works from Ethereum alone if the sequencer stops responding.
+
+Nothing in the folder map below moves because of that. What changes is what the layers point at, and that the MCP's client-side policy gates become a seatbelt rather than the safety story. The x402 service's `X402_MODE=live` wiring documented further down still describes the Coinbase CDP / Base Sepolia path as shipped today; retargeting it at the appchain is `v2` work.
+
 ```
 ┌──────────────────┐                       ┌─────────────────┐
 │  sera-agents     │                       │   sera-mcp      │

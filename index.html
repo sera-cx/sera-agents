@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sera for Agents — multi-currency settlement infrastructure for AI agents</title>
-  <meta name="description" content="Sera gives AI agents and apps the ability to quote, convert, and settle across 40 stablecoins and 22 fiat currencies. Open MCP for any host, plus templates, a bundled agent, a self-hosted x402 service, and reference apps for trading, treasury, prediction markets, and cross-border payments." />
+  <meta name="description" content="Your agent holds an account on Sera, not a wallet on a chain. Quote, convert, and settle across 40 stablecoins and 22 fiat currencies with instant finality, mandates enforced by the chain, and a provable receipt for every payment. Open MCP for any host, plus templates, a bundled agent, managed and self-hosted x402, and reference apps." />
   <meta name="theme-color" content="#06070A" />
   <meta name="author" content="Sera Protocol" />
   <link rel="canonical" href="https://agents.sera.cx/" />
@@ -17,7 +17,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Sera for Agents" />
   <meta property="og:title" content="Sera for Agents — multi-currency settlement for AI agents" />
-  <meta property="og:description" content="Quote, convert, and settle across 40 stablecoins and 22 fiat currencies from any agent host. Open MCP, self-hosted x402 service, working templates. 55 tools live." />
+  <meta property="og:description" content="Your agent holds an account on Sera, not a wallet on a chain. Instant settlement across 40 stablecoins and 22 fiat currencies, a provable receipt every time, no gas token. 55 tools live." />
   <meta property="og:url" content="https://agents.sera.cx/" />
   <meta property="og:image" content="https://agents.sera.cx/og-image.png" />
   <meta property="og:image:width" content="1200" />
@@ -27,7 +27,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Sera for Agents — multi-currency settlement for AI agents" />
-  <meta name="twitter:description" content="Quote, convert, and settle across 40 stablecoins and 22 fiat currencies from any agent host. Open MCP, self-hosted x402 service, 55 tools live." />
+  <meta name="twitter:description" content="Your agent holds an account on Sera, not a wallet on a chain. Instant settlement, a provable receipt every time, no gas token. 55 tools live." />
   <meta name="twitter:image" content="https://agents.sera.cx/og-image.png" />
   <meta name="twitter:image:alt" content="Sera for Agents — multi-currency settlement for AI agents" />
 
@@ -59,6 +59,7 @@
       </a>
 
       <nav class="hidden lg:flex items-center gap-6 text-sm text-chalk-300">
+        <a href="#appchain" class="hover:text-chalk-50">Appchain</a>
         <a href="#paths" class="hover:text-chalk-50">Paths</a>
         <a href="#build" class="hover:text-chalk-50">Build</a>
         <a href="#hosts" class="hover:text-chalk-50">Hosts</a>
@@ -82,6 +83,7 @@
 
     <div id="mobile-menu" class="mobile-menu lg:hidden border-t border-white/5 bg-ink-950/95">
       <nav class="px-5 py-4 grid gap-1 text-sm">
+        <a href="#appchain" class="py-2.5 text-chalk-300 hover:text-chalk-50">Appchain</a>
         <a href="#paths" class="py-2.5 text-chalk-300 hover:text-chalk-50">Paths</a>
         <a href="#build" class="py-2.5 text-chalk-300 hover:text-chalk-50">Build with Sera</a>
         <a href="#hosts" class="py-2.5 text-chalk-300 hover:text-chalk-50">Hosts</a>
@@ -111,7 +113,7 @@
       <div class="max-w-4xl">
         <div class="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-accent-400 bg-accent-500/5 border border-accent-500/20 rounded-full px-3 py-1.5 mb-7">
           <span class="w-1.5 h-1.5 rounded-full bg-accent-500 animate-pulse"></span>
-          v0.8.3 · open MCP · 55 tools live
+          appchain live · open MCP · 55 tools live
         </div>
 
         <h1 class="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] gradient-text">
@@ -120,11 +122,11 @@
         </h1>
 
         <p class="mt-7 text-lg sm:text-xl text-chalk-300 max-w-2xl leading-relaxed">
-          Most agentic payment infrastructure today is single-currency. The world isn't. Sera gives any agent — or any app — the ability to quote, convert, and settle across <span class="text-chalk-50 font-medium">40 stablecoins</span> and <span class="text-chalk-50 font-medium">22 fiat currencies</span> — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more.
+          Your agent holds an account on Sera, not a wallet on a chain. It pays in any of <span class="text-chalk-50 font-medium">40 stablecoins</span> across <span class="text-chalk-50 font-medium">22 fiat currencies</span> — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR and more — and the receiver gets its own. Settlement is instant, and every payment comes with a provable receipt.
         </p>
 
         <p class="mt-3 text-sm sm:text-base text-chalk-500 max-w-2xl">
-          Build a cross-border payment app, an FX trading dashboard, a prediction market on FX, a treasury rebalancer, an x402-paid API, an AI agent — anything that needs a real FX layer underneath.
+          Build a cross-border payment app, an FX trading dashboard, a prediction market on FX, a treasury rebalancer, an x402-paid API, an AI agent — anything that needs a real FX layer underneath. No chain IDs, no RPC endpoints, no gas token.
         </p>
 
         <div class="mt-9 flex flex-wrap gap-3">
@@ -144,7 +146,7 @@
           <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span> Open MCP, every host</div>
           <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span> External signer by default</div>
           <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span> Non-custodial settlement</div>
-          <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span> Policy gates built in</div>
+          <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent-500"></span> Mandates enforced by the chain</div>
         </div>
 
         <!-- Featured integrations callout -->
@@ -177,7 +179,7 @@
   <!-- ============== CURRENCIES MARQUEE ============== -->
   <section class="border-y border-white/5 py-7 overflow-hidden bg-ink-900/50">
     <div class="text-center text-xs font-mono uppercase tracking-widest text-chalk-500 mb-5">
-      Settle in any of these stablecoins
+      Issued and settled natively on Sera
     </div>
     <div class="flex whitespace-nowrap marquee gap-10 text-xl sm:text-2xl font-mono text-chalk-300">
       <div class="flex gap-10">
@@ -239,7 +241,239 @@
         </div>
         <div class="space-y-5 text-base sm:text-lg text-chalk-300 leading-relaxed">
           <p>An agent paying a Singapore vendor in a single dollar-denominated stablecoin pushes FX risk onto the recipient every cycle. An agent settling payroll in Manila that way means someone, somewhere, is converting and absorbing the spread.</p>
-          <p>The agentic payment stack today assumes one global currency. Real settlement doesn't work that way. <span class="text-chalk-50 font-medium">Sera is the multi-currency settlement infrastructure underneath agents and apps — quote, convert, and settle in whatever currency the counterparty actually uses.</span></p>
+          <p>And every agent that wants to move money becomes an infrastructure engineer: chain IDs, RPC endpoints, a gas token to keep topped up, bridge hops, confirmations to wait on.</p>
+          <p>The agentic payment stack today assumes one global currency. Real settlement doesn't work that way. <span class="text-chalk-50 font-medium">So Sera is its own chain. The currencies are issued in the ledger, a filled quote is final the moment it fills, mandates are enforced in the block rather than by the client — and the agent never sees a chain ID, an RPC endpoint or a gas price.</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== WHY AN APPCHAIN ============== -->
+  <section id="appchain" class="py-20 sm:py-24 border-t border-white/5 bg-ink-900/30">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="max-w-3xl mb-12">
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Why an appchain</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+          Sera is its own chain.<br/>Here's what that <span class="accent-text">buys an agent.</span>
+        </h2>
+        <p class="mt-5 text-base sm:text-lg text-chalk-300">
+          Settlement used to be something Sera did on a general-purpose chain. Now it is the chain — which removes four problems an agent developer would otherwise inherit.
+        </p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="ring-soft ring-soft-hover bento bg-ink-900/60 p-6 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">Instant finality</div>
+          <h3 class="text-lg font-semibold mb-2">A filled quote is done</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">
+            No confirmation count to wait out, no reorg window, no <code class="font-mono text-accent-400 text-xs">pending</code> state for your agent to poll. The fill is final in the block that contains it.
+          </p>
+        </div>
+        <div class="ring-soft ring-soft-hover bento bg-ink-900/60 p-6 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">No gas token</div>
+          <h3 class="text-lg font-semibold mb-2">Fees come out of the swap</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">
+            Taken in the stablecoin you are already moving. Nothing to top up, nothing to monitor, and no payment that fails because a balance in some unrelated asset ran dry.
+          </p>
+        </div>
+        <div class="ring-soft ring-soft-hover bento bg-ink-900/60 p-6 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">Mandates</div>
+          <h3 class="text-lg font-semibold mb-2">Enforced by the chain</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">
+            An agent key cannot exceed its cap, its pair allowlist or its destination allowlist. The limit lives in the block — not in a client your agent could be talked out of.
+          </p>
+        </div>
+        <div class="ring-soft ring-soft-hover bento bg-ink-900/60 p-6 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">Matching</div>
+          <h3 class="text-lg font-semibold mb-2">Proven in every block</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">
+            The order book is the chain, so every block carries proof that the fills followed the published rules. You never have to take the operator's word for the price you got.
+          </p>
+        </div>
+      </div>
+
+      <!-- PRE-PUBLISH GATE: this panel asserts validity proofs, forced withdrawal
+           and reconstructable balances. All three must be true in shipped code
+           before this goes live — see the launch checklist in DEPLOY.md. -->
+      <div class="mt-10 p-6 sm:p-8 rounded-2xl ring-soft bg-ink-950/60 border border-accent-500/20">
+        <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-4">Non-custodial, stated plainly</div>
+        <div class="grid md:grid-cols-3 gap-6 text-sm">
+          <div>
+            <div class="text-chalk-50 font-medium mb-1.5">Balances are proven to Ethereum</div>
+            <p class="text-chalk-300 leading-relaxed">Every state transition carries a validity proof settled on L1. Your balance is not an entry in a database we ask you to trust.</p>
+          </div>
+          <div>
+            <div class="text-chalk-50 font-medium mb-1.5">You can leave from L1</div>
+            <p class="text-chalk-300 leading-relaxed">If Sera stops responding, withdraw directly from Ethereum. <code class="font-mono text-accent-400 text-xs">request_forced_withdrawal</code> is exposed as a tool whether or not you ever need it.</p>
+          </div>
+          <div>
+            <div class="text-chalk-50 font-medium mb-1.5">Sera cannot freeze or reorder</div>
+            <p class="text-chalk-300 leading-relaxed">No seizure, no censorship of your intents, no quiet reordering of your fills. The data to reconstruct balances is published, not held.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== ACCOUNT MODEL ============== -->
+  <section id="accounts" class="py-20 sm:py-24 border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="max-w-3xl mb-12">
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Account model</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+          Owner key, agent key,<br/>and a <span class="accent-text">mandate in between.</span>
+        </h2>
+        <p class="mt-5 text-base sm:text-lg text-chalk-300">
+          One signer doing everything is how agent deployments go wrong. On Sera the owner key creates the account and grants authority; the agent key spends inside it.
+        </p>
+      </div>
+
+      <!-- Flow diagram -->
+      <div class="flex flex-col lg:flex-row items-stretch gap-3 mb-12">
+        <div class="flex-1 ring-soft bg-ink-900/60 p-5 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-chalk-500 mb-3">In</div>
+          <div class="space-y-2.5 text-sm">
+            <div class="text-chalk-50 font-medium">Ethereum L1 deposit</div>
+            <div class="text-chalk-300">Native issuance — MYRT, XSGD and your existing issuers mint in-ledger</div>
+            <div class="text-chalk-300">Deposit address for USDC bridged from Base, Arbitrum and other EVM chains</div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center text-accent-400 text-2xl rotate-90 lg:rotate-0 py-2 lg:py-0" aria-hidden="true">→</div>
+
+        <div class="flex-[1.4] ring-soft bg-ink-900/80 p-5 rounded-2xl border border-accent-500/30">
+          <div class="text-xs font-mono uppercase tracking-wider text-accent-400 mb-3">Sera account</div>
+          <div class="space-y-3">
+            <div class="p-3 rounded-lg bg-ink-950/70 ring-soft">
+              <div class="text-sm text-chalk-50 font-medium">Owner key <span class="text-chalk-500 font-normal">— Safe or hardware</span></div>
+              <div class="text-xs text-chalk-300 mt-1">Creates the account, authorises and revokes agent keys, withdraws</div>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono text-accent-400 pl-3">
+              <span aria-hidden="true">↓</span> grants a mandate
+            </div>
+            <div class="p-3 rounded-lg bg-ink-950/70 ring-soft">
+              <div class="text-sm text-chalk-50 font-medium">Agent key <span class="text-chalk-500 font-normal">— one per agent</span></div>
+              <div class="logo-chain mt-2">
+                <span class="logo-pill">notional cap</span>
+                <span class="logo-pill">pair allowlist</span>
+                <span class="logo-pill">destinations</span>
+                <span class="logo-pill">expiry</span>
+              </div>
+            </div>
+            <div class="p-3 rounded-lg bg-accent-500/5 border border-accent-500/20">
+              <div class="text-sm text-chalk-50 font-medium">Ledger balance</div>
+              <div class="text-xs text-chalk-300 mt-1">40 stablecoins, 22 fiats. Intents settle against it — no approvals, no gas</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center text-accent-400 text-2xl rotate-90 lg:rotate-0 py-2 lg:py-0" aria-hidden="true">→</div>
+
+        <div class="flex-1 ring-soft bg-ink-900/60 p-5 rounded-2xl">
+          <div class="text-xs font-mono uppercase tracking-wider text-chalk-500 mb-3">Out</div>
+          <div class="space-y-2.5 text-sm">
+            <div class="text-chalk-300">In-ledger to another Sera account — instant</div>
+            <div class="text-chalk-300">Withdrawal to any L1 address</div>
+            <div class="text-chalk-50 font-medium">Off-ramp partners</div>
+            <div class="logo-chain">
+              <span class="logo-pill">DuitNow</span>
+              <span class="logo-pill">PayNow</span>
+              <span class="logo-pill">QRIS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Five steps -->
+      <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="ring-soft bento bg-ink-900/60 p-5 rounded-2xl">
+          <div class="mb-3"><span class="num-badge">01</span></div>
+          <h3 class="font-semibold mb-2 text-sm">Fund the account</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">The owner creates a Sera account and funds it — an L1 deposit, native in-ledger issuance, or a deposit address that accepts USDC through an intent bridge.</p>
+        </div>
+        <div class="ring-soft bento bg-ink-900/60 p-5 rounded-2xl">
+          <div class="mb-3"><span class="num-badge">02</span></div>
+          <h3 class="font-semibold mb-2 text-sm">Authorise an agent key</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">The owner key attaches a mandate: a cap in the owner's home currency, the pairs it may trade, where it may send, when it expires.</p>
+        </div>
+        <div class="ring-soft bento bg-ink-900/60 p-5 rounded-2xl">
+          <div class="mb-3"><span class="num-badge">03</span></div>
+          <h3 class="font-semibold mb-2 text-sm">Quote and submit</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">The agent calls <code class="font-mono text-accent-400 text-xs">get_quote</code>, gets a firm quote with the KYT/KYA result attached, countersigns, submits. Instant finality.</p>
+        </div>
+        <div class="ring-soft bento bg-ink-900/60 p-5 rounded-2xl">
+          <div class="mb-3"><span class="num-badge">04</span></div>
+          <h3 class="font-semibold mb-2 text-sm">Take the receipt</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">Sera returns a signed settlement receipt. It is the agent's proof-of-payment for AP2 and the owner's audit trail.</p>
+        </div>
+        <div class="ring-soft bento bg-ink-900/60 p-5 rounded-2xl">
+          <div class="mb-3"><span class="num-badge">05</span></div>
+          <h3 class="font-semibold mb-2 text-sm">Pay out</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed">Stay in-ledger to the receiver's Sera account, withdraw to any L1 address, or route to an off-ramp partner through the open-sourced gateway.</p>
+        </div>
+      </div>
+
+      <div class="mt-8 text-base sm:text-lg text-chalk-50 font-medium max-w-2xl">
+        Agents never see a chain ID, an RPC or a gas price. <span class="text-chalk-500 font-normal">That is the pitch to agent developers.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== RECEIPTS ============== -->
+  <section id="receipts" class="py-20 sm:py-24 border-t border-white/5 bg-ink-900/30">
+    <div class="max-w-7xl mx-auto px-5 lg:px-6">
+      <div class="max-w-3xl mb-12">
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Receipts</div>
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
+          Every payment comes with<br/>something you can <span class="accent-text">check.</span>
+        </h2>
+        <p class="mt-5 text-base sm:text-lg text-chalk-300">
+          A transaction hash tells you something happened. A Sera receipt tells you what was traded, at what rate, under which authority, and against a state root you can verify yourself.
+        </p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-6 items-start">
+        <div class="codeblock p-5 overflow-x-auto">
+          <div class="text-xs font-mono uppercase tracking-wider text-chalk-500 mb-3">get_receipt → settlement receipt</div>
+<pre class="text-chalk-300"><code>{
+  "receipt_id":  "rcpt_01JQ8M4K2P7V",
+  "account":     "sera1q9f0wner...",
+  "agent_key":   "sera1qk3agent...",
+  "pair":        "XSGD/MYRT",
+  "rate":        "3.4821",
+  "amount_in":   "10000.00 XSGD",
+  "amount_out":  "34821.00 MYRT",
+  "fee":         "8.70 XSGD",
+  "screening":   { "kyt": "pass", "kya": "pass" },
+  "settled_at":  "2026-11-08T04:12:55Z",
+  "block":       4821993,
+  "state_root":  "0x9f2c7ae1...",
+  "mandate":     { "id": "mnd_01JQ8K",
+                   "remaining": "40000.00 SGD" }
+}</code></pre>
+        </div>
+
+        <div class="space-y-4">
+          <div class="p-5 rounded-2xl ring-soft bg-ink-900/60">
+            <div class="font-mono text-xs text-accent-400 mb-1.5">pair · rate · amounts · fee</div>
+            <p class="text-chalk-300 text-sm leading-relaxed">What was actually traded and at what price — including the fee, taken in the stablecoin you swapped rather than in a gas token.</p>
+          </div>
+          <div class="p-5 rounded-2xl ring-soft bg-ink-900/60">
+            <div class="font-mono text-xs text-accent-400 mb-1.5">screening</div>
+            <p class="text-chalk-300 text-sm leading-relaxed">The KYT/KYA verdict as of the moment of settlement, bound into the receipt rather than filed somewhere else afterwards.</p>
+          </div>
+          <div class="p-5 rounded-2xl ring-soft bg-ink-900/60">
+            <div class="font-mono text-xs text-accent-400 mb-1.5">block · state_root</div>
+            <p class="text-chalk-300 text-sm leading-relaxed">Anchors the receipt to state proven on Ethereum. <code class="font-mono text-accent-400 text-xs">verify_receipt</code> checks it against the L1 state root for you.</p>
+          </div>
+          <div class="p-5 rounded-2xl ring-soft bg-ink-900/60">
+            <div class="font-mono text-xs text-accent-400 mb-1.5">agent_key · mandate</div>
+            <p class="text-chalk-300 text-sm leading-relaxed">Which key acted, under whose authority, and how much of its cap is left. An owner reading the audit trail can tell those apart.</p>
+          </div>
+          <div class="p-5 rounded-2xl ring-soft bg-ink-900/60">
+            <div class="font-mono text-xs text-accent-400 mb-1.5">settled_at · receipt_id</div>
+            <p class="text-chalk-300 text-sm leading-relaxed">The timestamp and identifier an AP2 proof-of-payment needs. <code class="font-mono text-accent-400 text-xs">export_receipts</code> hands the owner the full set for an audit.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -254,7 +488,7 @@
           Four ways to ship a<br/>Sera-powered integration.
         </h2>
         <p class="mt-5 text-base sm:text-lg text-chalk-300">
-          Already have an agent stack? Install the MCP. Building one from scratch? Start from a template. Want it ready out of the box? Run the bundled agent. Need HTTP payments? Self-host the x402 service.
+          Already have an agent stack? Install the MCP. Building one from scratch? Start from a template. Want it ready out of the box? Run the bundled agent. Need HTTP payments? Use the managed x402 endpoint, or self-host your own.
         </p>
       </div>
 
@@ -333,17 +567,17 @@
             <div class="text-xs font-mono uppercase tracking-wider text-accent-400">Path D · Protocol</div>
             <div class="text-xs font-mono text-chalk-500">x402 HTTP</div>
           </div>
-          <h3 class="text-lg font-semibold mb-2">Self-host the x402 service</h3>
+          <h3 class="text-lg font-semibold mb-2">Charge over x402</h3>
           <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">
-            Run it at <code class="font-mono text-accent-400 text-xs">localhost:8402</code> for the demo, or deploy it to infrastructure you operate. Standard <code class="font-mono text-accent-400 text-xs">402 → pay → 200</code> flow for agents that speak x402.
+            Standard <code class="font-mono text-accent-400 text-xs">402 → pay → 200</code> for agents that speak x402. Sera is the facilitator: use the managed endpoint, or self-host if you want to hold your own key.
           </p>
           <div class="logo-chain mb-4">
             <span class="logo-pill">HTTP</span>
             <span class="logo-pill">x402</span>
-            <span class="logo-pill">USDC</span>
-            <span class="logo-pill">EIP-3009</span>
+            <span class="logo-pill">managed</span>
+            <span class="logo-pill">in-ledger</span>
           </div>
-          <a href="#x402" class="text-accent-400 text-sm font-medium hover:underline">See self-hosting details →</a>
+          <a href="#x402" class="text-accent-400 text-sm font-medium hover:underline">See both flows →</a>
         </div>
 
       </div>
@@ -405,8 +639,8 @@
               <a href="docs/tutorials/x402-paid-api.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
                 <div class="flex items-center justify-between mb-4"><span class="num-badge">05</span><span class="cost-pill">$0.001 / call</span></div>
                 <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">x402-paid API</h3>
-                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Charge AI agents per call in USDC over plain HTTP. Sera's x402-service is the reference; you can wrap any API the same way. Standard 402 → pay → 200 flow. No paywall pages, no Stripe.</p>
-                <div class="logo-chain mb-4"><span class="logo-pill">Express</span><span class="logo-pill">x402</span><span class="logo-pill">EIP-3009</span></div>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Charge AI agents per call in USDC over plain HTTP, and get credited in your own currency — the conversion happens in-ledger. Standard 402 → pay → 200 flow. No paywall pages, no Stripe.</p>
+                <div class="logo-chain mb-4"><span class="logo-pill">Express</span><span class="logo-pill">x402</span><span class="logo-pill">in-ledger</span></div>
                 <span class="text-accent-400 text-sm font-medium group-hover:underline">Tutorial →</span>
               </a>
 
@@ -436,7 +670,7 @@
               <a href="docs/tutorials/x402-paid-api.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl flex flex-col group">
                 <div class="flex items-center justify-between mb-4"><span class="num-badge">08</span><span class="cost-pill">recurring USDC</span></div>
                 <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Subscription billing</h3>
-                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Recurring payments via x402 + EIP-3009 pre-authorizations. Customer signs once, server charges monthly + auto-converts to your preferred treasury currency through Sera. No Stripe.</p>
+                <p class="text-chalk-300 text-sm leading-relaxed mb-4 flex-1">Recurring payments over x402. The customer authorizes once, the server charges monthly, and each charge converts in-ledger into your treasury currency. No Stripe.</p>
                 <div class="logo-chain mb-4"><span class="logo-pill">Express</span><span class="logo-pill">x402</span><span class="logo-pill">convert_and_send</span></div>
                 <span class="text-accent-400 text-sm font-medium group-hover:underline">Pattern →</span>
               </a>
@@ -657,7 +891,7 @@
           <button type="button" class="tab-btn" role="tab" aria-selected="true" data-tab="a">A · MCP + CLI</button>
           <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="b">B · Template</button>
           <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="c">C · Bundled</button>
-          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="d">D · x402 service</button>
+          <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="d">D · x402</button>
         </div>
       </div>
 
@@ -730,19 +964,19 @@
       <!-- Path D panel -->
       <div class="tab-panel" data-panel="d">
         <div class="codeblock p-5 sm:p-6">
-          <div class="text-xs text-chalk-500 mb-3 font-mono">DEMO MODE — NO WALLET REQUIRED</div>
-          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-accent-400">cd</span> sera-agents/x402-service
-<span class="text-accent-400">npm install</span>
-<span class="text-accent-400">npm run demo</span>     <span class="text-chalk-500"># X402_MODE=demo, listens on :8402</span>
-
-<span class="text-chalk-500"># From another terminal:</span>
-<span class="text-accent-400">curl</span> -X POST localhost:8402/x402/swap \
+          <div class="text-xs text-chalk-500 mb-3 font-mono">MANAGED ENDPOINT — NOTHING TO DEPLOY</div>
+          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-chalk-500"># Sera is the facilitator. Point an x402 client at the managed endpoint:</span>
+<span class="text-accent-400">curl</span> -i -X POST https://agents.sera.cx/x402/swap \
   -H 'Content-Type: application/json' \
   -d '{"from_currency":"USD","to_currency":"MYR",
-       "amount":100,"recipient":"0xVendor"}'
+       "amount":100,"recipient":"sera1qvendor..."}'
 
-<span class="text-chalk-500"># 402 with payment_required + payment_id</span>
-<span class="text-chalk-500"># Retry with X-PAYMENT: &lt;id&gt;:demo-auth header → 200</span></code></pre>
+<span class="text-chalk-500"># 402 with payment_required + payment_id → retry with X-PAYMENT → 200</span>
+
+<span class="text-chalk-500"># Prefer to hold your own key? Self-host against the appchain testnet:</span>
+<span class="text-accent-400">cd</span> sera-agents/x402-service
+<span class="text-accent-400">npm install</span>
+<span class="text-accent-400">npm run testnet</span>  <span class="text-chalk-500"># X402_MODE=testnet, listens on :8402</span></code></pre>
         </div>
       </div>
     </div>
@@ -752,12 +986,12 @@
   <section id="tools" class="py-20 sm:py-24 border-t border-white/5">
     <div class="max-w-7xl mx-auto px-5 lg:px-6">
       <div class="max-w-3xl mb-10">
-        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">55 tools, organized</div>
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">55 tools live · 13 more on the appchain</div>
         <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
           Every primitive an<br/>FX-native agent needs.
         </h2>
         <p class="mt-5 text-base text-chalk-300">
-          Each tool is callable from any MCP host, the bundled CLI, or programmatically. <a href="docs/api/" class="text-accent-400 hover:underline">Full API reference →</a> with method signatures, params, and response shapes.
+          Each tool is callable from any MCP host, the bundled CLI, or programmatically. <a href="docs/api/" class="text-accent-400 hover:underline">Full API reference →</a> with method signatures, params, and response shapes. Groups marked <span class="font-mono text-chalk-500">· appchain</span> are the account, mandate and receipt surface — <code class="font-mono text-accent-400">v2</code> of the MCP; <code class="font-mono text-accent-400">v1</code> installs keep working untouched.
         </p>
       </div>
 
@@ -856,13 +1090,65 @@
         <details class="acc">
           <summary>
             <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Account &amp; keys <span class="text-chalk-500">· appchain</span></span>
+              <span class="acc-title font-medium text-chalk-300">6 tools — create_account · create_agent_key · set_mandate · revoke_key · list_keys · mandate_remaining</span>
+            </div>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            The two-tier key model. <code class="font-mono text-accent-400">create_account</code> opens a Sera account from the owner key; <code class="font-mono text-accent-400">create_agent_key</code> mints a key for one agent and <code class="font-mono text-accent-400">set_mandate</code> attaches its limits — notional cap in the owner's home currency, pair allowlist, destination allowlist, expiry. <code class="font-mono text-accent-400">mandate_remaining</code> is what an agent should call before planning a large settlement; <code class="font-mono text-accent-400">list_keys</code> and <code class="font-mono text-accent-400">revoke_key</code> are the owner's controls. The chain enforces the mandate, so the MCP sets and mirrors it rather than being the thing that holds the line.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Funding <span class="text-chalk-500">· appchain</span></span>
+              <span class="acc-title font-medium text-chalk-300">3 tools — deposit_address · deposit_status · native_issuance_status</span>
+            </div>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            <code class="font-mono text-accent-400">deposit_address</code> returns the account's L1 deposit address, plus the bridged-in address that accepts USDC from Base, Arbitrum and other EVM chains through an intent bridge landing on the L1 deposit contract. <code class="font-mono text-accent-400">deposit_status</code> tracks a deposit through to credit. <code class="font-mono text-accent-400">native_issuance_status</code> covers the stablecoins minted directly on the appchain — MYRT, XSGD and the other issuers you already work with — where there is no bridge leg at all.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Receipts <span class="text-chalk-500">· appchain</span></span>
+              <span class="acc-title font-medium text-chalk-300">3 tools — get_receipt · verify_receipt · export_receipts</span>
+            </div>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            <code class="font-mono text-accent-400">get_receipt</code> fetches the signed settlement receipt for a trade — pair, rate, amounts, screening result, timestamp, block and state root. <code class="font-mono text-accent-400">verify_receipt</code> checks it against the L1 state root, so a counterparty can confirm a payment without trusting Sera. <code class="font-mono text-accent-400">export_receipts</code> hands the owner the full set for an audit trail or an AP2 proof-of-payment bundle.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
+              <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Exit <span class="text-chalk-500">· appchain</span></span>
+              <span class="acc-title font-medium text-chalk-300">1 tool — request_forced_withdrawal</span>
+            </div>
+            <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <div class="acc-body text-sm">
+            The escape hatch. If the sequencer stops responding, <code class="font-mono text-accent-400">request_forced_withdrawal</code> starts a withdrawal from Ethereum itself, with a bounded delay. It is exposed whether or not anyone ever calls it — this is the non-custodial claim made callable.
+          </div>
+        </details>
+
+        <details class="acc">
+          <summary>
+            <div>
               <span class="text-xs font-mono uppercase tracking-wider text-accent-400 mr-2">Account &amp; funds</span>
               <span class="acc-title font-medium text-chalk-300">5 tools — build_approve · build_deposit · build_transfer · send_tx · send_transfer</span>
             </div>
             <svg aria-hidden="true" class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
           </summary>
           <div class="acc-body text-sm">
-            Build the unsigned transactions for the on-chain leg — ERC-20 <code class="font-mono text-accent-400">build_approve</code>, vault <code class="font-mono text-accent-400">build_deposit</code> (optionally with an EIP-2612 permit), and <code class="font-mono text-accent-400">build_transfer</code> — then broadcast the signed result with <code class="font-mono text-accent-400">send_tx</code> / <code class="font-mono text-accent-400">send_transfer</code>. The agent signs; nothing is custodial.
+            Build the unsigned transactions for the <span class="text-chalk-50">L1 funding leg</span> — ERC-20 <code class="font-mono text-accent-400">build_approve</code>, vault <code class="font-mono text-accent-400">build_deposit</code> (optionally with an EIP-2612 permit), and <code class="font-mono text-accent-400">build_transfer</code> — then broadcast the signed result with <code class="font-mono text-accent-400">send_tx</code> / <code class="font-mono text-accent-400">send_transfer</code>. Token approvals and permits live here and only here: once funds are inside Sera, payment is an intent against a ledger balance with no approval and no gas. The agent signs; nothing is custodial.
           </div>
         </details>
 
@@ -913,38 +1199,67 @@
   </section>
 
   <!-- ============== X402 — FULL SECTION ============== -->
+  <!-- PRE-PUBLISH GATE: the managed endpoint block below advertises
+       agents.sera.cx/x402/*. Ship those routes on the gateway before this
+       goes live, or comment the "Managed" column back out. -->
   <section id="x402" class="py-20 sm:py-24 border-t border-white/5 bg-ink-900/30">
     <div class="max-w-7xl mx-auto px-5 lg:px-6">
       <div class="max-w-3xl mb-10">
-        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">Self-hosted x402 service — Path D</div>
+        <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-4">x402 on Sera — Path D</div>
         <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight gradient-text leading-tight">
-          Sera as a<br/>self-hosted x402 service.
+          Sera is the <span class="accent-text">facilitator</span> now.
         </h2>
         <p class="mt-5 text-base sm:text-lg text-chalk-300 leading-relaxed">
-          Run <code class="font-mono text-accent-400">x402-service</code> locally at <code class="font-mono text-accent-400">localhost:8402</code> for the demo, or deploy it to infrastructure you operate. It provides a native HTTP interface to <span class="text-chalk-50 font-medium">the Sera multi-currency settlement engine</span> over standard <span class="font-mono text-accent-400">x402</span>. <strong>agents.sera.cx does not provide a managed x402 endpoint.</strong>
+          x402 used to mean running your own service against someone else's chain. With settlement on the appchain, Sera can be the facilitator itself — so there is a <span class="text-chalk-50 font-medium">managed endpoint</span> on <code class="font-mono text-accent-400">agents.sera.cx</code>, and self-hosting stays for operators who want to hold their own key.
         </p>
-        <div class="mt-5 grid sm:grid-cols-3 gap-3 text-sm">
-          <div class="ring-soft bg-ink-900/40 p-3.5 rounded-lg">
-            <div class="text-chalk-50 font-medium mb-1">Agent pays USDC</div>
-            <div class="text-chalk-500 text-xs">Standard x402 payment authorization, no Sera knowledge required.</div>
+      </div>
+
+      <!-- Two flows -->
+      <div class="grid lg:grid-cols-2 gap-4 mb-8">
+        <div class="ring-soft bento bg-ink-900/60 p-6 rounded-2xl">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-xs font-mono uppercase tracking-wider text-accent-400">Receiving side</div>
+            <div class="text-xs font-mono text-chalk-500">from any chain</div>
           </div>
-          <div class="ring-soft bg-ink-900/40 p-3.5 rounded-lg">
-            <div class="text-chalk-50 font-medium mb-1">Service swaps via Sera</div>
-            <div class="text-chalk-500 text-xs">Vault wallet executes the FX swap on Sera Protocol — non-custodial, on-chain.</div>
+          <h3 class="text-lg font-semibold mb-2">Take a standard x402 payment, keep your own currency</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed mb-4">
+            An agent anywhere pays USDC over plain x402 — on Base, on Ethereum mainnet, with no Sera knowledge and no Sera account. The payment lands in Sera's gateway, converts in-ledger, and credits the merchant in XSGD, MYRT, EURC or any of the 40.
+          </p>
+          <div class="logo-chain">
+            <span class="logo-pill">USDC in</span>
+            <span class="logo-pill">converted in-ledger</span>
+            <span class="logo-pill">merchant currency out</span>
           </div>
-          <div class="ring-soft bg-ink-900/40 p-3.5 rounded-lg">
-            <div class="text-chalk-50 font-medium mb-1">Recipient gets target currency</div>
-            <div class="text-chalk-500 text-xs">MYR, SGD, JPY, EUR — any of 40 stablecoins delivered to recipient address.</div>
+        </div>
+        <div class="ring-soft bento bg-ink-900/60 p-6 rounded-2xl border border-accent-500/30">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-xs font-mono uppercase tracking-wider text-accent-400">Native side</div>
+            <div class="text-xs font-mono text-chalk-500">account → account</div>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Sera accounts pay 402 invoices to each other</h3>
+          <p class="text-chalk-300 text-sm leading-relaxed mb-4">
+            Both sides already hold Sera accounts, so a 402 invoice settles in-ledger: instant, no bridge, no approvals, no gas token. The fee comes out of the stablecoin being paid, and the payer's agent key stays inside its mandate.
+          </p>
+          <div class="logo-chain">
+            <span class="logo-pill">instant</span>
+            <span class="logo-pill">no bridge</span>
+            <span class="logo-pill">mandate-bounded</span>
+            <span class="logo-pill">receipt</span>
           </div>
         </div>
       </div>
 
       <div class="grid sm:grid-cols-2 gap-4 mb-8">
         <div class="ring-soft bg-ink-900/60 p-6 rounded-2xl">
-          <h3 class="text-base font-semibold mb-4">Your service endpoints</h3>
-          <ul class="space-y-2.5 text-sm font-mono">
-            <li><span class="text-accent-400">POST /x402/swap</span> <span class="text-chalk-500">— main flow (402 → pay → 200)</span></li>
+          <h3 class="text-base font-semibold mb-4">Endpoints</h3>
+          <div class="text-xs font-mono uppercase tracking-wider text-chalk-500 mb-2">Managed — agents.sera.cx</div>
+          <ul class="space-y-2.5 text-sm font-mono mb-5">
+            <li><span class="text-accent-400">POST /x402/invoice</span> <span class="text-chalk-500">— issue a 402 invoice</span></li>
+            <li><span class="text-accent-400">POST /x402/swap</span> <span class="text-chalk-500">— 402 → pay → 200</span></li>
             <li><span class="text-accent-400">POST /x402/quote</span> <span class="text-chalk-500">— quote-only, no payment</span></li>
+          </ul>
+          <div class="text-xs font-mono uppercase tracking-wider text-chalk-500 mb-2">Self-hosted — your infrastructure</div>
+          <ul class="space-y-2.5 text-sm font-mono">
             <li><span class="text-accent-400">GET /</span> <span class="text-chalk-500">— service-discovery JSON</span></li>
             <li><span class="text-accent-400">GET /health</span> <span class="text-chalk-500">— ops probe</span></li>
           </ul>
@@ -953,40 +1268,44 @@
           <h3 class="text-base font-semibold mb-4">Run modes</h3>
           <ul class="space-y-3 text-sm">
             <li>
-              <span class="font-mono text-accent-400">demo</span> <span class="text-chalk-500">— developer mode</span><br/>
-              <span class="text-chalk-300">Mocks the payment verification AND the swap leg. Lets you test the protocol round-trip locally without a wallet or any real Sera transaction. Useful for first integration. <span class="text-chalk-500">Does not actually use Sera.</span></span>
+              <span class="font-mono text-accent-400">testnet</span> <span class="text-chalk-500">— developer mode</span><br/>
+              <span class="text-chalk-300">Points at the Sera appchain testnet and its faucet for test stablecoins. Nothing is mocked: the payment verification and the swap leg are the same code path that runs in production, against a chain where the money isn't real.</span>
             </li>
             <li>
               <span class="font-mono text-accent-400">live</span> <span class="text-chalk-500">— operator-gated</span><br/>
-              <span class="text-chalk-300">Requires your own deployment, Base Sepolia end-to-end verification, and explicit operator approval before handling real settlement. Review the <a href="https://github.com/sera-cx/sera-agents/blob/main/x402-service/README.md" class="text-accent-400 hover:underline">service README</a> and <a href="https://github.com/sera-cx/sera-agents/blob/main/SECURITY-MODEL.md" class="text-accent-400 hover:underline">security model</a> before enabling it.</span>
+              <span class="text-chalk-300">For self-hosting only. Requires your own deployment, appchain testnet end-to-end verification, and explicit operator approval before handling real settlement. Review the <a href="https://github.com/sera-cx/sera-agents/blob/main/x402-service/README.md" class="text-accent-400 hover:underline">service README</a> and <a href="https://github.com/sera-cx/sera-agents/blob/main/SECURITY-MODEL.md" class="text-accent-400 hover:underline">security model</a> first. The managed endpoint needs none of this.</span>
             </li>
           </ul>
         </div>
       </div>
 
+      <!-- PRE-PUBLISH GATE: `npm run testnet` / X402_MODE=testnet do not exist in
+           x402-service yet (only `npm run demo` / X402_MODE=demo do). Ship the
+           testnet mode before this goes live, or this block prints a command
+           that fails. See the rollout note in README.md. -->
       <div class="codeblock p-5 sm:p-6">
-        <div class="text-xs text-chalk-500 mb-3 font-mono">FULL FLOW — DEMO MODE</div>
-        <pre class="leading-relaxed overflow-x-auto"><code><span class="text-chalk-500"># 1. Run the service</span>
-<span class="text-accent-400">cd</span> sera-agents/x402-service &amp;&amp; <span class="text-accent-400">npm install &amp;&amp; npm run demo</span>
+        <div class="text-xs text-chalk-500 mb-3 font-mono">FULL FLOW — APPCHAIN TESTNET</div>
+        <pre class="leading-relaxed overflow-x-auto"><code><span class="text-chalk-500"># 1. Run the service against the testnet (or skip it and use the managed endpoint)</span>
+<span class="text-accent-400">cd</span> sera-agents/x402-service &amp;&amp; <span class="text-accent-400">npm install &amp;&amp; npm run testnet</span>
 
 <span class="text-chalk-500"># 2. Initial request — get 402 with payment_required</span>
 <span class="text-accent-400">curl</span> -i -X POST localhost:8402/x402/swap \
   -H 'Content-Type: application/json' \
   -d '{"from_currency":"USD","to_currency":"MYR",
-       "amount":100,"recipient":"0xVendor"}'
+       "amount":100,"recipient":"sera1qvendor..."}'
 
-<span class="text-chalk-500"># 3. Retry with X-PAYMENT header</span>
+<span class="text-chalk-500"># 3. Retry with the X-PAYMENT authorization</span>
 <span class="text-accent-400">curl</span> -X POST localhost:8402/x402/swap \
   -H 'Content-Type: application/json' \
-  -H 'X-PAYMENT: &lt;PAYMENT_ID&gt;:demo-authorization' \
+  -H 'X-PAYMENT: &lt;PAYMENT_ID&gt;:&lt;AUTHORIZATION&gt;' \
   -d '{"from_currency":"USD","to_currency":"MYR",
-       "amount":100,"recipient":"0xVendor"}'
+       "amount":100,"recipient":"sera1qvendor..."}'
 
-<span class="text-chalk-500"># Response: 200 with delivered + paid + trade_id</span></code></pre>
+<span class="text-chalk-500"># Response: 200 with delivered + paid + receipt_id</span></code></pre>
       </div>
 
       <div class="mt-5 text-sm text-chalk-500">
-        The demo is local-only. Source and deployment prerequisites: <a href="https://github.com/sera-cx/sera-agents/blob/main/x402-service/README.md" class="underline hover:text-accent-400 font-mono">x402-service/README.md</a> · <a href="https://github.com/sera-cx/sera-agents/blob/main/SECURITY-MODEL.md" class="underline hover:text-accent-400">SECURITY-MODEL.md</a>. Live operation needs a self-hosted deployment, vault wallet, RPC URL, facilitator integration, Base Sepolia E2E verification, and explicit operator approval.
+        Same request shape against the managed endpoint — swap <code class="font-mono">localhost:8402</code> for <code class="font-mono">agents.sera.cx</code> and drop the deployment. Source and self-hosting prerequisites: <a href="https://github.com/sera-cx/sera-agents/blob/main/x402-service/README.md" class="underline hover:text-accent-400 font-mono">x402-service/README.md</a> · <a href="https://github.com/sera-cx/sera-agents/blob/main/SECURITY-MODEL.md" class="underline hover:text-accent-400">SECURITY-MODEL.md</a>.
       </div>
     </div>
   </section>
@@ -1011,13 +1330,18 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-white/5 text-sm">
-            <tr><td class="py-4 pr-6 text-chalk-500">Stablecoins</td><td class="py-4 pr-6 text-chalk-300">Typically one</td><td class="py-4 pr-6 text-chalk-50">40 across 22 fiats</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Stablecoins</td><td class="py-4 pr-6 text-chalk-300">Typically one</td><td class="py-4 pr-6 text-chalk-50">40 across 22 fiats, issued in-ledger</td></tr>
             <tr><td class="py-4 pr-6 text-chalk-500">FX between currencies</td><td class="py-4 pr-6 text-chalk-300">Not supported</td><td class="py-4 pr-6 text-chalk-50">Atomic, smart-routed</td></tr>
             <tr><td class="py-4 pr-6 text-chalk-500">Recipient settles in</td><td class="py-4 pr-6 text-chalk-300">Issuer's currency only</td><td class="py-4 pr-6 text-chalk-50">Any supported currency</td></tr>
             <tr><td class="py-4 pr-6 text-chalk-500">Agent host coverage</td><td class="py-4 pr-6 text-chalk-300">Hosted SDK</td><td class="py-4 pr-6 text-chalk-50">Open MCP, every host</td></tr>
-            <tr><td class="py-4 pr-6 text-chalk-500">Custody</td><td class="py-4 pr-6 text-chalk-300">Centralized issuer</td><td class="py-4 pr-6 text-chalk-50">Non-custodial, on-chain</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Custody</td><td class="py-4 pr-6 text-chalk-300">Centralized issuer</td><td class="py-4 pr-6 text-chalk-50">Non-custodial, forced exit from L1</td></tr>
             <tr><td class="py-4 pr-6 text-chalk-500">Treasury awareness</td><td class="py-4 pr-6 text-chalk-300">None</td><td class="py-4 pr-6 text-chalk-50">Multi-wallet, exposure, rebalance</td></tr>
             <tr><td class="py-4 pr-6 text-chalk-500">Lock-in</td><td class="py-4 pr-6 text-chalk-300">Vendor rails</td><td class="py-4 pr-6 text-chalk-50">Open protocol, open MCP</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Finality</td><td class="py-4 pr-6 text-chalk-300">Minutes, and a reorg window</td><td class="py-4 pr-6 text-chalk-50">Instant — a filled quote is done</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Gas token</td><td class="py-4 pr-6 text-chalk-300">Required, and your problem</td><td class="py-4 pr-6 text-chalk-50">None — fees in the stablecoin you swap</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Proof of payment</td><td class="py-4 pr-6 text-chalk-300">A transaction hash</td><td class="py-4 pr-6 text-chalk-50">Signed receipt, verifiable against L1</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Mandate enforcement</td><td class="py-4 pr-6 text-chalk-300">Client-side, if any</td><td class="py-4 pr-6 text-chalk-50">In the block — caps, pairs, destinations, expiry</td></tr>
+            <tr><td class="py-4 pr-6 text-chalk-500">Forced exit</td><td class="py-4 pr-6 text-chalk-300">Ask support</td><td class="py-4 pr-6 text-chalk-50"><code class="font-mono text-accent-400">request_forced_withdrawal</code> from Ethereum</td></tr>
           </tbody>
         </table>
       </div>
@@ -1036,7 +1360,7 @@
         Multi-currency settlement,<br/><span class="accent-text">made native.</span>
       </h2>
       <p class="mt-5 text-base sm:text-lg text-chalk-300 max-w-2xl mx-auto">
-        55 tools. Every major agent host. The MCP is open source. Sera Protocol charges only on actual swap settlement, on-chain.
+        55 tools. Every major agent host. The MCP is open source. Sera charges only on settlement, in the stablecoin you swap — no gas, no subscription, no minimum.
       </p>
       <div class="mt-9 flex flex-wrap gap-3 justify-center">
         <a href="#paths" class="bg-accent-500 text-ink-950 font-semibold px-7 py-3 rounded-lg hover:bg-accent-400 transition">
@@ -1061,7 +1385,7 @@
             <img src="logo.png" alt="Sera" class="w-7 h-7 rounded-md" />
             <span class="font-semibold tracking-tight">Sera <span class="text-chalk-500 font-normal">for Agents</span></span>
           </div>
-          <p class="text-sm text-chalk-500 leading-relaxed">Multi-currency settlement infrastructure for AI agents and apps. Built on Sera Protocol.</p>
+          <p class="text-sm text-chalk-500 leading-relaxed">Multi-currency settlement infrastructure for AI agents and apps. Settled on the Sera appchain.</p>
         </div>
 
         <div>
@@ -1073,6 +1397,9 @@
             <li><a href="docs/recipes.html" class="text-chalk-300 hover:text-accent-400">Recipes</a></li>
             <li><a href="docs/architecture.html" class="text-chalk-300 hover:text-accent-400">Architecture</a></li>
             <li><a href="docs/concepts.html" class="text-chalk-300 hover:text-accent-400">Concepts</a></li>
+            <li><a href="#appchain" class="text-chalk-300 hover:text-accent-400">Why an appchain</a></li>
+            <li><a href="#accounts" class="text-chalk-300 hover:text-accent-400">Account model</a></li>
+            <li><a href="#receipts" class="text-chalk-300 hover:text-accent-400">Receipts</a></li>
           </ul>
         </div>
 
@@ -1090,7 +1417,7 @@
         <div>
           <div class="text-xs font-mono uppercase tracking-wider text-chalk-500 mb-3">Resources</div>
           <ul class="space-y-2 text-sm">
-            <li><a href="https://docs.sera.cx" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Sera Protocol docs</a></li>
+            <li><a href="https://docs.sera.cx" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Appchain spec &amp; protocol docs</a></li>
             <li><a href="https://github.com/sera-cx/sera-agents/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Contributing</a></li>
             <li><a href="https://github.com/sera-cx/sera-mcp/issues" target="_blank" rel="noopener" class="text-chalk-300 hover:text-accent-400">Report a bug</a></li>
           </ul>
@@ -1098,8 +1425,8 @@
       </div>
 
       <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-chalk-500">
-        <div class="font-mono">v0.8.3 · MIT · 55 tools live</div>
-        <div>Built on <a href="https://docs.sera.cx" target="_blank" rel="noopener" class="hover:text-chalk-300">Sera Protocol</a>.</div>
+        <div class="font-mono">v0.8.3 · MIT · appchain live · 55 tools live</div>
+        <div>Settled on the <a href="https://docs.sera.cx" target="_blank" rel="noopener" class="hover:text-chalk-300">Sera appchain</a>.</div>
       </div>
     </div>
   </footer>

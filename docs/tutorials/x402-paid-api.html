@@ -87,7 +87,7 @@
     <main class="prose max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 05</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">x402-paid API.</h1>
-      <p class="text-lg" style="color:#A4A89C">Charge AI agents per call in USDC over plain HTTP. Standard <code class="text-base">402 → pay → 200</code> flow. No paywall pages, no Stripe, no API keys, no contracts. Sera's own x402 service is the reference implementation; this tutorial shows you how to wrap any API the same way.</p>
+      <p class="text-lg" style="color:#A4A89C">Charge AI agents per call in USDC over plain HTTP. Standard <code class="text-base">402 → pay → 200</code> flow. No paywall pages, no Stripe, no API keys, no contracts. Sera's own x402 service is the reference implementation, and Sera runs a managed facilitator on the appchain; this tutorial shows you how to wrap any API the same way.</p>
 
       <div class="my-6">
         <span class="meta-pill">25 min</span>
@@ -110,7 +110,7 @@ GET /v1/data
     "x402_version": 1,
     "accepts": [{
       "scheme": "exact",
-      "network": "base",
+      "network": "base",       // the payer's chain, not Sera's
       "asset": "0xUSDC...",
       "max_amount_required": "1000",  <span style="color:#6B7180"># 1000 = $0.001</span>
       "pay_to": "0xYourVault...",
@@ -197,8 +197,8 @@ app.listen(<span style="color:#7DF9C2">3000</span>);</code></pre>
 
       <p>The verifier (in <code>./verify.ts</code>) checks the EIP-3009 signature, validates the recipient + amount + token + nonce + expiry against your <code>opts</code>, returns <code>{ valid: boolean, reason: string }</code>. Sera's <code>x402-service/</code> in <a href="https://github.com/sera-cx/sera-agents/tree/main/x402-service" target="_blank">github.com/sera-cx/sera-agents/x402-service</a> has a working reference for this code.</p>
 
-      <h3><span class="step-num">4</span>Test with curl (demo mode first)</h3>
-      <p>While developing, set a flag that accepts <code>X-PAYMENT: any:demo-authorization</code> instead of verifying real signatures. Lets you exercise the protocol without spending USDC.</p>
+      <h3><span class="step-num">4</span>Test with curl (appchain testnet first)</h3>
+      <p>Point the settlement leg at the Sera appchain testnet and claim test stablecoins from the faucet. The payment verification and the swap run the same code they will run in production, which is the point — a mock would let a bug hide until the first real payment. If you want to exercise only the HTTP shape before wiring settlement at all, a development flag that accepts <code>X-PAYMENT: any:demo-authorization</code> will do for that one afternoon.</p>
       <div class="codeblock">
 <pre><code><span style="color:#6B7180"># 1. First call returns 402</span>
 curl -i localhost:3000/v1/data
@@ -210,7 +210,7 @@ curl localhost:3000/v1/data \
       </div>
 
       <h3><span class="step-num">5</span>Wire to a payment facilitator (production)</h3>
-      <p>You can submit the EIP-3009 authorization to USDC's contract yourself (you pay gas), OR use a facilitator service like <a href="https://www.coinbase.com/developer-platform/products/x402" target="_blank">Coinbase's x402 facilitator</a> which batches and pays gas for you. The latter is cheaper at low volume.</p>
+      <p>You can submit the EIP-3009 authorization to USDC's contract yourself (you pay gas), or hand it to a facilitator that batches and pays gas for you — <a href="https://www.coinbase.com/developer-platform/products/x402" target="_blank" rel="noopener">Coinbase's x402 facilitator</a>, or Sera's managed endpoint on <code>agents.sera.cx</code>, which also converts the inflow in-ledger so you are credited in your own currency rather than in USDC. A facilitator is cheaper at low volume either way.</p>
 
       <h3><span class="step-num">6</span>Pricing variants</h3>
       <ul>

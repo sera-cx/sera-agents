@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Concepts — Sera for Agents</title>
   <meta name="theme-color" content="#06070A" />
-  <meta name="description" content="Five concepts you'll encounter constantly: CLOB, MCP, x402, EIP-712, EIP-3009. Definitions, why Sera uses each, end-to-end flow examples." />
+  <meta name="description" content="Eight concepts you'll meet constantly: the Sera appchain, accounts and mandates, receipts, CLOB, MCP, x402, EIP-712, EIP-3009. Definitions, why Sera uses each, end-to-end flow examples." />
   <meta name="author" content="Sera Protocol" />
   <link rel="canonical" href="https://agents.sera.cx/docs/concepts.html" />
 
@@ -17,7 +17,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Sera for Agents" />
   <meta property="og:title" content="Concepts — Sera for Agents" />
-  <meta property="og:description" content="Five concepts you'll encounter constantly: CLOB, MCP, x402, EIP-712, EIP-3009. Definitions, why Sera uses each, end-to-end flow examples." />
+  <meta property="og:description" content="Eight concepts you'll meet constantly: the Sera appchain, accounts and mandates, receipts, CLOB, MCP, x402, EIP-712, EIP-3009. Definitions, why Sera uses each, end-to-end flow examples." />
   <meta property="og:url" content="https://agents.sera.cx/docs/concepts.html" />
   <meta property="og:image" content="https://agents.sera.cx/og-image.png" />
   <meta property="og:image:width" content="1200" />
@@ -27,7 +27,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Concepts — Sera for Agents" />
-  <meta name="twitter:description" content="Five concepts you'll encounter constantly: CLOB, MCP, x402, EIP-712, EIP-3009. Definitions, why Sera uses each, end-to-end flow examples." />
+  <meta name="twitter:description" content="Eight concepts you'll meet constantly: the Sera appchain, accounts and mandates, receipts, CLOB, MCP, x402, EIP-712, EIP-3009. Definitions, why Sera uses each, end-to-end flow examples." />
   <meta name="twitter:image" content="https://agents.sera.cx/og-image.png" />
   <!-- Self-hosted fonts (see assets/css/fonts.css). Replaces the Google
        Fonts stylesheet + preconnects, which were the last third-party
@@ -83,13 +83,58 @@
       <div class="group-label">Resources</div>
       <a href="https://github.com/sera-cx/sera-mcp" target="_blank">sera-mcp on GitHub</a>
       <a href="https://github.com/sera-cx/sera-agents" target="_blank">sera-agents on GitHub</a>
-      <a href="https://docs.sera.cx" target="_blank">Sera Protocol docs</a>
+      <a href="https://docs.sera.cx" target="_blank">Appchain spec &amp; protocol docs</a>
     </aside>
 
     <main class="prose max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Concepts</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-6">The pieces, explained.</h1>
-      <p class="text-lg" style="color:#A4A89C">Five concepts you'll encounter constantly: <a href="#clob">CLOB</a> · <a href="#mcp">MCP</a> · <a href="#x402">x402</a> · <a href="#eip712">EIP-712</a> · <a href="#eip3009">EIP-3009</a>. Each gets a one-paragraph definition, why we use it, and what changes if you swap it out.</p>
+      <p class="text-lg" style="color:#A4A89C">Eight concepts you'll meet constantly: <a href="#appchain">the appchain</a> · <a href="#accounts">accounts &amp; mandates</a> · <a href="#receipts">receipts</a> · <a href="#clob">CLOB</a> · <a href="#mcp">MCP</a> · <a href="#x402">x402</a> · <a href="#eip712">EIP-712</a> · <a href="#eip3009">EIP-3009</a>. Each gets a one-paragraph definition, why we use it, and what changes if you swap it out.</p>
+
+      <!-- ============ APPCHAIN ============ -->
+      <h2 id="appchain" class="gradient-text">The appchain <span class="anchor-jump">— Sera is its own chain</span></h2>
+      <p>Sera settles on a purpose-built chain rather than renting block space on a general-purpose one. Balances live in a ledger, the order book <em>is</em> the chain's state machine, and every state transition carries a validity proof settled on Ethereum. Deposits arrive from L1; withdrawals leave to L1; in between, nothing is a transaction in the usual sense.</p>
+
+      <h3>Why it matters for your code</h3>
+      <ul>
+        <li><strong>Instant finality.</strong> A filled quote is done in the block that contains it. There is no confirmation count, no reorg window and no <code>pending</code> state to poll.</li>
+        <li><strong>No gas token.</strong> Fees are taken in the stablecoin you are swapping. Your agent never holds a second asset just to be able to move the first one.</li>
+        <li><strong>No chain plumbing.</strong> No chain ID, no RPC endpoint, no nonce management. The MCP talks to Sera; Sera is the chain.</li>
+        <li><strong>Native issuance.</strong> MYRT, XSGD and the other issuers mint directly in-ledger, so most of the currency set has no bridge leg at all.</li>
+      </ul>
+
+      <h3>What it does not change</h3>
+      <p>Your signing stack. Intents are still EIP-712 typed data, still signed by whatever the owner already uses — a Safe, a hardware wallet, WalletConnect. The appchain did not introduce a new key type.</p>
+
+      <!-- ============ ACCOUNTS ============ -->
+      <h2 id="accounts" class="gradient-text">Accounts, agent keys and mandates</h2>
+      <p>A Sera account is owned by one key and may authorise many. The <strong>owner key</strong> — a Safe or a hardware wallet — creates the account, authorises and revokes agent keys, and withdraws. An <strong>agent key</strong> belongs to one agent and can only act inside the <strong>mandate</strong> the owner attached to it.</p>
+
+      <h3>What a mandate holds</h3>
+      <ul>
+        <li>A notional cap, denominated in the owner's home currency rather than in whatever asset is moving.</li>
+        <li>A pair allowlist — which markets this key may trade at all.</li>
+        <li>A destination allowlist — where it may send.</li>
+        <li>An expiry, after which the key is inert without anyone having to remember to revoke it.</li>
+      </ul>
+
+      <h3>Why this replaces client-side policy</h3>
+      <p>Earlier versions of the MCP enforced USD notional caps in the client. That is a real safety feature right up until the agent runs a different client. On the appchain the mandate is enforced in the block: an intent that exceeds its cap, names an unlisted pair or sends to an unlisted destination does not fail politely in your process — it is not a valid state transition. The MCP sets and mirrors the mandate; it is no longer the thing holding the line.</p>
+      <p>Practically: call <code>mandate_remaining</code> before planning a large settlement, and treat <code>revoke_key</code> as the kill switch for a misbehaving agent.</p>
+
+      <!-- ============ RECEIPTS ============ -->
+      <h2 id="receipts" class="gradient-text">Receipts <span class="anchor-jump">— proof you can hand to someone else</span></h2>
+      <p>Every settlement returns a signed receipt: pair, rate, amount in, amount out, fee, the KYT/KYA screening result, a timestamp, the block, the state root, and which agent key acted under which mandate.</p>
+
+      <h3>Why a transaction hash isn't enough</h3>
+      <p>A hash says something happened. A receipt says <em>what</em> happened, at what price, under whose authority — and binds the screening verdict to the moment of settlement rather than to a log somewhere else. <code>verify_receipt</code> checks a receipt against the L1 state root, so the party you paid can confirm it without trusting Sera and without trusting you.</p>
+
+      <h3>What it's for</h3>
+      <ul>
+        <li><strong>AP2 proof-of-payment.</strong> The receipt carries the fields the mandate-and-payment flow expects.</li>
+        <li><strong>The owner's audit trail.</strong> <code>export_receipts</code> returns the full set, attributable per agent key.</li>
+        <li><strong>Disputes.</strong> Rate and fee are in the signed object, so "what did we actually get filled at" has one answer.</li>
+      </ul>
 
       <!-- ============ CLOB ============ -->
       <h2 id="clob" class="gradient-text">CLOB <span class="anchor-jump">— Central Limit Order Book</span></h2>
@@ -129,8 +174,14 @@
       <h2 id="x402" class="gradient-text">x402 <span class="anchor-jump">— HTTP 402 Payment Required</span></h2>
       <p>An open agent-payment standard layered on top of HTTP. The server returns <code>402 Payment Required</code> with payment instructions. The client pays (USDC, on-chain). The client retries with an <code>X-PAYMENT</code> header. The server verifies and returns <code>200 OK</code> with the goods. Idempotent, stateless, cache-friendly.</p>
 
-      <h3>Why you might self-host one</h3>
-      <p>Some agents don't speak MCP — they speak HTTP. Run or deploy <code>x402-service</code> yourself to let an agent that knows the standard pay USDC and receive an FX-converted payout, with no Sera SDK required. The local demo listens on <code>localhost:8402</code>; <code>agents.sera.cx</code> does not host this endpoint.</p>
+      <h3>Managed, or your own</h3>
+      <p>Some agents don't speak MCP — they speak HTTP. With settlement on the appchain, Sera can act as the x402 facilitator itself, so there is a managed endpoint on <code>agents.sera.cx</code>. Self-hosting <code>x402-service</code> stays available for operators who want to hold their own key; point it at the appchain testnet with <code>npm run testnet</code>, which exercises the same code path as production rather than mocking it.</p>
+
+      <h3>Two flows, not one</h3>
+      <ul>
+        <li><strong>Receiving side.</strong> An agent anywhere pays USDC over plain x402 — on Base, on Ethereum mainnet — with no Sera account and no Sera knowledge. The payment lands in Sera's gateway, converts in-ledger, and credits the merchant in XSGD, MYRT, EURC or any of the 40.</li>
+        <li><strong>Native side.</strong> Both parties already hold Sera accounts, so a 402 invoice settles account-to-account in-ledger: instant, no bridge, no approvals, no gas, and the payer's agent key stays inside its mandate.</li>
+      </ul>
 
       <h3>Why this is interesting beyond Sera</h3>
       <p>x402 is the closest thing the agent ecosystem has to "Stripe for agents" without the Stripe. Wrapping <em>any</em> API in the same pattern means agents can pay you per call without contract negotiations, OAuth flows, or pre-funded API keys. See the <a href="tutorials/x402-paid-api.html">x402-paid API tutorial</a>.</p>
@@ -150,34 +201,54 @@
       </ul>
 
       <!-- ============ EIP-3009 ============ -->
-      <h2 id="eip3009" class="gradient-text">EIP-3009 <span class="anchor-jump">— transferWithAuthorization</span></h2>
-      <p>An ERC-20 extension that lets a token holder pre-sign an authorization to transfer X tokens to address Y by time T, and a third party submits that authorization on-chain. USDC implements it.</p>
+      <h2 id="eip3009" class="gradient-text">EIP-3009 <span class="anchor-jump">— transferWithAuthorization, on the funding leg</span></h2>
+      <p>An ERC-20 extension that lets a token holder pre-sign an authorization to transfer X tokens to address Y by time T, which a third party then submits on-chain. USDC implements it. Its sibling EIP-2612 does the same for approvals.</p>
 
-      <h3>Why x402 needs it</h3>
-      <p>Without EIP-3009, an agent paying for an API call would need to (a) approve the API server's contract for an allowance, (b) call a transfer function — two on-chain transactions, two gas fees. With EIP-3009, the agent signs an authorization off-chain, posts it in the <code>X-PAYMENT</code> header, the server submits it. One transaction; the server pays gas (or batches many).</p>
+      <h3>Where it still applies</h3>
+      <p>On the L1 side only — funding a Sera account, and receiving a standard x402 payment from an agent that lives on another chain. Without it, an agent paying for an API call would need an allowance approval and then a transfer: two transactions, two gas fees. With it, the agent signs off-chain, posts the authorization in the <code>X-PAYMENT</code> header, and the server submits it once.</p>
+
+      <h3>Where it no longer applies</h3>
+      <p>Inside Sera. Once funds are in the ledger, a payment is an intent against a balance — no token approval, no authorization to pre-sign, no gas for anyone to pay. If you are reading an older integration that treats EIP-3009 as the payment primitive, that is the L1 funding leg, not settlement.</p>
 
       <h2 class="gradient-text">Putting them together</h2>
       <p>Two end-to-end flows show how the concepts compose:</p>
 
-      <h3>FX swap via MCP (uses CLOB + MCP + EIP-712)</h3>
+      <h3>Setting up an agent (account + mandate)</h3>
       <div class="codeblock my-4">
-<pre><code><span style="color:#6B7180">1.</span> Agent → <span style="color:#7DF9C2">sera.get_quote</span> → MCP returns Order struct
-<span style="color:#6B7180">2.</span> Agent's wallet → signs Order via EIP-712 typed-data
-<span style="color:#6B7180">3.</span> Agent → <span style="color:#7DF9C2">sera.execute_swap</span> with signature → MCP submits to Sera CLOB
-<span style="color:#6B7180">4.</span> Sera Protocol → fills against a maker → settles atomically on-chain
-<span style="color:#6B7180">5.</span> Agent → <span style="color:#7DF9C2">sera.settlement_status</span> → confirms trade_id</code></pre>
+<pre><code>1. Owner  -> sera.create_account          -> account, funded from L1 or native issuance
+2. Owner  -> sera.create_agent_key        -> agent key, not yet useful
+3. Owner  -> sera.set_mandate             -> cap, pairs, destinations, expiry
+4. Agent  -> sera.mandate_remaining       -> knows what it is allowed to do</code></pre>
       </div>
 
-      <h3>FX swap via x402 (uses CLOB + x402 + EIP-3009)</h3>
+      <h3>FX settlement on Sera (CLOB + MCP + EIP-712 + mandate + receipt)</h3>
       <div class="codeblock my-4">
-<pre><code><span style="color:#6B7180">1.</span> Agent → <span style="color:#7DF9C2">POST your-x402-host/x402/swap</span> → server returns 402 + payment_id
-<span style="color:#6B7180">2.</span> Agent → signs USDC transferWithAuthorization (EIP-3009) off-chain
-<span style="color:#6B7180">3.</span> Agent → retries POST with <span style="color:#7DF9C2">X-PAYMENT: id:auth</span> header
-<span style="color:#6B7180">4.</span> Server → verifies USDC payment + executes Sera swap from vault
-<span style="color:#6B7180">5.</span> Server → returns 200 OK with delivered + trade_id</code></pre>
+<pre><code>1. Agent  -> sera.get_quote               -> firm quote + KYT/KYA result + Order struct
+2. Agent  -> signs the Order via EIP-712 with its agent key
+3. Agent  -> sera.execute_swap            -> chain checks the mandate, fills, settles
+4. Chain  -> instant finality             -> no confirmations to wait on
+5. Agent  -> sera.get_receipt             -> signed receipt: rate, amounts, block, state root
+6. Payee  -> sera.verify_receipt          -> confirms it against the L1 state root</code></pre>
       </div>
 
-      <p class="mt-12">For the local demo and live-readiness requirements, see <a href="https://github.com/sera-cx/sera-agents/blob/main/x402-service/README.md">x402-service/README.md</a> and <a href="https://github.com/sera-cx/sera-agents/blob/main/SECURITY-MODEL.md">SECURITY-MODEL.md</a>. Next: <a href="tutorials/">Pick a tutorial</a> · <a href="api/">API reference</a> · <a href="recipes.html">Recipes</a>.</p>
+      <h3>x402, receiving side (payer is on another chain)</h3>
+      <div class="codeblock my-4">
+<pre><code>1. Agent  -> POST agents.sera.cx/x402/swap -> 402 + payment_required + payment_id
+2. Agent  -> signs USDC transferWithAuthorization (EIP-3009) off-chain
+3. Agent  -> retries POST with X-PAYMENT: id:auth
+4. Sera   -> verifies the USDC payment, converts in-ledger
+5. Sera   -> 200 OK with delivered + receipt_id, merchant credited in its own currency</code></pre>
+      </div>
+
+      <h3>x402, native side (both parties on Sera)</h3>
+      <div class="codeblock my-4">
+<pre><code>1. Payee  -> sera.x402_invoice            -> 402 invoice against a Sera account
+2. Payer  -> signs the intent with its agent key, inside its mandate
+3. Chain  -> settles account-to-account in-ledger, fee in the stablecoin paid
+4. Both   -> sera.get_receipt             -> same receipt shape, no bridge involved</code></pre>
+      </div>
+
+      <p class="mt-12">For self-hosting and live-readiness requirements, see <a href="https://github.com/sera-cx/sera-agents/blob/main/x402-service/README.md">x402-service/README.md</a> and <a href="https://github.com/sera-cx/sera-agents/blob/main/SECURITY-MODEL.md">SECURITY-MODEL.md</a>. For the appchain itself — account model, data availability and proofs, the bridge, forced exit and matching rules — see the <a href="https://docs.sera.cx" target="_blank" rel="noopener">protocol docs</a>. Next: <a href="tutorials/">Pick a tutorial</a> · <a href="api/">API reference</a> · <a href="recipes.html">Recipes</a>.</p>
 
     </main>
   </div>

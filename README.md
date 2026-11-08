@@ -6,7 +6,9 @@
 
 **Who this is for:** developers integrating Sera into an existing agent product, picking up a template to ship fast, or self-hosting an x402 service for agent-to-agent FX delivery.
 
-Multi-currency settlement infrastructure for AI agents. Quote, convert, and settle across 40 stablecoins and 22 fiat currencies — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more — through an open Model Context Protocol server, six starter templates, a complete bundled agent, and a self-hosted x402 service.
+Multi-currency settlement infrastructure for AI agents. Your agent holds an account on the Sera appchain, not a wallet on a chain: it quotes, converts and settles across 40 stablecoins and 22 fiat currencies — USD, SGD, MYR, JPY, EUR, GBP, BRL, MXN, IDR, and more — with instant finality, fees taken in the stablecoin being swapped, and a signed receipt for every settlement. Reached through an open Model Context Protocol server, six starter templates, a complete bundled agent, and x402 over HTTP.
+
+Agents never see a chain ID, an RPC or a gas price. Owners authorise agent keys with a **mandate** — a notional cap in the owner's home currency, a pair allowlist, a destination allowlist, an expiry — and the chain enforces it, not the client.
 
 For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.md`](SECURITY-MODEL.md), and [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -17,9 +19,11 @@ For deeper reading, see [`ARCHITECTURE.md`](ARCHITECTURE.md), [`SECURITY-MODEL.m
 | **A — Install** | Already have an agent stack (Claude, ChatGPT, Cursor, OpenAI Agents SDK, etc.) | [`sera-mcp`](https://github.com/sera-cx/sera-mcp) (the MCP) |
 | **B — Build** | Engineering a new agent product | `templates/{chat-cli, discord-agent, web-chat, webhook-agent, slack-agent, market-maker, withdraw-cli}` |
 | **C — Run** | Want it ready out of the box | `sera-agent/` (interactive CLI) |
-| **D — Self-host** | Agent speaks x402 HTTP | `x402-service/` (run locally or deploy yourself) |
+| **D — x402** | Agent speaks x402 HTTP | Managed facilitator on `agents.sera.cx`, or `x402-service/` self-hosted |
 
-Paths A–C are available through their listed artifacts. Path D provides a self-contained, localhost demo; `agents.sera.cx` does not offer a public x402 URL. Live mode is self-hosted and requires Base Sepolia E2E verification plus explicit operator approval. See [`x402-service/README.md`](x402-service/README.md) and [`SECURITY-MODEL.md`](SECURITY-MODEL.md).
+Paths A–C are available through their listed artifacts. For Path D, Sera acts as the x402 facilitator on the appchain, so the managed endpoint needs nothing deployed; `x402-service/` remains for operators who want to hold their own key, and self-hosted live mode requires appchain-testnet E2E verification plus explicit operator approval. See [`x402-service/README.md`](x402-service/README.md) and [`SECURITY-MODEL.md`](SECURITY-MODEL.md).
+
+> **Rollout status.** The managed `agents.sera.cx/x402/*` routes and the appchain tool groups (`create_account`, `set_mandate`, `get_receipt`, `verify_receipt`, `request_forced_withdrawal`, …) are MCP `v2`. `v1` targets mainnet as it works today and existing installs keep working untouched. `x402-service`'s own live mode still carries the Coinbase CDP / Base Sepolia wiring described in [`SECURITY-MODEL.md`](SECURITY-MODEL.md) until that retarget lands, and the `testnet` run mode the site describes (`npm run testnet` / `X402_MODE=testnet`) is not implemented yet — today the service offers `demo` and `live`.
 
 ## Repository contents
 
@@ -203,7 +207,7 @@ curl -X POST http://localhost:8402/x402/swap \
   -d '{"from_currency":"USD","to_currency":"MYR","amount":100,"recipient":"0xVendor"}'
 ```
 
-This demo is local-only; it is not hosted at `agents.sera.cx`. Live mode (`X402_MODE=live`) needs your own deployment, a funded vault wallet, RPC URL, facilitator integration, completed Base Sepolia E2E, and explicit operator approval. See [`x402-service/README.md`](x402-service/README.md) and [`SECURITY-MODEL.md`](SECURITY-MODEL.md).
+Prefer not to deploy anything? Send the same request to the managed facilitator at `agents.sera.cx` instead, which converts the inflow in-ledger and credits you in your own currency. Self-hosted live mode (`X402_MODE=live`) needs your own deployment, a funded Sera account with an agent key, RPC URL, facilitator integration, completed E2E verification, and explicit operator approval. See [`x402-service/README.md`](x402-service/README.md) and [`SECURITY-MODEL.md`](SECURITY-MODEL.md).
 
 ## Reference flows (programmatic, not interactive)
 

@@ -10,7 +10,8 @@ export const OPENAPI_DOC: {
   info: {
     title: "Sera Protocol API",
     version: "1.0.0",
-    description: "On-chain FX settlement for multi-currency stablecoins.",
+    description:
+      "Multi-currency stablecoin FX settled on the Sera appchain. Instant finality, fees taken in the stablecoin swapped, and a signed receipt for every settlement.",
     contact: { email: "partnerships@sera.cx" },
   },
   servers: [{ url: "https://agents.sera.cx" }],

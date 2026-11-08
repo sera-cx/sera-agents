@@ -1,5 +1,5 @@
 {
-  "description": "MCP catalog for Sera — cross-border stablecoin FX. Keyless, non-custodial, Streamable HTTP transport.",
+  "description": "MCP catalog for Sera — multi-currency stablecoin FX settled on the Sera appchain. Keyless, non-custodial, Streamable HTTP transport.",
   "mcpServers": {
     "sera": {
       "type": "http",
@@ -17,7 +17,7 @@
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "sera-mcp"],
-      "description": "Full Sera MCP (~55 tools incl. treasury, orders, execution) run locally via npx. Node 18+. Uses your own signer/API key."
+      "description": "Full Sera MCP (~55 tools incl. treasury, orders, execution, plus accounts, mandates and receipts on the appchain) run locally via npx. Node 20+. Uses your own signer/API key."
     }
   }
 }
