@@ -87,7 +87,7 @@
     <main class="prose max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 03</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Prediction market on FX.</h1>
-      <p class="text-lg" style="color:#A4A89C">Binary markets like <em>"USD/JPY &gt; 158 by Friday close"</em> using Sera's reference rate as the settlement oracle. Markets settle in stablecoins; payouts route through Sera FX so winners can withdraw in whatever currency they want.</p>
+      <p class="text-lg text-chalk-300">Binary markets like <em>"USD/JPY &gt; 158 by Friday close"</em> using Sera's reference rate as the settlement oracle. Markets settle in stablecoins; payouts route through Sera FX so winners can withdraw in whatever currency they want.</p>
 
       <div class="my-6">
         <span class="meta-pill">60 min</span>
@@ -98,12 +98,12 @@
 
       <div class="callout">
         <div class="callout-label">What you'll have at the end</div>
-        <p style="color:#A4A89C; margin: 0;">A deployed binary-market contract on Ethereum that resolves against Sera's reference FX rate, plus an off-chain "resolver" service that posts the final rate at expiry.</p>
+        <p class="text-chalk-300 m-0">A deployed binary-market contract on Ethereum that resolves against Sera's reference FX rate, plus an off-chain "resolver" service that posts the final rate at expiry.</p>
       </div>
 
       <div class="warn">
         <div class="callout-label">Honest framing</div>
-        <p style="color:#A4A89C; margin: 0;">Prediction markets are regulated in most jurisdictions. This tutorial shows the <em>technical</em> pattern. Treat it as infrastructure for a permitted product (internal employee market, on-chain airdrop game, sanctioned jurisdiction), not a public consumer offering without legal review.</p>
+        <p class="text-chalk-300 m-0">Prediction markets are regulated in most jurisdictions. This tutorial shows the <em>technical</em> pattern. Treat it as infrastructure for a permitted product (internal employee market, on-chain airdrop game, sanctioned jurisdiction), not a public consumer offering without legal review.</p>
       </div>
 
       <h2 class="gradient-text">Architecture</h2>
@@ -135,47 +135,47 @@
       <h3><span class="step-num">1</span>The market contract (minimal)</h3>
       <div class="codeblock">
         <div class="filename">contracts/FxBinaryMarket.sol</div>
-<pre><code><span style="color:#A78BFA">// SPDX-License-Identifier: MIT</span>
-pragma solidity ^<span style="color:#7DF9C2">0.8.20</span>;
+<pre><code><span class="text-violet-400">// SPDX-License-Identifier: MIT</span>
+pragma solidity ^<span class="text-accent-400">0.8.20</span>;
 
-<span style="color:#A78BFA">import</span> <span style="color:#7DF9C2">"@openzeppelin/contracts/token/ERC20/IERC20.sol"</span>;
+<span class="text-violet-400">import</span> <span class="text-accent-400">"@openzeppelin/contracts/token/ERC20/IERC20.sol"</span>;
 
-<span style="color:#A78BFA">contract</span> FxBinaryMarket {
-    IERC20 <span style="color:#A78BFA">public immutable</span> usdc;
-    <span style="color:#A78BFA">address</span> <span style="color:#A78BFA">public immutable</span> resolver;
-    <span style="color:#A78BFA">string</span> <span style="color:#A78BFA">public</span> question;       <span style="color:#6B7180">// "USD/JPY > 158 at 2026-05-20T16:00Z"</span>
-    <span style="color:#A78BFA">uint256</span> <span style="color:#A78BFA">public immutable</span> threshold;
-    <span style="color:#A78BFA">uint256</span> <span style="color:#A78BFA">public immutable</span> expiry;
-    <span style="color:#A78BFA">enum</span> Outcome { Pending, Yes, No }
-    Outcome <span style="color:#A78BFA">public</span> outcome;
+<span class="text-violet-400">contract</span> FxBinaryMarket {
+    IERC20 <span class="text-violet-400">public immutable</span> usdc;
+    <span class="text-violet-400">address</span> <span class="text-violet-400">public immutable</span> resolver;
+    <span class="text-violet-400">string</span> <span class="text-violet-400">public</span> question;       <span class="text-chalk-500">// "USD/JPY > 158 at 2026-05-20T16:00Z"</span>
+    <span class="text-violet-400">uint256</span> <span class="text-violet-400">public immutable</span> threshold;
+    <span class="text-violet-400">uint256</span> <span class="text-violet-400">public immutable</span> expiry;
+    <span class="text-violet-400">enum</span> Outcome { Pending, Yes, No }
+    Outcome <span class="text-violet-400">public</span> outcome;
 
-    <span style="color:#A78BFA">mapping</span>(<span style="color:#A78BFA">address</span> =&gt; <span style="color:#A78BFA">uint256</span>) <span style="color:#A78BFA">public</span> yesShares;
-    <span style="color:#A78BFA">mapping</span>(<span style="color:#A78BFA">address</span> =&gt; <span style="color:#A78BFA">uint256</span>) <span style="color:#A78BFA">public</span> noShares;
-    <span style="color:#A78BFA">uint256</span> <span style="color:#A78BFA">public</span> totalYes;
-    <span style="color:#A78BFA">uint256</span> <span style="color:#A78BFA">public</span> totalNo;
+    <span class="text-violet-400">mapping</span>(<span class="text-violet-400">address</span> =&gt; <span class="text-violet-400">uint256</span>) <span class="text-violet-400">public</span> yesShares;
+    <span class="text-violet-400">mapping</span>(<span class="text-violet-400">address</span> =&gt; <span class="text-violet-400">uint256</span>) <span class="text-violet-400">public</span> noShares;
+    <span class="text-violet-400">uint256</span> <span class="text-violet-400">public</span> totalYes;
+    <span class="text-violet-400">uint256</span> <span class="text-violet-400">public</span> totalNo;
 
-    <span style="color:#A78BFA">function</span> bet(<span style="color:#A78BFA">bool</span> yes, <span style="color:#A78BFA">uint256</span> amount) <span style="color:#A78BFA">external</span> {
-        <span style="color:#A78BFA">require</span>(block.timestamp &lt; expiry, <span style="color:#7DF9C2">"closed"</span>);
-        usdc.transferFrom(msg.sender, address(<span style="color:#A78BFA">this</span>), amount);
-        <span style="color:#A78BFA">if</span> (yes) { yesShares[msg.sender] += amount; totalYes += amount; }
-        <span style="color:#A78BFA">else</span>     { noShares[msg.sender]  += amount; totalNo  += amount; }
+    <span class="text-violet-400">function</span> bet(<span class="text-violet-400">bool</span> yes, <span class="text-violet-400">uint256</span> amount) <span class="text-violet-400">external</span> {
+        <span class="text-violet-400">require</span>(block.timestamp &lt; expiry, <span class="text-accent-400">"closed"</span>);
+        usdc.transferFrom(msg.sender, address(<span class="text-violet-400">this</span>), amount);
+        <span class="text-violet-400">if</span> (yes) { yesShares[msg.sender] += amount; totalYes += amount; }
+        <span class="text-violet-400">else</span>     { noShares[msg.sender]  += amount; totalNo  += amount; }
     }
 
-    <span style="color:#A78BFA">function</span> resolve(<span style="color:#A78BFA">uint256</span> finalRate) <span style="color:#A78BFA">external</span> {
-        <span style="color:#A78BFA">require</span>(msg.sender == resolver, <span style="color:#7DF9C2">"!resolver"</span>);
-        <span style="color:#A78BFA">require</span>(block.timestamp &gt;= expiry, <span style="color:#7DF9C2">"early"</span>);
-        <span style="color:#A78BFA">require</span>(outcome == Outcome.Pending, <span style="color:#7DF9C2">"resolved"</span>);
+    <span class="text-violet-400">function</span> resolve(<span class="text-violet-400">uint256</span> finalRate) <span class="text-violet-400">external</span> {
+        <span class="text-violet-400">require</span>(msg.sender == resolver, <span class="text-accent-400">"!resolver"</span>);
+        <span class="text-violet-400">require</span>(block.timestamp &gt;= expiry, <span class="text-accent-400">"early"</span>);
+        <span class="text-violet-400">require</span>(outcome == Outcome.Pending, <span class="text-accent-400">"resolved"</span>);
         outcome = finalRate &gt; threshold ? Outcome.Yes : Outcome.No;
     }
 
-    <span style="color:#A78BFA">function</span> claim() <span style="color:#A78BFA">external</span> {
-        <span style="color:#A78BFA">require</span>(outcome != Outcome.Pending, <span style="color:#7DF9C2">"pending"</span>);
-        <span style="color:#A78BFA">uint256</span> total = totalYes + totalNo;
-        <span style="color:#A78BFA">uint256</span> winning = outcome == Outcome.Yes ? yesShares[msg.sender] : noShares[msg.sender];
-        <span style="color:#A78BFA">uint256</span> pool = outcome == Outcome.Yes ? totalYes : totalNo;
-        <span style="color:#A78BFA">uint256</span> payout = (winning * total) / pool;
-        <span style="color:#A78BFA">if</span> (outcome == Outcome.Yes) yesShares[msg.sender] = <span style="color:#7DF9C2">0</span>;
-        <span style="color:#A78BFA">else</span> noShares[msg.sender] = <span style="color:#7DF9C2">0</span>;
+    <span class="text-violet-400">function</span> claim() <span class="text-violet-400">external</span> {
+        <span class="text-violet-400">require</span>(outcome != Outcome.Pending, <span class="text-accent-400">"pending"</span>);
+        <span class="text-violet-400">uint256</span> total = totalYes + totalNo;
+        <span class="text-violet-400">uint256</span> winning = outcome == Outcome.Yes ? yesShares[msg.sender] : noShares[msg.sender];
+        <span class="text-violet-400">uint256</span> pool = outcome == Outcome.Yes ? totalYes : totalNo;
+        <span class="text-violet-400">uint256</span> payout = (winning * total) / pool;
+        <span class="text-violet-400">if</span> (outcome == Outcome.Yes) yesShares[msg.sender] = <span class="text-accent-400">0</span>;
+        <span class="text-violet-400">else</span> noShares[msg.sender] = <span class="text-accent-400">0</span>;
         usdc.transfer(msg.sender, payout);
     }
 }</code></pre>
@@ -185,36 +185,36 @@ pragma solidity ^<span style="color:#7DF9C2">0.8.20</span>;
       <p>A small Node service that wakes at expiry, calls <code>sera.get_fx_rate</code>, and posts the result.</p>
       <div class="codeblock">
         <div class="filename">resolver/index.ts</div>
-<pre><code><span style="color:#A78BFA">import</span> { spawnSeraMcp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./mcpClient'</span>;
-<span style="color:#A78BFA">import</span> { ethers } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'ethers'</span>;
+<pre><code><span class="text-violet-400">import</span> { spawnSeraMcp } <span class="text-violet-400">from</span> <span class="text-accent-400">'./mcpClient'</span>;
+<span class="text-violet-400">import</span> { ethers } <span class="text-violet-400">from</span> <span class="text-accent-400">'ethers'</span>;
 
-<span style="color:#A78BFA">const</span> sera   = spawnSeraMcp({ env: { SERA_NETWORK: <span style="color:#7DF9C2">'mainnet'</span> } });
-<span style="color:#A78BFA">const</span> wallet = <span style="color:#A78BFA">new</span> ethers.Wallet(process.env.RESOLVER_KEY!, provider);
-<span style="color:#A78BFA">const</span> market = <span style="color:#A78BFA">new</span> ethers.Contract(MARKET_ADDR, ABI, wallet);
+<span class="text-violet-400">const</span> sera   = spawnSeraMcp({ env: { SERA_NETWORK: <span class="text-accent-400">'mainnet'</span> } });
+<span class="text-violet-400">const</span> wallet = <span class="text-violet-400">new</span> ethers.Wallet(process.env.RESOLVER_KEY!, provider);
+<span class="text-violet-400">const</span> market = <span class="text-violet-400">new</span> ethers.Contract(MARKET_ADDR, ABI, wallet);
 
-<span style="color:#A78BFA">async function</span> resolveAtExpiry() {
-  <span style="color:#A78BFA">const</span> expiry = <span style="color:#A78BFA">await</span> market.expiry();
-  <span style="color:#A78BFA">const</span> now    = Math.floor(Date.now() / <span style="color:#7DF9C2">1000</span>);
-  <span style="color:#A78BFA">if</span> (now &lt; expiry) <span style="color:#A78BFA">return</span>;
+<span class="text-violet-400">async function</span> resolveAtExpiry() {
+  <span class="text-violet-400">const</span> expiry = <span class="text-violet-400">await</span> market.expiry();
+  <span class="text-violet-400">const</span> now    = Math.floor(Date.now() / <span class="text-accent-400">1000</span>);
+  <span class="text-violet-400">if</span> (now &lt; expiry) <span class="text-violet-400">return</span>;
 
-  <span style="color:#A78BFA">const</span> r = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'get_fx_rate'</span>, { base: <span style="color:#7DF9C2">'USD'</span>, quote: <span style="color:#7DF9C2">'JPY'</span> });
-  <span style="color:#A78BFA">const</span> finalRate = ethers.parseUnits(r.rate.toString(), <span style="color:#7DF9C2">8</span>);
-  <span style="color:#A78BFA">await</span> market.resolve(finalRate);
+  <span class="text-violet-400">const</span> r = <span class="text-violet-400">await</span> sera.call(<span class="text-accent-400">'get_fx_rate'</span>, { base: <span class="text-accent-400">'USD'</span>, quote: <span class="text-accent-400">'JPY'</span> });
+  <span class="text-violet-400">const</span> finalRate = ethers.parseUnits(r.rate.toString(), <span class="text-accent-400">8</span>);
+  <span class="text-violet-400">await</span> market.resolve(finalRate);
 }</code></pre>
       </div>
 
       <h3><span class="step-num">3</span>(Better) Median over a resolution window</h3>
       <p>A single rate read at expiry is manipulable. In production, average over a resolution window (e.g. last 30 min before expiry) using <code>sera.fx_history</code> + <code>multi_source_mid</code> as a sanity check.</p>
       <div class="codeblock">
-<pre><code><span style="color:#A78BFA">const</span> series = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'fx_history'</span>, {
-  pair: <span style="color:#7DF9C2">'USD/JPY'</span>, hours: <span style="color:#7DF9C2">0.5</span>
+<pre><code><span class="text-violet-400">const</span> series = <span class="text-violet-400">await</span> sera.call(<span class="text-accent-400">'fx_history'</span>, {
+  pair: <span class="text-accent-400">'USD/JPY'</span>, hours: <span class="text-accent-400">0.5</span>
 });
-<span style="color:#A78BFA">const</span> median = series.map(s =&gt; s.rate).sort()[Math.floor(series.length / <span style="color:#7DF9C2">2</span>)];
+<span class="text-violet-400">const</span> median = series.map(s =&gt; s.rate).sort()[Math.floor(series.length / <span class="text-accent-400">2</span>)];
 
-<span style="color:#A78BFA">const</span> ext = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'multi_source_mid'</span>, { base: <span style="color:#7DF9C2">'USD'</span>, quote: <span style="color:#7DF9C2">'JPY'</span> });
-<span style="color:#A78BFA">if</span> (Math.abs(median - ext.median) / ext.median &gt; <span style="color:#7DF9C2">0.005</span>) {
-  <span style="color:#6B7180">// More than 50bps disagreement — pause resolution, alert humans.</span>
-  <span style="color:#A78BFA">throw new</span> Error(<span style="color:#7DF9C2">'Sera vs external mid disagree'</span>);
+<span class="text-violet-400">const</span> ext = <span class="text-violet-400">await</span> sera.call(<span class="text-accent-400">'multi_source_mid'</span>, { base: <span class="text-accent-400">'USD'</span>, quote: <span class="text-accent-400">'JPY'</span> });
+<span class="text-violet-400">if</span> (Math.abs(median - ext.median) / ext.median &gt; <span class="text-accent-400">0.005</span>) {
+  <span class="text-chalk-500">// More than 50bps disagreement — pause resolution, alert humans.</span>
+  <span class="text-violet-400">throw new</span> Error(<span class="text-accent-400">'Sera vs external mid disagree'</span>);
 }</code></pre>
       </div>
 

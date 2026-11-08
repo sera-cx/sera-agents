@@ -87,7 +87,7 @@
     <main class="prose max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 06</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">AI agent (any host).</h1>
-      <p class="text-lg" style="color:#A4A89C">The classic — an MCP-powered agent with the full 55-tool Sera surface. Three paths depending on how custom you want to go: bundled Sera Agent (one command), Claude Code/Cursor/ChatGPT (just register the MCP), or your own host using OpenAI Agents SDK.</p>
+      <p class="text-lg text-chalk-300">The classic — an MCP-powered agent with the full 55-tool Sera surface. Three paths depending on how custom you want to go: bundled Sera Agent (one command), Claude Code/Cursor/ChatGPT (just register the MCP), or your own host using OpenAI Agents SDK.</p>
 
       <div class="my-6">
         <span class="meta-pill">15 min</span>
@@ -97,21 +97,21 @@
 
       <div class="callout">
         <div class="callout-label">What you'll have at the end</div>
-        <p style="color:#A4A89C; margin: 0;">An interactive agent that can answer questions like <em>"how much USDC to deliver exactly 5,000 MYR?"</em>, scan for FX deals, generate quotes, and (with policy gates) execute swaps. Pick the path that matches your existing workflow.</p>
+        <p class="text-chalk-300 m-0">An interactive agent that can answer questions like <em>"how much USDC to deliver exactly 5,000 MYR?"</em>, scan for FX deals, generate quotes, and (with policy gates) execute swaps. Pick the path that matches your existing workflow.</p>
       </div>
 
       <h2 class="gradient-text">Path A — Bundled Sera Agent (fastest)</h2>
       <p>Best if you just want a working agent now and don't care which host it runs in. Comes pre-wired with MCP + LLM.</p>
       <div class="codeblock">
 <pre><code>git clone https://github.com/sera-cx/sera-agents
-<span style="color:#A78BFA">cd</span> sera-agents/sera-agent &amp;&amp; npm install
-<span style="color:#A78BFA">export</span> OPENAI_API_KEY=sk-...
+<span class="text-violet-400">cd</span> sera-agents/sera-agent &amp;&amp; npm install
+<span class="text-violet-400">export</span> OPENAI_API_KEY=sk-...
 npm start
 
-<span style="color:#6B7180"># Try:</span>
-<span style="color:#A4A89C">&gt; What stablecoins do you support for SGD?</span>
-<span style="color:#A4A89C">&gt; How much USDC to deliver exactly 5,000 MYR?</span>
-<span style="color:#A4A89C">&gt; Run sera.doctor</span></code></pre>
+<span class="text-chalk-500"># Try:</span>
+<span class="text-chalk-300">&gt; What stablecoins do you support for SGD?</span>
+<span class="text-chalk-300">&gt; How much USDC to deliver exactly 5,000 MYR?</span>
+<span class="text-chalk-300">&gt; Run sera.doctor</span></code></pre>
       </div>
 
       <h2 class="gradient-text">Path B — Claude Code (or Cursor, ChatGPT, etc.)</h2>
@@ -120,7 +120,7 @@ npm start
       <h3><span class="step-num">1</span>Get sera-mcp on your machine</h3>
       <div class="codeblock">
 <pre><code>git clone https://github.com/sera-cx/sera-mcp
-<span style="color:#A78BFA">cd</span> sera-mcp &amp;&amp; npm install &amp;&amp; npm run build</code></pre>
+<span class="text-violet-400">cd</span> sera-mcp &amp;&amp; npm install &amp;&amp; npm run build</code></pre>
       </div>
 
       <h3><span class="step-num">2</span>Register with the host</h3>
@@ -136,7 +136,7 @@ npm start
       <h3><span class="step-num">3</span>Verify</h3>
       <p>In any agent session, type:</p>
       <div class="codeblock">
-<pre><code><span style="color:#A4A89C">Call sera.doctor</span></code></pre>
+<pre><code><span class="text-chalk-300">Call sera.doctor</span></code></pre>
       </div>
       <p>You should get back <code>overall_ok: true</code> with green checks for sera_health, network_sanity, tokens_registry, signer_mode, policy.</p>
 
@@ -144,45 +144,45 @@ npm start
       <p>Best if you're building a custom agent product and need programmatic control over the loop. Use local stdio for the full MCP surface:</p>
       <div class="codeblock">
         <div class="filename">my-agent.ts</div>
-<pre><code><span style="color:#A78BFA">import</span> { Agent, MCPServerStdio } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'@openai/agents'</span>;
+<pre><code><span class="text-violet-400">import</span> { Agent, MCPServerStdio } <span class="text-violet-400">from</span> <span class="text-accent-400">'@openai/agents'</span>;
 
-<span style="color:#A78BFA">const</span> sera = <span style="color:#A78BFA">new</span> MCPServerStdio({
-  command: <span style="color:#7DF9C2">'node'</span>,
-  args: [<span style="color:#7DF9C2">'/abs/path/to/sera-mcp/dist/index.js'</span>],
-  env: { SERA_NETWORK: <span style="color:#7DF9C2">'mainnet'</span>, POLICY_PRESET: <span style="color:#7DF9C2">'standard'</span> }
+<span class="text-violet-400">const</span> sera = <span class="text-violet-400">new</span> MCPServerStdio({
+  command: <span class="text-accent-400">'node'</span>,
+  args: [<span class="text-accent-400">'/abs/path/to/sera-mcp/dist/index.js'</span>],
+  env: { SERA_NETWORK: <span class="text-accent-400">'mainnet'</span>, POLICY_PRESET: <span class="text-accent-400">'standard'</span> }
 });
 
-<span style="color:#A78BFA">const</span> agent = <span style="color:#A78BFA">new</span> Agent({
-  name: <span style="color:#7DF9C2">'fx-helper'</span>,
-  instructions: <span style="color:#7DF9C2">'You help with multi-currency FX settlement. Use sera.doctor first if anything looks off. Always show cost in basis points and absolute dollars.'</span>,
+<span class="text-violet-400">const</span> agent = <span class="text-violet-400">new</span> Agent({
+  name: <span class="text-accent-400">'fx-helper'</span>,
+  instructions: <span class="text-accent-400">'You help with multi-currency FX settlement. Use sera.doctor first if anything looks off. Always show cost in basis points and absolute dollars.'</span>,
   mcpServers: [sera]
 });
 
-<span style="color:#A78BFA">const</span> response = <span style="color:#A78BFA">await</span> agent.run(<span style="color:#7DF9C2">'Find me FX deals over 25 bps right now.'</span>);
+<span class="text-violet-400">const</span> response = <span class="text-violet-400">await</span> agent.run(<span class="text-accent-400">'Find me FX deals over 25 bps right now.'</span>);
 console.log(response);</code></pre>
       </div>
 
       <p>For the hosted keyless gateway, use Streamable HTTP instead. It exposes the public gateway tool set. For account-scoped or execution tools, self-host <code>sera-mcp</code> and set its secret <code>SERA_MCP_TOKEN</code> in your server environment.</p>
       <div class="codeblock">
         <div class="filename">my-agent.ts</div>
-<pre><code><span style="color:#A78BFA">import</span> { Agent, MCPServerStreamableHttp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'@openai/agents'</span>;
+<pre><code><span class="text-violet-400">import</span> { Agent, MCPServerStreamableHttp } <span class="text-violet-400">from</span> <span class="text-accent-400">'@openai/agents'</span>;
 
-<span style="color:#A78BFA">const</span> token = process.env.SERA_MCP_TOKEN;
-<span style="color:#A78BFA">const</span> sera = <span style="color:#A78BFA">new</span> MCPServerStreamableHttp({
-  url: <span style="color:#7DF9C2">'https://agents.sera.cx/mcp'</span>,
-  name: <span style="color:#7DF9C2">'sera'</span>,
-  ...(token ? { requestInit: { headers: { Authorization: <span style="color:#7DF9C2">`Bearer ${token}`</span> } } } : {})
+<span class="text-violet-400">const</span> token = process.env.SERA_MCP_TOKEN;
+<span class="text-violet-400">const</span> sera = <span class="text-violet-400">new</span> MCPServerStreamableHttp({
+  url: <span class="text-accent-400">'https://agents.sera.cx/mcp'</span>,
+  name: <span class="text-accent-400">'sera'</span>,
+  ...(token ? { requestInit: { headers: { Authorization: <span class="text-accent-400">`Bearer ${token}`</span> } } } : {})
 });
-<span style="color:#A78BFA">await</span> sera.connect();</code></pre>
+<span class="text-violet-400">await</span> sera.connect();</code></pre>
       </div>
 
       <h2 class="gradient-text">Add policy gates (any path)</h2>
       <p>For any agent that will execute swaps, set the policy preset and caps via env vars. <code>sera-mcp</code> reads these and refuses to exceed them — even if the LLM tries.</p>
       <div class="codeblock">
 <pre><code>SERA_NETWORK=mainnet
-POLICY_PRESET=standard           <span style="color:#6B7180"># or 'strict' or 'dry-run-only'</span>
-SERA_DAILY_VOLUME_CAP_USD=10000  <span style="color:#6B7180"># server-derived, not LLM-claimed</span>
-SERA_DRY_RUN=false               <span style="color:#6B7180"># true = every execute returns dry-run trace</span>
+POLICY_PRESET=standard           <span class="text-chalk-500"># or 'strict' or 'dry-run-only'</span>
+SERA_DAILY_VOLUME_CAP_USD=10000  <span class="text-chalk-500"># server-derived, not LLM-claimed</span>
+SERA_DRY_RUN=false               <span class="text-chalk-500"># true = every execute returns dry-run trace</span>
 SERA_HISTORY_DB=$HOME/.sera/history.db</code></pre>
       </div>
 

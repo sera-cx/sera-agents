@@ -138,7 +138,7 @@
         </div>
         <div class="grid sm:grid-cols-2 gap-3">
           <a href="tutorials/cross-border-payment-widget.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-5 rounded-xl block group">
-            <div class="flex items-center justify-between mb-3"><span class="num-badge">01</span><span class="cost-pill"><span style="text-decoration:line-through;color:#6B7180">$87</span> $2.50</span></div>
+            <div class="flex items-center justify-between mb-3"><span class="num-badge">01</span><span class="cost-pill"><span class="line-through text-chalk-500">$87</span> $2.50</span></div>
             <div class="font-semibold group-hover:text-accent-400 transition">Cross-border payment widget</div>
             <div class="text-xs text-chalk-500 mt-1">React · sera.pay_invoice · 25 min</div>
           </a>
@@ -205,11 +205,11 @@
       <section>
         <h2 class="text-2xl font-bold gradient-text mb-5">Install in five lines</h2>
         <div class="codeblock p-5">
-          <pre class="leading-relaxed overflow-x-auto"><code><span style="color:#6B7180"># Get the MCP, build, register with Claude Code</span>
-<span style="color:#7DF9C2">git clone</span> https://github.com/sera-cx/sera-mcp
-<span style="color:#7DF9C2">cd</span> sera-mcp &amp;&amp; <span style="color:#7DF9C2">npm install &amp;&amp; npm run build</span>
-<span style="color:#7DF9C2">claude mcp add</span> sera --scope user --env SERA_NETWORK=mainnet -- node $(pwd)/dist/index.js
-<span style="color:#A4A89C">Call sera.doctor</span>   <span style="color:#6B7180"># expect overall_ok: true</span></code></pre>
+          <pre class="leading-relaxed overflow-x-auto"><code><span class="text-chalk-500"># Get the MCP, build, register with Claude Code</span>
+<span class="text-accent-400">git clone</span> https://github.com/sera-cx/sera-mcp
+<span class="text-accent-400">cd</span> sera-mcp &amp;&amp; <span class="text-accent-400">npm install &amp;&amp; npm run build</span>
+<span class="text-accent-400">claude mcp add</span> sera --scope user --env SERA_NETWORK=mainnet -- node $(pwd)/dist/index.js
+<span class="text-chalk-300">Call sera.doctor</span>   <span class="text-chalk-500"># expect overall_ok: true</span></code></pre>
         </div>
         <p class="mt-3 text-sm text-chalk-500">Other hosts (Cursor, ChatGPT, OpenClaw, Hermes, NanoClaw): see <a href="https://github.com/sera-cx/sera-agents/tree/main/integrations" target="_blank" class="text-accent-400 hover:underline">integrations/</a>.</p>
       </section>

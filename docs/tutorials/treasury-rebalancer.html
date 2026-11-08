@@ -87,7 +87,7 @@
     <main class="prose max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 04</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Treasury rebalancer.</h1>
-      <p class="text-lg" style="color:#A4A89C">A cron job that reads multi-currency wallet balances, computes drift from target weights, and emits Sera swap intents. Runs daily, signs nothing — emits a plan you (or a multi-sig flow) execute.</p>
+      <p class="text-lg text-chalk-300">A cron job that reads multi-currency wallet balances, computes drift from target weights, and emits Sera swap intents. Runs daily, signs nothing — emits a plan you (or a multi-sig flow) execute.</p>
 
       <div class="my-6">
         <span class="meta-pill">20 min</span>
@@ -98,7 +98,7 @@
 
       <div class="callout">
         <div class="callout-label">What you'll have at the end</div>
-        <p style="color:#A4A89C; margin: 0;">A script that runs daily, compares your treasury composition to a target (e.g. 50% USDC / 30% EURC / 20% XSGD), and drops a swap plan into Slack/Telegram for approval. Optional auto-execution behind a multi-sig.</p>
+        <p class="text-chalk-300 m-0">A script that runs daily, compares your treasury composition to a target (e.g. 50% USDC / 30% EURC / 20% XSGD), and drops a swap plan into Slack/Telegram for approval. Optional auto-execution behind a multi-sig.</p>
       </div>
 
       <h2 class="gradient-text">Steps</h2>
@@ -107,66 +107,66 @@
       <div class="codeblock">
         <div class="filename">config/targets.json</div>
 <pre><code>{
-  <span style="color:#7DF9C2">"wallets"</span>: [
-    <span style="color:#7DF9C2">"0xAa…operating"</span>,
-    <span style="color:#7DF9C2">"0xBb…reserve"</span>
+  <span class="text-accent-400">"wallets"</span>: [
+    <span class="text-accent-400">"0xAa…operating"</span>,
+    <span class="text-accent-400">"0xBb…reserve"</span>
   ],
-  <span style="color:#7DF9C2">"targets"</span>: { <span style="color:#7DF9C2">"USDC"</span>: <span style="color:#7DF9C2">0.5</span>, <span style="color:#7DF9C2">"EURC"</span>: <span style="color:#7DF9C2">0.3</span>, <span style="color:#7DF9C2">"XSGD"</span>: <span style="color:#7DF9C2">0.2</span> },
-  <span style="color:#7DF9C2">"reporting_currency"</span>: <span style="color:#7DF9C2">"USD"</span>,
-  <span style="color:#7DF9C2">"drift_threshold_pct"</span>: <span style="color:#7DF9C2">5</span>,
-  <span style="color:#7DF9C2">"alert_webhook"</span>: <span style="color:#7DF9C2">"https://hooks.slack.com/…"</span>
+  <span class="text-accent-400">"targets"</span>: { <span class="text-accent-400">"USDC"</span>: <span class="text-accent-400">0.5</span>, <span class="text-accent-400">"EURC"</span>: <span class="text-accent-400">0.3</span>, <span class="text-accent-400">"XSGD"</span>: <span class="text-accent-400">0.2</span> },
+  <span class="text-accent-400">"reporting_currency"</span>: <span class="text-accent-400">"USD"</span>,
+  <span class="text-accent-400">"drift_threshold_pct"</span>: <span class="text-accent-400">5</span>,
+  <span class="text-accent-400">"alert_webhook"</span>: <span class="text-accent-400">"https://hooks.slack.com/…"</span>
 }</code></pre>
       </div>
 
       <h3><span class="step-num">2</span>The rebalancer script</h3>
       <div class="codeblock">
         <div class="filename">rebalance.ts</div>
-<pre><code><span style="color:#A78BFA">import</span> { spawnSeraMcp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./mcpClient'</span>;
-<span style="color:#A78BFA">import</span> targets <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./config/targets.json'</span>;
+<pre><code><span class="text-violet-400">import</span> { spawnSeraMcp } <span class="text-violet-400">from</span> <span class="text-accent-400">'./mcpClient'</span>;
+<span class="text-violet-400">import</span> targets <span class="text-violet-400">from</span> <span class="text-accent-400">'./config/targets.json'</span>;
 
-<span style="color:#A78BFA">const</span> sera = spawnSeraMcp({ env: { SERA_NETWORK: <span style="color:#7DF9C2">'mainnet'</span> } });
+<span class="text-violet-400">const</span> sera = spawnSeraMcp({ env: { SERA_NETWORK: <span class="text-accent-400">'mainnet'</span> } });
 
-<span style="color:#A78BFA">async function</span> main() {
-  <span style="color:#6B7180">// 1. Snapshot exposure</span>
-  <span style="color:#A78BFA">const</span> exposure = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'exposure_report'</span>, {
+<span class="text-violet-400">async function</span> main() {
+  <span class="text-chalk-500">// 1. Snapshot exposure</span>
+  <span class="text-violet-400">const</span> exposure = <span class="text-violet-400">await</span> sera.call(<span class="text-accent-400">'exposure_report'</span>, {
     wallets: targets.wallets, reporting_currency: targets.reporting_currency
   });
 
-  <span style="color:#6B7180">// 2. Compute drift vs targets</span>
-  <span style="color:#A78BFA">const</span> drift = Object.entries(targets.targets).map(([sym, t]) =&gt; ({
+  <span class="text-chalk-500">// 2. Compute drift vs targets</span>
+  <span class="text-violet-400">const</span> drift = Object.entries(targets.targets).map(([sym, t]) =&gt; ({
     symbol: sym,
     target: t,
-    actual: exposure.weights[sym] ?? <span style="color:#7DF9C2">0</span>,
-    drift_pp: ((exposure.weights[sym] ?? <span style="color:#7DF9C2">0</span>) - t) * <span style="color:#7DF9C2">100</span>
+    actual: exposure.weights[sym] ?? <span class="text-accent-400">0</span>,
+    drift_pp: ((exposure.weights[sym] ?? <span class="text-accent-400">0</span>) - t) * <span class="text-accent-400">100</span>
   }));
 
-  <span style="color:#A78BFA">const</span> maxDrift = Math.max(...drift.map(d =&gt; Math.abs(d.drift_pp)));
-  <span style="color:#A78BFA">if</span> (maxDrift &lt; targets.drift_threshold_pct) {
-    console.log(<span style="color:#7DF9C2">`No action — max drift ${maxDrift.toFixed(1)}pp under threshold`</span>);
-    <span style="color:#A78BFA">return</span>;
+  <span class="text-violet-400">const</span> maxDrift = Math.max(...drift.map(d =&gt; Math.abs(d.drift_pp)));
+  <span class="text-violet-400">if</span> (maxDrift &lt; targets.drift_threshold_pct) {
+    console.log(<span class="text-accent-400">`No action — max drift ${maxDrift.toFixed(1)}pp under threshold`</span>);
+    <span class="text-violet-400">return</span>;
   }
 
-  <span style="color:#6B7180">// 3. Get the swap plan</span>
-  <span style="color:#A78BFA">const</span> plan = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'rebalance_plan'</span>, {
+  <span class="text-chalk-500">// 3. Get the swap plan</span>
+  <span class="text-violet-400">const</span> plan = <span class="text-violet-400">await</span> sera.call(<span class="text-accent-400">'rebalance_plan'</span>, {
     wallets: targets.wallets,
     targets: targets.targets,
     reporting_currency: targets.reporting_currency
   });
 
-  <span style="color:#6B7180">// 4. Post to Slack/Telegram for approval</span>
-  <span style="color:#A78BFA">await</span> postPlan(plan, drift);
+  <span class="text-chalk-500">// 4. Post to Slack/Telegram for approval</span>
+  <span class="text-violet-400">await</span> postPlan(plan, drift);
 }
 
-<span style="color:#A78BFA">async function</span> postPlan(plan, drift) {
-  <span style="color:#A78BFA">const</span> lines = [
-    <span style="color:#7DF9C2">`*Treasury drift*`</span>,
-    ...drift.map(d =&gt; <span style="color:#7DF9C2">`• ${d.symbol}: actual ${(d.actual*100).toFixed(1)}% vs target ${(d.target*100)}% (${d.drift_pp&gt;0?'+':''}${d.drift_pp.toFixed(1)}pp)`</span>),
-    <span style="color:#7DF9C2">`*Suggested swaps*`</span>,
-    ...plan.swaps.map(s =&gt; <span style="color:#7DF9C2">`• ${s.amount} ${s.from} → ${s.to}`</span>)
+<span class="text-violet-400">async function</span> postPlan(plan, drift) {
+  <span class="text-violet-400">const</span> lines = [
+    <span class="text-accent-400">`*Treasury drift*`</span>,
+    ...drift.map(d =&gt; <span class="text-accent-400">`• ${d.symbol}: actual ${(d.actual*100).toFixed(1)}% vs target ${(d.target*100)}% (${d.drift_pp&gt;0?'+':''}${d.drift_pp.toFixed(1)}pp)`</span>),
+    <span class="text-accent-400">`*Suggested swaps*`</span>,
+    ...plan.swaps.map(s =&gt; <span class="text-accent-400">`• ${s.amount} ${s.from} → ${s.to}`</span>)
   ];
-  <span style="color:#A78BFA">await</span> fetch(targets.alert_webhook, {
-    method: <span style="color:#7DF9C2">'POST'</span>,
-    body: JSON.stringify({ text: lines.join(<span style="color:#7DF9C2">'\n'</span>) })
+  <span class="text-violet-400">await</span> fetch(targets.alert_webhook, {
+    method: <span class="text-accent-400">'POST'</span>,
+    body: JSON.stringify({ text: lines.join(<span class="text-accent-400">'\n'</span>) })
   });
 }
 
@@ -186,15 +186,15 @@ main().catch(console.error);</code></pre>
 <pre><code>name: rebalance
 on:
   schedule:
-    - cron: <span style="color:#7DF9C2">'0 9 * * *'</span>     <span style="color:#6B7180"># 09:00 UTC daily</span>
-  workflow_dispatch: {}    <span style="color:#6B7180"># manual trigger button</span>
+    - cron: <span class="text-accent-400">'0 9 * * *'</span>     <span class="text-chalk-500"># 09:00 UTC daily</span>
+  workflow_dispatch: {}    <span class="text-chalk-500"># manual trigger button</span>
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: <span style="color:#7DF9C2">'20'</span> }
+        with: { node-version: <span class="text-accent-400">'20'</span> }
       - run: npm ci
       - run: node rebalance.js
         env:

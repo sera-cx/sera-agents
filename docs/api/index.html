@@ -97,8 +97,8 @@
     <main class="max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Reference</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">API reference.</h1>
-      <p class="text-lg mb-2" style="color:#A4A89C">Complete reference for all 55 registered tools in <code class="font-mono text-accent-400 text-base">sera-mcp</code>, organized by category. Under the default external-signer mode, 54 tools are exposed via <code class="font-mono text-accent-400 text-base">tools/list</code> because <code class="font-mono text-accent-400 text-base">sera.convert_and_send</code> is local-signer only. The Sera MCP can be used from standard MCP hosts such as Claude, Cursor, ChatGPT, and OpenAI Agents SDK, with tool availability determined by server configuration.</p>
-      <p class="text-sm" style="color:#6B7180">Schema source-of-truth: <code class="font-mono text-accent-400 text-xs">sera-mcp/dist/index.js</code> — these signatures are kept in sync with the running MCP. For Sera Protocol's underlying REST endpoints, see <a href="https://docs.sera.cx" target="_blank" class="text-accent-400 hover:underline">docs.sera.cx</a>.</p>
+      <p class="text-lg mb-2 text-chalk-300">Complete reference for all 55 registered tools in <code class="font-mono text-accent-400 text-base">sera-mcp</code>, organized by category. Under the default external-signer mode, 54 tools are exposed via <code class="font-mono text-accent-400 text-base">tools/list</code> because <code class="font-mono text-accent-400 text-base">sera.convert_and_send</code> is local-signer only. The Sera MCP can be used from standard MCP hosts such as Claude, Cursor, ChatGPT, and OpenAI Agents SDK, with tool availability determined by server configuration.</p>
+      <p class="text-sm text-chalk-500">Schema source-of-truth: <code class="font-mono text-accent-400 text-xs">sera-mcp/dist/index.js</code> — these signatures are kept in sync with the running MCP. For Sera Protocol's underlying REST endpoints, see <a href="https://docs.sera.cx" target="_blank" class="text-accent-400 hover:underline">docs.sera.cx</a>.</p>
 
       <!-- ============ DISCOVERY ============ -->
       <div id="discovery" class="group-header">
@@ -605,7 +605,7 @@
       <!-- ============ TREASURY ============ -->
       <div id="treasury" class="group-header">
         <span class="num">07</span><h2>Treasury</h2>
-        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Requires SERA_API_KEY</span>
+        <span class="font-mono text-[11px] text-chalk-500">Requires SERA_API_KEY</span>
       </div>
 
       <div class="tool" id="get_balances">
@@ -687,7 +687,7 @@
       <!-- ============ ACCOUNT & FUNDS ============ -->
       <div id="account" class="group-header">
         <span class="num">08</span><h2>Account &amp; funds</h2>
-        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Requires SERA_API_KEY</span>
+        <span class="font-mono text-[11px] text-chalk-500">Requires SERA_API_KEY</span>
       </div>
 
       <div class="tool" id="build_approve">
@@ -756,7 +756,7 @@
       <!-- ============ WITHDRAW ============ -->
       <div id="withdraw" class="group-header">
         <span class="num">09</span><h2>Withdraw</h2>
-        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Dual-signature flow</span>
+        <span class="font-mono text-[11px] text-chalk-500">Dual-signature flow</span>
       </div>
 
       <div class="tool" id="withdraw_request">
@@ -798,7 +798,7 @@
       <!-- ============ HISTORY ============ -->
       <div id="history" class="group-header">
         <span class="num">10</span><h2>History</h2>
-        <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#6B7180">Requires SERA_HISTORY_DB</span>
+        <span class="font-mono text-[11px] text-chalk-500">Requires SERA_HISTORY_DB</span>
       </div>
 
       <div class="tool" id="fx_history">

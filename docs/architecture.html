@@ -89,7 +89,7 @@
     <main class="prose max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Architecture</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-6">How the layers compose.</h1>
-      <p class="text-lg" style="color:#A4A89C">Sera for Agents is a stack of independent layers, and the bottom one is now a chain of our own. Pick the highest layer that solves your problem; everything below it is implementation detail.</p>
+      <p class="text-lg text-chalk-300">Sera for Agents is a stack of independent layers, and the bottom one is now a chain of our own. Pick the highest layer that solves your problem; everything below it is implementation detail.</p>
 
       <h2 class="gradient-text">The stack, top-down</h2>
 
@@ -231,15 +231,15 @@
       <h2 class="gradient-text">Repository layout</h2>
 
       <div class="codeblock my-6">
-<pre><code><span style="color:#7DF9C2">sera-mcp/</span>            <span style="color:#6B7180">— the MCP server itself (55 tools, CLI)</span>
-<span style="color:#7DF9C2">sera-agents/</span>
-├── <span style="color:#A4A89C">integrations/</span>     <span style="color:#6B7180">— per-host install snippets (11 hosts)</span>
-├── <span style="color:#A4A89C">templates/</span>        <span style="color:#6B7180">— chat-cli · web-chat · webhook starters</span>
-├── <span style="color:#A4A89C">sera-agent/</span>       <span style="color:#6B7180">— the bundled interactive agent</span>
-├── <span style="color:#A4A89C">x402-service/</span>     <span style="color:#6B7180">— x402 HTTP wrapper around sera-mcp</span>
-├── <span style="color:#A4A89C">x402/</span>             <span style="color:#6B7180">— EIP-3009 helpers (L1 funding leg)</span>
-├── <span style="color:#A4A89C">examples/</span>         <span style="color:#6B7180">— minimal one-file references</span>
-└── <span style="color:#A4A89C">docs/</span>             <span style="color:#6B7180">— this site</span>
+<pre><code><span class="text-accent-400">sera-mcp/</span>            <span class="text-chalk-500">— the MCP server itself (55 tools, CLI)</span>
+<span class="text-accent-400">sera-agents/</span>
+├── <span class="text-chalk-300">integrations/</span>     <span class="text-chalk-500">— per-host install snippets (11 hosts)</span>
+├── <span class="text-chalk-300">templates/</span>        <span class="text-chalk-500">— chat-cli · web-chat · webhook starters</span>
+├── <span class="text-chalk-300">sera-agent/</span>       <span class="text-chalk-500">— the bundled interactive agent</span>
+├── <span class="text-chalk-300">x402-service/</span>     <span class="text-chalk-500">— x402 HTTP wrapper around sera-mcp</span>
+├── <span class="text-chalk-300">x402/</span>             <span class="text-chalk-500">— EIP-3009 helpers (L1 funding leg)</span>
+├── <span class="text-chalk-300">examples/</span>         <span class="text-chalk-500">— minimal one-file references</span>
+└── <span class="text-chalk-300">docs/</span>             <span class="text-chalk-500">— this site</span>
 </code></pre>
       </div>
 

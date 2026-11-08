@@ -87,7 +87,7 @@
     <main class="prose max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 02</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">FX trading dashboard.</h1>
-      <p class="text-lg" style="color:#A4A89C">A live FX dashboard reading Sera's reference rates + multi-source mid + executable depth across 60+ stablecoin pairs. Read-only — no wallet, no signer, no notional commitment. Useful as an internal tool for traders, an external "data product," or a public marketing surface.</p>
+      <p class="text-lg text-chalk-300">A live FX dashboard reading Sera's reference rates + multi-source mid + executable depth across 60+ stablecoin pairs. Read-only — no wallet, no signer, no notional commitment. Useful as an internal tool for traders, an external "data product," or a public marketing surface.</p>
 
       <div class="my-6">
         <span class="meta-pill">30 min</span>
@@ -98,7 +98,7 @@
 
       <div class="callout">
         <div class="callout-label">What you'll have at the end</div>
-        <p style="color:#A4A89C; margin: 0;">A web page showing live FX rates for any subset of Sera's pairs, with deviation-from-external-mid in basis points, sortable, refreshing every 60s. Pair this with charting (Lightweight Charts, Recharts) for a full trading dashboard.</p>
+        <p class="text-chalk-300 m-0">A web page showing live FX rates for any subset of Sera's pairs, with deviation-from-external-mid in basis points, sortable, refreshing every 60s. Pair this with charting (Lightweight Charts, Recharts) for a full trading dashboard.</p>
       </div>
 
       <h2 class="gradient-text">Prerequisites</h2>
@@ -122,28 +122,28 @@
       <p>Browser fetches read-only data from your Node backend. Your backend calls the MCP. Cache responses for 60s — every page-load otherwise costs you a fresh upstream round-trip, and rates don't move that fast anyway.</p>
       <div class="codeblock">
         <div class="filename">api/sera-data.ts</div>
-<pre><code><span style="color:#A78BFA">import</span> { spawnSeraMcp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./mcpClient'</span>;
-<span style="color:#A78BFA">const</span> sera = spawnSeraMcp({ env: { SERA_NETWORK: <span style="color:#7DF9C2">'mainnet'</span> } });
+<pre><code><span class="text-violet-400">import</span> { spawnSeraMcp } <span class="text-violet-400">from</span> <span class="text-accent-400">'./mcpClient'</span>;
+<span class="text-violet-400">const</span> sera = spawnSeraMcp({ env: { SERA_NETWORK: <span class="text-accent-400">'mainnet'</span> } });
 
-<span style="color:#A78BFA">const</span> cache = <span style="color:#A78BFA">new</span> Map();
-<span style="color:#A78BFA">async function</span> cached(key: string, ttlMs: number, fn: () =&gt; <span style="color:#A78BFA">Promise</span>&lt;any&gt;) {
-  <span style="color:#A78BFA">const</span> hit = cache.get(key);
-  <span style="color:#A78BFA">if</span> (hit &amp;&amp; hit.exp &gt; Date.now()) <span style="color:#A78BFA">return</span> hit.val;
-  <span style="color:#A78BFA">const</span> val = <span style="color:#A78BFA">await</span> fn();
+<span class="text-violet-400">const</span> cache = <span class="text-violet-400">new</span> Map();
+<span class="text-violet-400">async function</span> cached(key: string, ttlMs: number, fn: () =&gt; <span class="text-violet-400">Promise</span>&lt;any&gt;) {
+  <span class="text-violet-400">const</span> hit = cache.get(key);
+  <span class="text-violet-400">if</span> (hit &amp;&amp; hit.exp &gt; Date.now()) <span class="text-violet-400">return</span> hit.val;
+  <span class="text-violet-400">const</span> val = <span class="text-violet-400">await</span> fn();
   cache.set(key, { val, exp: Date.now() + ttlMs });
-  <span style="color:#A78BFA">return</span> val;
+  <span class="text-violet-400">return</span> val;
 }
 
-<span style="color:#A78BFA">export async function</span> GET_grid() {
-  <span style="color:#A78BFA">return</span> cached(<span style="color:#7DF9C2">'grid'</span>, <span style="color:#7DF9C2">60_000</span>, () =&gt; sera.call(<span style="color:#7DF9C2">'find_deals'</span>, { min_bps: <span style="color:#7DF9C2">0</span> }));
+<span class="text-violet-400">export async function</span> GET_grid() {
+  <span class="text-violet-400">return</span> cached(<span class="text-accent-400">'grid'</span>, <span class="text-accent-400">60_000</span>, () =&gt; sera.call(<span class="text-accent-400">'find_deals'</span>, { min_bps: <span class="text-accent-400">0</span> }));
 }
-<span style="color:#A78BFA">export async function</span> GET_deals() {
-  <span style="color:#A78BFA">return</span> cached(<span style="color:#7DF9C2">'deals'</span>, <span style="color:#7DF9C2">60_000</span>, () =&gt; sera.call(<span style="color:#7DF9C2">'find_deals'</span>, { min_bps: <span style="color:#7DF9C2">25</span> }));
+<span class="text-violet-400">export async function</span> GET_deals() {
+  <span class="text-violet-400">return</span> cached(<span class="text-accent-400">'deals'</span>, <span class="text-accent-400">60_000</span>, () =&gt; sera.call(<span class="text-accent-400">'find_deals'</span>, { min_bps: <span class="text-accent-400">25</span> }));
 }
-<span style="color:#A78BFA">export async function</span> GET_radar(req) {
-  <span style="color:#A78BFA">const</span> currencies = req.query.basket.split(<span style="color:#7DF9C2">','</span>);
-  <span style="color:#A78BFA">return</span> cached(<span style="color:#7DF9C2">`r:${currencies.join(',')}`</span>, <span style="color:#7DF9C2">60_000</span>,
-    () =&gt; sera.call(<span style="color:#7DF9C2">'spread_radar'</span>, { currencies, min_bps: <span style="color:#7DF9C2">25</span> }));
+<span class="text-violet-400">export async function</span> GET_radar(req) {
+  <span class="text-violet-400">const</span> currencies = req.query.basket.split(<span class="text-accent-400">','</span>);
+  <span class="text-violet-400">return</span> cached(<span class="text-accent-400">`r:${currencies.join(',')}`</span>, <span class="text-accent-400">60_000</span>,
+    () =&gt; sera.call(<span class="text-accent-400">'spread_radar'</span>, { currencies, min_bps: <span class="text-accent-400">25</span> }));
 }</code></pre>
       </div>
 
@@ -151,21 +151,21 @@
       <p>Sortable table. Color the deviation column by sign + magnitude. Refresh every 60s.</p>
       <div class="codeblock">
         <div class="filename">components/RateGrid.tsx</div>
-<pre><code><span style="color:#A78BFA">import</span> { useEffect, useState } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'react'</span>;
+<pre><code><span class="text-violet-400">import</span> { useEffect, useState } <span class="text-violet-400">from</span> <span class="text-accent-400">'react'</span>;
 
-<span style="color:#A78BFA">export function</span> RateGrid() {
-  <span style="color:#A78BFA">const</span> [rows, setRows] = useState&lt;any[]&gt;([]);
+<span class="text-violet-400">export function</span> RateGrid() {
+  <span class="text-violet-400">const</span> [rows, setRows] = useState&lt;any[]&gt;([]);
   useEffect(() =&gt; {
-    <span style="color:#A78BFA">const</span> tick = <span style="color:#A78BFA">async</span> () =&gt; {
-      <span style="color:#A78BFA">const</span> r = <span style="color:#A78BFA">await</span> fetch(<span style="color:#7DF9C2">'/api/grid'</span>).then(r =&gt; r.json());
+    <span class="text-violet-400">const</span> tick = <span class="text-violet-400">async</span> () =&gt; {
+      <span class="text-violet-400">const</span> r = <span class="text-violet-400">await</span> fetch(<span class="text-accent-400">'/api/grid'</span>).then(r =&gt; r.json());
       setRows(r.deals.sort((a, b) =&gt; b.edge_bps - a.edge_bps));
     };
     tick();
-    <span style="color:#A78BFA">const</span> id = setInterval(tick, <span style="color:#7DF9C2">60_000</span>);
-    <span style="color:#A78BFA">return</span> () =&gt; clearInterval(id);
+    <span class="text-violet-400">const</span> id = setInterval(tick, <span class="text-accent-400">60_000</span>);
+    <span class="text-violet-400">return</span> () =&gt; clearInterval(id);
   }, []);
 
-  <span style="color:#A78BFA">return</span> (
+  <span class="text-violet-400">return</span> (
     &lt;table&gt;
       &lt;thead&gt;&lt;tr&gt;
         &lt;th&gt;Pair&lt;/th&gt;&lt;th&gt;Sera&lt;/th&gt;&lt;th&gt;External mid&lt;/th&gt;&lt;th&gt;Δ bps&lt;/th&gt;
@@ -176,8 +176,8 @@
             &lt;td&gt;{r.pair}&lt;/td&gt;
             &lt;td&gt;{r.sera_rate}&lt;/td&gt;
             &lt;td&gt;{r.external_mid}&lt;/td&gt;
-            &lt;td style={{color: r.edge_bps &gt; 0 ? <span style="color:#7DF9C2">'#3DE8A0'</span> : <span style="color:#7DF9C2">'#FF6B6B'</span>}}&gt;
-              {r.edge_bps.toFixed(<span style="color:#7DF9C2">1</span>)}
+            &lt;td style={{color: r.edge_bps &gt; 0 ? <span class="text-accent-400">'#3DE8A0'</span> : <span class="text-accent-400">'#FF6B6B'</span>}}&gt;
+              {r.edge_bps.toFixed(<span class="text-accent-400">1</span>)}
             &lt;/td&gt;
           &lt;/tr&gt;
         ))}
@@ -189,9 +189,9 @@
 
       <h3><span class="step-num">3</span>Spread radar tab — triangular arb scanner</h3>
       <div class="codeblock">
-<pre><code><span style="color:#A78BFA">async function</span> loadRadar(basket: string[]) {
-  <span style="color:#A78BFA">const</span> r = <span style="color:#A78BFA">await</span> fetch(<span style="color:#7DF9C2">`/api/radar?basket=${basket.join(',')}`</span>).then(r =&gt; r.json());
-  <span style="color:#A78BFA">return</span> r.triangles;  <span style="color:#6B7180">// [{ a, b, c, edge_bps, direction }, ...]</span>
+<pre><code><span class="text-violet-400">async function</span> loadRadar(basket: string[]) {
+  <span class="text-violet-400">const</span> r = <span class="text-violet-400">await</span> fetch(<span class="text-accent-400">`/api/radar?basket=${basket.join(',')}`</span>).then(r =&gt; r.json());
+  <span class="text-violet-400">return</span> r.triangles;  <span class="text-chalk-500">// [{ a, b, c, edge_bps, direction }, ...]</span>
 }</code></pre>
       </div>
       <p>Visualize triangles as arrows on a 2D layout, or just list them sorted by <code>edge_bps</code>. Anything &gt;100 bps is suspicious — verify with a fresh probe.</p>
@@ -199,8 +199,8 @@
       <h3><span class="step-num">4</span>(Optional) Add a chart panel</h3>
       <p>If you set <code>SERA_HISTORY_DB</code> on the MCP, every <code>fx_rate</code> call gets logged. After a few hours of dashboard runtime, you can plot <code>sera.fx_history({ pair, hours })</code> series with any chart library.</p>
       <div class="codeblock">
-<pre><code><span style="color:#A78BFA">const</span> series = <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'fx_history'</span>, { pair: <span style="color:#7DF9C2">'USD/JPY'</span>, hours: <span style="color:#7DF9C2">24</span> });
-<span style="color:#6B7180">// [{ ts, rate }, ...]</span></code></pre>
+<pre><code><span class="text-violet-400">const</span> series = <span class="text-violet-400">await</span> sera.call(<span class="text-accent-400">'fx_history'</span>, { pair: <span class="text-accent-400">'USD/JPY'</span>, hours: <span class="text-accent-400">24</span> });
+<span class="text-chalk-500">// [{ ts, rate }, ...]</span></code></pre>
       </div>
 
       <h3><span class="step-num">5</span>Deploy</h3>

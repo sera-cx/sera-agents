@@ -87,7 +87,7 @@
     <main class="prose max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 01</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Cross-border payment widget.</h1>
-      <p class="text-lg" style="color:#A4A89C">A drop-in React component. User picks recipient + amount in their currency, widget fetches the cheapest source asset, generates a quote, and triggers wallet signing. Settles on Sera in one transaction.</p>
+      <p class="text-lg text-chalk-300">A drop-in React component. User picks recipient + amount in their currency, widget fetches the cheapest source asset, generates a quote, and triggers wallet signing. Settles on Sera in one transaction.</p>
 
       <div class="my-6">
         <span class="meta-pill">25 min</span>
@@ -98,7 +98,7 @@
 
       <div class="callout">
         <div class="callout-label">What you'll have at the end</div>
-        <p style="color:#A4A89C; margin: 0;">A working <code>&lt;SeraPayWidget /&gt;</code> React component. Drop it on a page, pass <code>recipient</code> + <code>amount</code> + <code>currency</code> as props, and your users can settle international payments at on-chain cost (~$2 instead of $80+ via SWIFT).</p>
+        <p class="text-chalk-300 m-0">A working <code>&lt;SeraPayWidget /&gt;</code> React component. Drop it on a page, pass <code>recipient</code> + <code>amount</code> + <code>currency</code> as props, and your users can settle international payments at on-chain cost (~$2 instead of $80+ via SWIFT).</p>
       </div>
 
       <h2 class="gradient-text">Prerequisites</h2>
@@ -137,20 +137,20 @@
       <p>Spawn <code>sera-mcp</code> as a subprocess of your Node server (or import its tool functions directly if you're embedding). Expose two routes: <code>/api/quote</code> and <code>/api/execute</code>.</p>
       <div class="codeblock">
         <div class="filename">api/sera.ts</div>
-<pre><code><span style="color:#6B7180">// Pseudocode — wire to your framework's router (Next.js, Express, etc.)</span>
-<span style="color:#A78BFA">import</span> { spawnSeraMcp } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./mcpClient'</span>;
-<span style="color:#A78BFA">const</span> sera = spawnSeraMcp({ env: { SERA_NETWORK: <span style="color:#7DF9C2">'mainnet'</span>, POLICY_PRESET: <span style="color:#7DF9C2">'standard'</span> } });
+<pre><code><span class="text-chalk-500">// Pseudocode — wire to your framework's router (Next.js, Express, etc.)</span>
+<span class="text-violet-400">import</span> { spawnSeraMcp } <span class="text-violet-400">from</span> <span class="text-accent-400">'./mcpClient'</span>;
+<span class="text-violet-400">const</span> sera = spawnSeraMcp({ env: { SERA_NETWORK: <span class="text-accent-400">'mainnet'</span>, POLICY_PRESET: <span class="text-accent-400">'standard'</span> } });
 
-<span style="color:#A78BFA">export async function</span> POST_quote(req) {
-  <span style="color:#A78BFA">const</span> { recipient, target_amount, target_currency } = req.body;
-  <span style="color:#A78BFA">return</span> <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'pay_invoice'</span>, {
+<span class="text-violet-400">export async function</span> POST_quote(req) {
+  <span class="text-violet-400">const</span> { recipient, target_amount, target_currency } = req.body;
+  <span class="text-violet-400">return</span> <span class="text-violet-400">await</span> sera.call(<span class="text-accent-400">'pay_invoice'</span>, {
     recipient, target_amount, target_currency
   });
 }
 
-<span style="color:#A78BFA">export async function</span> POST_execute(req) {
-  <span style="color:#A78BFA">const</span> { quote_id, signature } = req.body;
-  <span style="color:#A78BFA">return</span> <span style="color:#A78BFA">await</span> sera.call(<span style="color:#7DF9C2">'execute_swap'</span>, { quote_id, signature });
+<span class="text-violet-400">export async function</span> POST_execute(req) {
+  <span class="text-violet-400">const</span> { quote_id, signature } = req.body;
+  <span class="text-violet-400">return</span> <span class="text-violet-400">await</span> sera.call(<span class="text-accent-400">'execute_swap'</span>, { quote_id, signature });
 }</code></pre>
       </div>
 
@@ -158,48 +158,48 @@
       <p>A single React component that handles the four states: <em>idle</em>, <em>quoting</em>, <em>signing</em>, <em>executing</em>.</p>
       <div class="codeblock">
         <div class="filename">components/SeraPayWidget.tsx</div>
-<pre><code><span style="color:#A78BFA">import</span> { useState } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'react'</span>;
-<span style="color:#A78BFA">import</span> { useSignTypedData } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'wagmi'</span>;
+<pre><code><span class="text-violet-400">import</span> { useState } <span class="text-violet-400">from</span> <span class="text-accent-400">'react'</span>;
+<span class="text-violet-400">import</span> { useSignTypedData } <span class="text-violet-400">from</span> <span class="text-accent-400">'wagmi'</span>;
 
-<span style="color:#A78BFA">type</span> Props = { recipient: string; amount: number; currency: string };
+<span class="text-violet-400">type</span> Props = { recipient: string; amount: number; currency: string };
 
-<span style="color:#A78BFA">export function</span> SeraPayWidget({ recipient, amount, currency }: Props) {
-  <span style="color:#A78BFA">const</span> [state, setState] = useState&lt;<span style="color:#7DF9C2">'idle'|'quoting'|'signing'|'executing'|'done'</span>&gt;(<span style="color:#7DF9C2">'idle'</span>);
-  <span style="color:#A78BFA">const</span> [quote, setQuote] = useState&lt;any&gt;(<span style="color:#A78BFA">null</span>);
-  <span style="color:#A78BFA">const</span> [tradeId, setTradeId] = useState&lt;string|<span style="color:#A78BFA">null</span>&gt;(<span style="color:#A78BFA">null</span>);
-  <span style="color:#A78BFA">const</span> { signTypedDataAsync } = useSignTypedData();
+<span class="text-violet-400">export function</span> SeraPayWidget({ recipient, amount, currency }: Props) {
+  <span class="text-violet-400">const</span> [state, setState] = useState&lt;<span class="text-accent-400">'idle'|'quoting'|'signing'|'executing'|'done'</span>&gt;(<span class="text-accent-400">'idle'</span>);
+  <span class="text-violet-400">const</span> [quote, setQuote] = useState&lt;any&gt;(<span class="text-violet-400">null</span>);
+  <span class="text-violet-400">const</span> [tradeId, setTradeId] = useState&lt;string|<span class="text-violet-400">null</span>&gt;(<span class="text-violet-400">null</span>);
+  <span class="text-violet-400">const</span> { signTypedDataAsync } = useSignTypedData();
 
-  <span style="color:#A78BFA">async function</span> pay() {
-    setState(<span style="color:#7DF9C2">'quoting'</span>);
-    <span style="color:#A78BFA">const</span> q = <span style="color:#A78BFA">await</span> fetch(<span style="color:#7DF9C2">'/api/quote'</span>, {
-      method: <span style="color:#7DF9C2">'POST'</span>,
+  <span class="text-violet-400">async function</span> pay() {
+    setState(<span class="text-accent-400">'quoting'</span>);
+    <span class="text-violet-400">const</span> q = <span class="text-violet-400">await</span> fetch(<span class="text-accent-400">'/api/quote'</span>, {
+      method: <span class="text-accent-400">'POST'</span>,
       body: JSON.stringify({ recipient, target_amount: amount, target_currency: currency })
     }).then(r =&gt; r.json());
     setQuote(q);
 
-    setState(<span style="color:#7DF9C2">'signing'</span>);
-    <span style="color:#A78BFA">const</span> sig = <span style="color:#A78BFA">await</span> signTypedDataAsync(q.typed_data);
+    setState(<span class="text-accent-400">'signing'</span>);
+    <span class="text-violet-400">const</span> sig = <span class="text-violet-400">await</span> signTypedDataAsync(q.typed_data);
 
-    setState(<span style="color:#7DF9C2">'executing'</span>);
-    <span style="color:#A78BFA">const</span> r = <span style="color:#A78BFA">await</span> fetch(<span style="color:#7DF9C2">'/api/execute'</span>, {
-      method: <span style="color:#7DF9C2">'POST'</span>,
+    setState(<span class="text-accent-400">'executing'</span>);
+    <span class="text-violet-400">const</span> r = <span class="text-violet-400">await</span> fetch(<span class="text-accent-400">'/api/execute'</span>, {
+      method: <span class="text-accent-400">'POST'</span>,
       body: JSON.stringify({ quote_id: q.uuid, signature: sig })
     }).then(r =&gt; r.json());
     setTradeId(r.trade_id);
-    setState(<span style="color:#7DF9C2">'done'</span>);
+    setState(<span class="text-accent-400">'done'</span>);
   }
 
-  <span style="color:#A78BFA">return</span> (
-    &lt;div className=<span style="color:#7DF9C2">"sera-widget"</span>&gt;
-      {state === <span style="color:#7DF9C2">'idle'</span> &amp;&amp; (
+  <span class="text-violet-400">return</span> (
+    &lt;div className=<span class="text-accent-400">"sera-widget"</span>&gt;
+      {state === <span class="text-accent-400">'idle'</span> &amp;&amp; (
         &lt;button onClick={pay}&gt;
           Send {amount} {currency} to {recipient.slice(0,6)}…
         &lt;/button&gt;
       )}
-      {state === <span style="color:#7DF9C2">'quoting'</span> &amp;&amp; <span style="color:#7DF9C2">'Fetching cheapest source…'</span>}
-      {state === <span style="color:#7DF9C2">'signing'</span> &amp;&amp; <span style="color:#7DF9C2">'Sign in your wallet'</span>}
-      {state === <span style="color:#7DF9C2">'executing'</span> &amp;&amp; <span style="color:#7DF9C2">'Settling on Sera…'</span>}
-      {state === <span style="color:#7DF9C2">'done'</span> &amp;&amp; (
+      {state === <span class="text-accent-400">'quoting'</span> &amp;&amp; <span class="text-accent-400">'Fetching cheapest source…'</span>}
+      {state === <span class="text-accent-400">'signing'</span> &amp;&amp; <span class="text-accent-400">'Sign in your wallet'</span>}
+      {state === <span class="text-accent-400">'executing'</span> &amp;&amp; <span class="text-accent-400">'Settling on Sera…'</span>}
+      {state === <span class="text-accent-400">'done'</span> &amp;&amp; (
         &lt;span&gt;Done. trade_id: &lt;code&gt;{tradeId}&lt;/code&gt;&lt;/span&gt;
       )}
     &lt;/div&gt;
@@ -210,16 +210,16 @@
       <h3><span class="step-num">3</span>Use it in a page</h3>
       <div class="codeblock">
         <div class="filename">pages/checkout.tsx</div>
-<pre><code><span style="color:#A78BFA">import</span> { SeraPayWidget } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'@/components/SeraPayWidget'</span>;
+<pre><code><span class="text-violet-400">import</span> { SeraPayWidget } <span class="text-violet-400">from</span> <span class="text-accent-400">'@/components/SeraPayWidget'</span>;
 
-<span style="color:#A78BFA">export default function</span> Checkout() {
-  <span style="color:#A78BFA">return</span> (
+<span class="text-violet-400">export default function</span> Checkout() {
+  <span class="text-violet-400">return</span> (
     &lt;div&gt;
       &lt;h1&gt;Pay vendor in Malaysia&lt;/h1&gt;
       &lt;SeraPayWidget
-        recipient=<span style="color:#7DF9C2">"0xAa…vendor"</span>
-        amount={<span style="color:#7DF9C2">5000</span>}
-        currency=<span style="color:#7DF9C2">"MYR"</span>
+        recipient=<span class="text-accent-400">"0xAa…vendor"</span>
+        amount={<span class="text-accent-400">5000</span>}
+        currency=<span class="text-accent-400">"MYR"</span>
       /&gt;
     &lt;/div&gt;
   );
@@ -233,8 +233,8 @@
       <h3><span class="step-num">5</span>Show the user the cost saving (the marketing piece)</h3>
       <p>The widget should display the cost. Use <code>sera.compare_to_external_fx</code> to fetch a comparable TradFi rate and show a "$87 → $2.50" callout. This is what makes users understand they're getting a genuinely better deal.</p>
       <div class="codeblock">
-<pre><code><span style="color:#A78BFA">const</span> ext = <span style="color:#A78BFA">await</span> fetch(<span style="color:#7DF9C2">'/api/compare?base=USD&amp;quote=MYR'</span>).then(r =&gt; r.json());
-<span style="color:#6B7180">// ext.swift_estimate_usd vs quote.cost_usd</span></code></pre>
+<pre><code><span class="text-violet-400">const</span> ext = <span class="text-violet-400">await</span> fetch(<span class="text-accent-400">'/api/compare?base=USD&amp;quote=MYR'</span>).then(r =&gt; r.json());
+<span class="text-chalk-500">// ext.swift_estimate_usd vs quote.cost_usd</span></code></pre>
       </div>
 
       <h2 class="gradient-text">Reference repo</h2>

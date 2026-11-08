@@ -87,7 +87,7 @@
     <main class="prose max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorial 05</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">x402-paid API.</h1>
-      <p class="text-lg" style="color:#A4A89C">Charge AI agents per call in USDC over plain HTTP. Standard <code class="text-base">402 → pay → 200</code> flow. No paywall pages, no Stripe, no API keys, no contracts. Sera's own x402 service is the reference implementation, and Sera runs a managed facilitator on the appchain; this tutorial shows you how to wrap any API the same way.</p>
+      <p class="text-lg text-chalk-300">Charge AI agents per call in USDC over plain HTTP. Standard <code class="text-base">402 → pay → 200</code> flow. No paywall pages, no Stripe, no API keys, no contracts. Sera's own x402 service is the reference implementation, and Sera runs a managed facilitator on the appchain; this tutorial shows you how to wrap any API the same way.</p>
 
       <div class="my-6">
         <span class="meta-pill">25 min</span>
@@ -98,12 +98,12 @@
 
       <div class="callout">
         <div class="callout-label">What you'll have at the end</div>
-        <p style="color:#A4A89C; margin: 0;">An Express middleware that gates any route behind a USDC payment. Agents pay $0.001 / call (or whatever you charge), retry with the <code>X-PAYMENT</code> header, get the response. Works with any agent that speaks x402 — no custom client SDK.</p>
+        <p class="text-chalk-300 m-0">An Express middleware that gates any route behind a USDC payment. Agents pay $0.001 / call (or whatever you charge), retry with the <code>X-PAYMENT</code> header, get the response. Works with any agent that speaks x402 — no custom client SDK.</p>
       </div>
 
       <h2 class="gradient-text">The flow</h2>
       <div class="codeblock">
-<pre><code><span style="color:#6B7180"># 1. Agent makes initial request</span>
+<pre><code><span class="text-chalk-500"># 1. Agent makes initial request</span>
 GET /v1/data
 → 402 Payment Required
   {
@@ -112,20 +112,20 @@ GET /v1/data
       "scheme": "exact",
       "network": "base",       // the payer's chain, not Sera's
       "asset": "0xUSDC...",
-      "max_amount_required": "1000",  <span style="color:#6B7180"># 1000 = $0.001</span>
+      "max_amount_required": "1000",  <span class="text-chalk-500"># 1000 = $0.001</span>
       "pay_to": "0xYourVault...",
       "resource": "/v1/data",
       "max_timeout_seconds": 60
     }]
   }
 
-<span style="color:#6B7180"># 2. Agent signs USDC transferWithAuthorization (EIP-3009) off-chain</span>
-<span style="color:#6B7180"># 3. Agent retries with X-PAYMENT header</span>
+<span class="text-chalk-500"># 2. Agent signs USDC transferWithAuthorization (EIP-3009) off-chain</span>
+<span class="text-chalk-500"># 3. Agent retries with X-PAYMENT header</span>
 GET /v1/data
 X-PAYMENT: &lt;base64-encoded payment payload with signature&gt;
 → 200 OK { ... your data ... }
 
-<span style="color:#6B7180"># Server submits the payment authorization on-chain (or batches)</span></code></pre>
+<span class="text-chalk-500"># Server submits the payment authorization on-chain (or batches)</span></code></pre>
       </div>
 
       <h2 class="gradient-text">Steps</h2>
@@ -138,58 +138,58 @@ X-PAYMENT: &lt;base64-encoded payment payload with signature&gt;
       <h3><span class="step-num">2</span>Wrap your route with the middleware</h3>
       <div class="codeblock">
         <div class="filename">server.ts</div>
-<pre><code><span style="color:#A78BFA">import</span> express <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'express'</span>;
-<span style="color:#A78BFA">import</span> { x402Middleware } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./x402-mw'</span>;
+<pre><code><span class="text-violet-400">import</span> express <span class="text-violet-400">from</span> <span class="text-accent-400">'express'</span>;
+<span class="text-violet-400">import</span> { x402Middleware } <span class="text-violet-400">from</span> <span class="text-accent-400">'./x402-mw'</span>;
 
-<span style="color:#A78BFA">const</span> app = express();
+<span class="text-violet-400">const</span> app = express();
 
-app.get(<span style="color:#7DF9C2">'/v1/data'</span>,
+app.get(<span class="text-accent-400">'/v1/data'</span>,
   x402Middleware({
-    price_atomic: <span style="color:#7DF9C2">1000n</span>,           <span style="color:#6B7180">// 0.001 USDC (6-decimal)</span>
+    price_atomic: <span class="text-accent-400">1000n</span>,           <span class="text-chalk-500">// 0.001 USDC (6-decimal)</span>
     pay_to: process.env.VAULT_ADDR!,
     asset: process.env.USDC_ADDR!,
-    network: <span style="color:#7DF9C2">'base'</span>
+    network: <span class="text-accent-400">'base'</span>
   }),
-  <span style="color:#A78BFA">async</span> (req, res) =&gt; {
-    res.json({ data: <span style="color:#7DF9C2">'whatever your API returns'</span> });
+  <span class="text-violet-400">async</span> (req, res) =&gt; {
+    res.json({ data: <span class="text-accent-400">'whatever your API returns'</span> });
   }
 );
 
-app.listen(<span style="color:#7DF9C2">3000</span>);</code></pre>
+app.listen(<span class="text-accent-400">3000</span>);</code></pre>
       </div>
 
       <h3><span class="step-num">3</span>The middleware itself</h3>
       <div class="codeblock">
         <div class="filename">x402-mw.ts</div>
-<pre><code><span style="color:#A78BFA">import</span> { verifyEip3009Authorization } <span style="color:#A78BFA">from</span> <span style="color:#7DF9C2">'./verify'</span>;
+<pre><code><span class="text-violet-400">import</span> { verifyEip3009Authorization } <span class="text-violet-400">from</span> <span class="text-accent-400">'./verify'</span>;
 
-<span style="color:#A78BFA">export function</span> x402Middleware(opts) {
-  <span style="color:#A78BFA">return async</span> (req, res, next) =&gt; {
-    <span style="color:#A78BFA">const</span> header = req.headers[<span style="color:#7DF9C2">'x-payment'</span>];
+<span class="text-violet-400">export function</span> x402Middleware(opts) {
+  <span class="text-violet-400">return async</span> (req, res, next) =&gt; {
+    <span class="text-violet-400">const</span> header = req.headers[<span class="text-accent-400">'x-payment'</span>];
 
-    <span style="color:#A78BFA">if</span> (!header) {
-      <span style="color:#6B7180">// First-time request — return 402 with payment instructions</span>
-      <span style="color:#A78BFA">return</span> res.status(<span style="color:#7DF9C2">402</span>).json({
-        x402_version: <span style="color:#7DF9C2">1</span>,
+    <span class="text-violet-400">if</span> (!header) {
+      <span class="text-chalk-500">// First-time request — return 402 with payment instructions</span>
+      <span class="text-violet-400">return</span> res.status(<span class="text-accent-400">402</span>).json({
+        x402_version: <span class="text-accent-400">1</span>,
         accepts: [{
-          scheme: <span style="color:#7DF9C2">'exact'</span>, network: opts.network,
+          scheme: <span class="text-accent-400">'exact'</span>, network: opts.network,
           asset: opts.asset, max_amount_required: opts.price_atomic.toString(),
-          pay_to: opts.pay_to, resource: req.path, max_timeout_seconds: <span style="color:#7DF9C2">60</span>
+          pay_to: opts.pay_to, resource: req.path, max_timeout_seconds: <span class="text-accent-400">60</span>
         }]
       });
     }
 
-    <span style="color:#6B7180">// Retry with X-PAYMENT header</span>
-    <span style="color:#A78BFA">const</span> payload = JSON.parse(Buffer.from(header, <span style="color:#7DF9C2">'base64'</span>).toString());
-    <span style="color:#A78BFA">const</span> ok = <span style="color:#A78BFA">await</span> verifyEip3009Authorization(payload, opts);
-    <span style="color:#A78BFA">if</span> (!ok.valid) {
-      <span style="color:#A78BFA">return</span> res.status(<span style="color:#7DF9C2">402</span>).json({ error: <span style="color:#7DF9C2">'invalid payment'</span>, reason: ok.reason });
+    <span class="text-chalk-500">// Retry with X-PAYMENT header</span>
+    <span class="text-violet-400">const</span> payload = JSON.parse(Buffer.from(header, <span class="text-accent-400">'base64'</span>).toString());
+    <span class="text-violet-400">const</span> ok = <span class="text-violet-400">await</span> verifyEip3009Authorization(payload, opts);
+    <span class="text-violet-400">if</span> (!ok.valid) {
+      <span class="text-violet-400">return</span> res.status(<span class="text-accent-400">402</span>).json({ error: <span class="text-accent-400">'invalid payment'</span>, reason: ok.reason });
     }
 
-    <span style="color:#6B7180">// Submit the EIP-3009 authorization on-chain (or batch)</span>
-    <span style="color:#A78BFA">await</span> submitOnchain(payload);
+    <span class="text-chalk-500">// Submit the EIP-3009 authorization on-chain (or batch)</span>
+    <span class="text-violet-400">await</span> submitOnchain(payload);
 
-    <span style="color:#6B7180">// Pass through to the actual handler</span>
+    <span class="text-chalk-500">// Pass through to the actual handler</span>
     next();
   };
 }</code></pre>
@@ -200,13 +200,13 @@ app.listen(<span style="color:#7DF9C2">3000</span>);</code></pre>
       <h3><span class="step-num">4</span>Test with curl (appchain testnet first)</h3>
       <p>Point the settlement leg at the Sera appchain testnet and claim test stablecoins from the faucet. The payment verification and the swap run the same code they will run in production, which is the point — a mock would let a bug hide until the first real payment. If you want to exercise only the HTTP shape before wiring settlement at all, a development flag that accepts <code>X-PAYMENT: any:demo-authorization</code> will do for that one afternoon.</p>
       <div class="codeblock">
-<pre><code><span style="color:#6B7180"># 1. First call returns 402</span>
+<pre><code><span class="text-chalk-500"># 1. First call returns 402</span>
 curl -i localhost:3000/v1/data
 
-<span style="color:#6B7180"># 2. Retry with demo header</span>
+<span class="text-chalk-500"># 2. Retry with demo header</span>
 curl localhost:3000/v1/data \
-  -H <span style="color:#7DF9C2">'X-PAYMENT: anything:demo-authorization'</span>
-<span style="color:#6B7180"># → 200 OK with your data</span></code></pre>
+  -H <span class="text-accent-400">'X-PAYMENT: anything:demo-authorization'</span>
+<span class="text-chalk-500"># → 200 OK with your data</span></code></pre>
       </div>
 
       <h3><span class="step-num">5</span>Wire to a payment facilitator (production)</h3>

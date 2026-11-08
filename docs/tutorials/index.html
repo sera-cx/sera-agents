@@ -95,15 +95,15 @@
     <main class="max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Tutorials</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Six builds you can ship.</h1>
-      <p class="text-lg mb-10" style="color:#A4A89C">Each tutorial is a complete walkthrough with prereqs, step-by-step instructions, runnable code, and a reference repo. Pick by what you're building, not by what's flashiest.</p>
+      <p class="text-lg mb-10 text-chalk-300">Each tutorial is a complete walkthrough with prereqs, step-by-step instructions, runnable code, and a reference repo. Pick by what you're building, not by what's flashiest.</p>
 
       <div class="grid sm:grid-cols-2 gap-4">
 
         <a href="cross-border-payment-widget.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
-          <div class="flex items-center justify-between mb-4"><span class="num-badge">01</span><span class="cost-pill"><span style="text-decoration:line-through;color:#6B7180">$87</span> $2.50</span></div>
+          <div class="flex items-center justify-between mb-4"><span class="num-badge">01</span><span class="cost-pill"><span class="line-through text-chalk-500">$87</span> $2.50</span></div>
           <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Cross-border payment widget</h3>
-          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">Drop-in React component. User picks recipient + amount in their currency, widget quotes + executes the cheapest source asset. Replaces $80+ SWIFT wires with $2 swaps.</p>
-          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+          <p class="text-sm leading-relaxed mb-3 text-chalk-300">Drop-in React component. User picks recipient + amount in their currency, widget quotes + executes the cheapest source asset. Replaces $80+ SWIFT wires with $2 swaps.</p>
+          <div class="flex items-center justify-between text-xs text-chalk-500">
             <span class="font-mono">React · sera.pay_invoice</span><span>25 min</span>
           </div>
         </a>
@@ -111,8 +111,8 @@
         <a href="fx-trading-dashboard.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
           <div class="flex items-center justify-between mb-4"><span class="num-badge">02</span><span class="cost-pill">read-only</span></div>
           <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">FX trading dashboard</h3>
-          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">Live FX dashboard reading Sera's reference rates + multi-source mid + executable depth. Spot deviations across 60+ stablecoin FX pairs. No wallet required.</p>
-          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+          <p class="text-sm leading-relaxed mb-3 text-chalk-300">Live FX dashboard reading Sera's reference rates + multi-source mid + executable depth. Spot deviations across 60+ stablecoin FX pairs. No wallet required.</p>
+          <div class="flex items-center justify-between text-xs text-chalk-500">
             <span class="font-mono">Next.js · find_deals</span><span>30 min</span>
           </div>
         </a>
@@ -120,8 +120,8 @@
         <a href="prediction-market.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
           <div class="flex items-center justify-between mb-4"><span class="num-badge">03</span><span class="cost-pill">on-chain</span></div>
           <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Prediction market on FX</h3>
-          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">Binary markets like "USD/JPY &gt; 158 by Friday" using Sera's reference rate as the settlement oracle. Payouts route through Sera FX so winners get paid in any currency.</p>
-          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+          <p class="text-sm leading-relaxed mb-3 text-chalk-300">Binary markets like "USD/JPY &gt; 158 by Friday" using Sera's reference rate as the settlement oracle. Payouts route through Sera FX so winners get paid in any currency.</p>
+          <div class="flex items-center justify-between text-xs text-chalk-500">
             <span class="font-mono">Solidity · get_fx_rate</span><span>60 min</span>
           </div>
         </a>
@@ -129,8 +129,8 @@
         <a href="treasury-rebalancer.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
           <div class="flex items-center justify-between mb-4"><span class="num-badge">04</span><span class="cost-pill">cron</span></div>
           <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">Treasury rebalancer</h3>
-          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">Cron job that reads multi-currency wallet balances, computes drift, emits Sera swap intents. Runs daily, signs nothing.</p>
-          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+          <p class="text-sm leading-relaxed mb-3 text-chalk-300">Cron job that reads multi-currency wallet balances, computes drift, emits Sera swap intents. Runs daily, signs nothing.</p>
+          <div class="flex items-center justify-between text-xs text-chalk-500">
             <span class="font-mono">Node · rebalance_plan</span><span>20 min</span>
           </div>
         </a>
@@ -138,8 +138,8 @@
         <a href="x402-paid-api.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
           <div class="flex items-center justify-between mb-4"><span class="num-badge">05</span><span class="cost-pill">$0.001/call</span></div>
           <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">x402-paid API</h3>
-          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">Charge AI agents per call in USDC over plain HTTP. Standard 402 → pay → 200. No paywall pages, no Stripe.</p>
-          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+          <p class="text-sm leading-relaxed mb-3 text-chalk-300">Charge AI agents per call in USDC over plain HTTP. Standard 402 → pay → 200. No paywall pages, no Stripe.</p>
+          <div class="flex items-center justify-between text-xs text-chalk-500">
             <span class="font-mono">Express · x402</span><span>25 min</span>
           </div>
         </a>
@@ -147,8 +147,8 @@
         <a href="ai-agent.html" class="bento ring-soft ring-soft-hover bg-ink-900/60 p-6 rounded-2xl block group">
           <div class="flex items-center justify-between mb-4"><span class="num-badge">06</span><span class="cost-pill">15 min</span></div>
           <h3 class="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">AI agent (any host)</h3>
-          <p class="text-sm leading-relaxed mb-3" style="color:#A4A89C">The classic — an MCP-powered agent with the full 55-tool surface. Use the bundled Sera Agent or wire the MCP into Claude Code, Cursor, Hermes, OpenClaw.</p>
-          <div class="flex items-center justify-between text-xs" style="color:#6B7180">
+          <p class="text-sm leading-relaxed mb-3 text-chalk-300">The classic — an MCP-powered agent with the full 55-tool surface. Use the bundled Sera Agent or wire the MCP into Claude Code, Cursor, Hermes, OpenClaw.</p>
+          <div class="flex items-center justify-between text-xs text-chalk-500">
             <span class="font-mono">MCP · Claude / GPT</span><span>15 min</span>
           </div>
         </a>
@@ -156,8 +156,8 @@
       </div>
 
       <div class="mt-10 p-5 rounded-2xl ring-soft bg-ink-900/40">
-        <div class="font-semibold mb-1" style="color:#F8F8F4">Don't see your use case?</div>
-        <p class="text-sm" style="color:#A4A89C">These six are the most common — but Sera is general infrastructure. If you've shipped a non-obvious build (an FX-aware AMM router, a stablecoin payroll service, an OTC desk, a DeFi structured product), <a href="https://github.com/sera-cx/sera-agents/issues" target="_blank" class="text-accent-400 hover:underline">open an issue</a> and we'll write it up.</p>
+        <div class="font-semibold mb-1 text-chalk-50">Don't see your use case?</div>
+        <p class="text-sm text-chalk-300">These six are the most common — but Sera is general infrastructure. If you've shipped a non-obvious build (an FX-aware AMM router, a stablecoin payroll service, an OTC desk, a DeFi structured product), <a href="https://github.com/sera-cx/sera-agents/issues" target="_blank" class="text-accent-400 hover:underline">open an issue</a> and we'll write it up.</p>
       </div>
 
     </main>

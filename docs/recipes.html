@@ -89,18 +89,18 @@
     <main class="max-w-3xl">
       <div class="text-xs font-mono uppercase tracking-widest text-accent-400 mb-3">Recipes</div>
       <h1 class="text-4xl sm:text-5xl font-bold gradient-text leading-tight mb-4">Copy. Paste. Ship.</h1>
-      <p class="text-lg mb-10" style="color:#A4A89C">Ten short snippets for things you'll do constantly. All assume <code class="font-mono text-accent-400 text-sm">sera-mcp</code> is registered with the host (or imported as a Node module).</p>
+      <p class="text-lg mb-10 text-chalk-300">Ten short snippets for things you'll do constantly. All assume <code class="font-mono text-accent-400 text-sm">sera-mcp</code> is registered with the host (or imported as a Node module).</p>
 
       <!-- 1 -->
       <div class="recipe">
         <span class="badge">CLI</span><span class="badge">5 lines</span>
         <h3>1. Quote a swap and execute it</h3>
         <p class="blurb">The canonical pattern: get a quote, sign it, execute. The MCP never sees the key.</p>
-        <div class="codeblock"><pre><code><span style="color:#6B7180">// In an MCP host (Claude Code / Cursor / your agent loop)</span>
-const q = await sera.get_quote({ from: <span style="color:#7DF9C2">'USDC'</span>, to: <span style="color:#7DF9C2">'XSGD'</span>, amount: <span style="color:#7DF9C2">1000</span> });
+        <div class="codeblock"><pre><code><span class="text-chalk-500">// In an MCP host (Claude Code / Cursor / your agent loop)</span>
+const q = await sera.get_quote({ from: <span class="text-accent-400">'USDC'</span>, to: <span class="text-accent-400">'XSGD'</span>, amount: <span class="text-accent-400">1000</span> });
 const sig = await wallet.signTypedData(q.typed_data);
 const r = await sera.execute_swap({ quote_id: q.uuid, signature: sig });
-console.log(<span style="color:#7DF9C2">'trade_id:'</span>, r.trade_id);</code></pre></div>
+console.log(<span class="text-accent-400">'trade_id:'</span>, r.trade_id);</code></pre></div>
       </div>
 
       <!-- 2 -->
@@ -108,9 +108,9 @@ console.log(<span style="color:#7DF9C2">'trade_id:'</span>, r.trade_id);</code><
         <span class="badge">read-only</span><span class="badge">no key</span>
         <h3>2. Find FX deals across all 60+ pairs</h3>
         <p class="blurb">Probes Sera, diffs against multi-source external mid, ranks by edge. Use as a cron job.</p>
-        <div class="codeblock"><pre><code>const deals = await sera.find_deals({ min_bps: <span style="color:#7DF9C2">25</span> });
+        <div class="codeblock"><pre><code>const deals = await sera.find_deals({ min_bps: <span class="text-accent-400">25</span> });
 deals.forEach(d =&gt;
-  console.log(`${d.pair}: <span style="color:#7DF9C2">${d.edge_bps}bps</span> @ ${d.notional}`)
+  console.log(`${d.pair}: <span class="text-accent-400">${d.edge_bps}bps</span> @ ${d.notional}`)
 );</code></pre></div>
       </div>
 
@@ -119,7 +119,7 @@ deals.forEach(d =&gt;
         <span class="badge">CLI</span><span class="badge">cron</span>
         <h3>3. Spread radar from a shell cron</h3>
         <p class="blurb">Runs the triangular-arbitrage scanner across a fiat basket. Logs anything &gt; 50 bps.</p>
-        <div class="codeblock"><pre><code><span style="color:#6B7180"># crontab: every 15 min</span>
+        <div class="codeblock"><pre><code><span class="text-chalk-500"># crontab: every 15 min</span>
 */15 * * * * sera spread-radar USD,SGD,MYR,EUR,GBP,JPY \
   --min-bps 50 --json &gt;&gt; /var/log/sera-arb.log</code></pre></div>
       </div>
@@ -130,11 +130,11 @@ deals.forEach(d =&gt;
         <h3>4. Compute multi-currency drift from target weights</h3>
         <p class="blurb">Reads balances across all your wallets, values in USD, and emits the swaps that bring drift to zero.</p>
         <div class="codeblock"><pre><code>const plan = await sera.rebalance_plan({
-  wallets: [<span style="color:#7DF9C2">'0xAaa...'</span>, <span style="color:#7DF9C2">'0xBbb...'</span>],
-  targets: { USDC: <span style="color:#7DF9C2">0.5</span>, EURC: <span style="color:#7DF9C2">0.3</span>, XSGD: <span style="color:#7DF9C2">0.2</span> },
-  reporting_currency: <span style="color:#7DF9C2">'USD'</span>
+  wallets: [<span class="text-accent-400">'0xAaa...'</span>, <span class="text-accent-400">'0xBbb...'</span>],
+  targets: { USDC: <span class="text-accent-400">0.5</span>, EURC: <span class="text-accent-400">0.3</span>, XSGD: <span class="text-accent-400">0.2</span> },
+  reporting_currency: <span class="text-accent-400">'USD'</span>
 });
-plan.swaps.forEach(s =&gt; console.log(s.from, <span style="color:#7DF9C2">'→'</span>, s.to, s.amount));</code></pre></div>
+plan.swaps.forEach(s =&gt; console.log(s.from, <span class="text-accent-400">'→'</span>, s.to, s.amount));</code></pre></div>
       </div>
 
       <!-- 5 -->
@@ -142,16 +142,16 @@ plan.swaps.forEach(s =&gt; console.log(s.from, <span style="color:#7DF9C2">'→'
         <span class="badge">x402</span><span class="badge">curl</span>
         <h3>5. Hit the x402 endpoint from curl (demo mode)</h3>
         <p class="blurb">No wallet, no MCP — just HTTP. The 402-then-pay-then-200 dance.</p>
-        <div class="codeblock"><pre><code><span style="color:#6B7180"># 1. Get a 402 + payment_id</span>
+        <div class="codeblock"><pre><code><span class="text-chalk-500"># 1. Get a 402 + payment_id</span>
 curl -i -X POST localhost:8402/x402/swap \
-  -H <span style="color:#7DF9C2">'Content-Type: application/json'</span> \
-  -d <span style="color:#7DF9C2">'{"from_currency":"USD","to_currency":"MYR","amount":100,"recipient":"0xVendor"}'</span>
+  -H <span class="text-accent-400">'Content-Type: application/json'</span> \
+  -d <span class="text-accent-400">'{"from_currency":"USD","to_currency":"MYR","amount":100,"recipient":"0xVendor"}'</span>
 
-<span style="color:#6B7180"># 2. Retry with X-PAYMENT (demo mode accepts demo-auth)</span>
+<span class="text-chalk-500"># 2. Retry with X-PAYMENT (demo mode accepts demo-auth)</span>
 curl -X POST localhost:8402/x402/swap \
-  -H <span style="color:#7DF9C2">'X-PAYMENT: &lt;PAYMENT_ID&gt;:demo-authorization'</span> \
-  -H <span style="color:#7DF9C2">'Content-Type: application/json'</span> \
-  -d <span style="color:#7DF9C2">'{"from_currency":"USD","to_currency":"MYR","amount":100,"recipient":"0xVendor"}'</span></code></pre></div>
+  -H <span class="text-accent-400">'X-PAYMENT: &lt;PAYMENT_ID&gt;:demo-authorization'</span> \
+  -H <span class="text-accent-400">'Content-Type: application/json'</span> \
+  -d <span class="text-accent-400">'{"from_currency":"USD","to_currency":"MYR","amount":100,"recipient":"0xVendor"}'</span></code></pre></div>
       </div>
 
       <!-- 6 -->
@@ -159,8 +159,8 @@ curl -X POST localhost:8402/x402/swap \
         <span class="badge">read-only</span>
         <h3>6. Mid-of-mids for any pair (no Sera liquidity required)</h3>
         <p class="blurb">Median across three free FX providers. Useful as a reference for your own pricing.</p>
-        <div class="codeblock"><pre><code>const m = await sera.multi_source_mid({ base: <span style="color:#7DF9C2">'USD'</span>, quote: <span style="color:#7DF9C2">'JPY'</span> });
-console.log(<span style="color:#7DF9C2">'median:'</span>, m.median, <span style="color:#7DF9C2">'sources:'</span>, m.sources);</code></pre></div>
+        <div class="codeblock"><pre><code>const m = await sera.multi_source_mid({ base: <span class="text-accent-400">'USD'</span>, quote: <span class="text-accent-400">'JPY'</span> });
+console.log(<span class="text-accent-400">'median:'</span>, m.median, <span class="text-accent-400">'sources:'</span>, m.sources);</code></pre></div>
       </div>
 
       <!-- 7 -->
@@ -169,7 +169,7 @@ console.log(<span style="color:#7DF9C2">'median:'</span>, m.median, <span style=
         <h3>7. Project market-making earnings at any spread</h3>
         <p class="blurb">Returns the full ladder — what you earn at 5/10/25/50/100/200 bps for a given pair + size.</p>
         <div class="codeblock"><pre><code>const ladder = await sera.maker_quote_ladder({
-  pair: <span style="color:#7DF9C2">'USDT/JPYC'</span>, notional_usd: <span style="color:#7DF9C2">30000</span>
+  pair: <span class="text-accent-400">'USDT/JPYC'</span>, notional_usd: <span class="text-accent-400">30000</span>
 });
 ladder.forEach(r =&gt; console.log(`${r.bps}bps → $${r.expected_earnings}/day`));</code></pre></div>
       </div>
@@ -180,10 +180,10 @@ ladder.forEach(r =&gt; console.log(`${r.bps}bps → $${r.expected_earnings}/day`
         <h3>8. Patient-quote pattern (limit watcher)</h3>
         <p class="blurb">Sera's <code>limit_watcher</code> polls quotes within a budget; surfaces the executable swap when threshold hits.</p>
         <div class="codeblock"><pre><code>const w = await sera.limit_watcher({
-  from: <span style="color:#7DF9C2">'USDC'</span>, to: <span style="color:#7DF9C2">'EURC'</span>, amount: <span style="color:#7DF9C2">10000</span>,
-  trigger_rate: <span style="color:#7DF9C2">0.93</span>, max_polls: <span style="color:#7DF9C2">200</span>, interval_s: <span style="color:#7DF9C2">15</span>
+  from: <span class="text-accent-400">'USDC'</span>, to: <span class="text-accent-400">'EURC'</span>, amount: <span class="text-accent-400">10000</span>,
+  trigger_rate: <span class="text-accent-400">0.93</span>, max_polls: <span class="text-accent-400">200</span>, interval_s: <span class="text-accent-400">15</span>
 });
-<span style="color:#A78BFA">if</span> (w.triggered) await sera.execute_swap({ quote_id: w.quote.uuid, signature: ... });</code></pre></div>
+<span class="text-violet-400">if</span> (w.triggered) await sera.execute_swap({ quote_id: w.quote.uuid, signature: ... });</code></pre></div>
       </div>
 
       <!-- 9 -->
@@ -191,12 +191,12 @@ ladder.forEach(r =&gt; console.log(`${r.bps}bps → $${r.expected_earnings}/day`
         <span class="badge">history</span><span class="badge">SQLite</span>
         <h3>9. Build your own price feed by enabling history</h3>
         <p class="blurb">Set <code>SERA_HISTORY_DB</code> and every fx_rate / quote call gets logged. Query series later.</p>
-        <div class="codeblock"><pre><code><span style="color:#6B7180"># Enable persistence (set once)</span>
+        <div class="codeblock"><pre><code><span class="text-chalk-500"># Enable persistence (set once)</span>
 export SERA_HISTORY_DB=$HOME/.sera/history.db
 
-<span style="color:#6B7180"># After a few hours of normal use:</span>
-const series = await sera.fx_history({ pair: <span style="color:#7DF9C2">'USD/SGD'</span>, hours: <span style="color:#7DF9C2">24</span> });
-const vol    = await sera.fx_volatility({ pair: <span style="color:#7DF9C2">'USD/SGD'</span>, window_h: <span style="color:#7DF9C2">24</span> });</code></pre></div>
+<span class="text-chalk-500"># After a few hours of normal use:</span>
+const series = await sera.fx_history({ pair: <span class="text-accent-400">'USD/SGD'</span>, hours: <span class="text-accent-400">24</span> });
+const vol    = await sera.fx_volatility({ pair: <span class="text-accent-400">'USD/SGD'</span>, window_h: <span class="text-accent-400">24</span> });</code></pre></div>
       </div>
 
       <!-- 10 -->
@@ -205,9 +205,9 @@ const vol    = await sera.fx_volatility({ pair: <span style="color:#7DF9C2">'USD
         <h3>10. Health check + policy summary</h3>
         <p class="blurb">Always run this first if anything looks off. Returns API health, network, signer mode, persistence state.</p>
         <div class="codeblock"><pre><code>const d = await sera.doctor();
-console.log(<span style="color:#7DF9C2">'overall_ok:'</span>, d.overall_ok);
-console.log(<span style="color:#7DF9C2">'policy:'</span>, d.policy);
-console.log(<span style="color:#7DF9C2">'history_db:'</span>, d.persistence.history_db_present);</code></pre></div>
+console.log(<span class="text-accent-400">'overall_ok:'</span>, d.overall_ok);
+console.log(<span class="text-accent-400">'policy:'</span>, d.policy);
+console.log(<span class="text-accent-400">'history_db:'</span>, d.persistence.history_db_present);</code></pre></div>
       </div>
 
       <p class="mt-8 text-sm text-chalk-500">Need a recipe that's not here? <a href="https://github.com/sera-cx/sera-agents/issues" target="_blank" class="text-accent-400 hover:underline">Open an issue.</a></p>
