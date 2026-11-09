@@ -47,7 +47,7 @@
     "node": ">=20"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.7",
-    "tailwindcss": "3.4.17"
+    "@biomejs/biome": "^2.6.5",
+    "tailwindcss": "4.3.4"
   }
 }
