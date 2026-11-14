@@ -15,7 +15,7 @@ function makePending(overrides: Partial<PendingPayment> = {}): PendingPayment {
       overrides.payment_id ?? `00000000-0000-4000-8000-${Date.now().toString().padStart(12, "0")}`,
     status: overrides.status ?? "pending",
     pay_to: overrides.pay_to ?? "0x" + "a".repeat(40),
-    amount_usdc: overrides.amount_usdc ?? 100,
+    amount_usdc: overrides.amount_usdc ?? "100000000",
     asset: "USDC",
     chain: 1,
     swap_request: overrides.swap_request ?? {

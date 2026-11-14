@@ -45,6 +45,7 @@ import {
   transitionToVerified,
   verifyPayment,
 } from "./payment.js";
+import { addSurchargeBps, atomicToUsdc, usdcToAtomic } from "./money.js";
 import { makeSeraMcpClient } from "./sera-client.js";
 import { makeStore, type PendingPayment } from "./state.js";
 
@@ -147,8 +148,10 @@ const MOCK_RATES_USD_PER_UNIT: Record<string, number> = {
   MYR: 0.21,
   MYRT: 0.21,
 };
-function mockUsdcForTarget(target: string, amount: number): number {
-  return amount * (MOCK_RATES_USD_PER_UNIT[target.toUpperCase()] ?? 1);
+function mockUsdcForTarget(target: string, amount: number): string {
+  const amountAtomic = BigInt(usdcToAtomic(amount));
+  const rateAtomic = BigInt(usdcToAtomic(MOCK_RATES_USD_PER_UNIT[target.toUpperCase()] ?? "1"));
+  return ((amountAtomic * rateAtomic + 999_999n) / 1_000_000n).toString();
 }
 
 // ── Schemas ────────────────────────────────────────────────────────────
@@ -281,22 +284,23 @@ app.post("/x402/swap", async (c) => {
 
   // ── Branch 1: no X-PAYMENT → 402 with payment_required ─────────
   if (!xPayment) {
-    let usdcRequired: number;
+    let usdcRequiredAtomic: string;
     let quoteSource: "sera" | "demo_mock" = "sera";
     const quote = await quoteRecipientAmountViaMcp(to_currency, amount, recipient);
     if ("error" in quote) {
       if (cfg.mode === "demo") {
-        usdcRequired = mockUsdcForTarget(to_currency, amount);
+        usdcRequiredAtomic = mockUsdcForTarget(to_currency, amount);
         quoteSource = "demo_mock";
       } else {
         process.stderr.write(`[quote] ${quote.error}\n`);
         return c.json({ error: "quote_failed", code: "upstream_error" }, 502);
       }
     } else {
-      usdcRequired = Number((quote as any).estimated_input_human);
-      if (!Number.isFinite(usdcRequired) || usdcRequired <= 0) {
+      try {
+        usdcRequiredAtomic = usdcToAtomic((quote as any).estimated_input_human);
+      } catch {
         if (cfg.mode === "demo") {
-          usdcRequired = mockUsdcForTarget(to_currency, amount);
+          usdcRequiredAtomic = mockUsdcForTarget(to_currency, amount);
           quoteSource = "demo_mock";
         } else {
           return c.json({ error: "quote_invalid", code: "upstream_error" }, 502);
@@ -304,8 +308,7 @@ app.post("/x402/swap", async (c) => {
       }
     }
 
-    const surcharge = cfg.surchargeBps / 10_000;
-    const totalUsdc = usdcRequired * (1 + surcharge);
+    const totalUsdcAtomic = addSurchargeBps(usdcRequiredAtomic!, cfg.surchargeBps);
     const paymentId = randomUUID();
     const now = Math.floor(Date.now() / 1000);
     const payTo = cfg.vaultAddress ?? "0x000000000000000000000000000000000000dEaD";
@@ -319,7 +322,7 @@ app.post("/x402/swap", async (c) => {
       payment_id: paymentId,
       status: "pending",
       pay_to: payTo,
-      amount_usdc: totalUsdc,
+      amount_usdc: totalUsdcAtomic,
       asset: "USDC",
       chain: 1,
       swap_request: { from_currency, to_currency, amount, recipient },
@@ -334,7 +337,8 @@ app.post("/x402/swap", async (c) => {
         payment_required: {
           scheme: "exact",
           asset: "USDC",
-          amount: totalUsdc.toFixed(6),
+          amount: atomicToUsdc(totalUsdcAtomic),
+          amount_atomic: totalUsdcAtomic,
           chain: 1,
           network: cfg.cdpNetwork,
           pay_to: payTo,
@@ -345,7 +349,7 @@ app.post("/x402/swap", async (c) => {
           target_currency: to_currency,
           target_amount: amount,
           recipient,
-          estimated_usdc_in: usdcRequired,
+          estimated_usdc_in: atomicToUsdc(usdcRequiredAtomic!),
           surcharge_bps: cfg.surchargeBps,
           quote_source: quoteSource,
         },
@@ -534,7 +538,12 @@ app.post("/x402/swap", async (c) => {
     const successBody = {
       success: true,
       payment_id: current.payment_id,
-      paid: { asset: "USDC", amount: current.amount_usdc.toFixed(6), to: current.pay_to },
+      paid: {
+        asset: "USDC",
+        amount: atomicToUsdc(current.amount_usdc),
+        amount_atomic: current.amount_usdc,
+        to: current.pay_to,
+      },
       delivered: {
         currency: current.swap_request.to_currency,
         amount: current.swap_request.amount,

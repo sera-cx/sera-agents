@@ -28,6 +28,7 @@ import { checkOnce } from "./payment-confirm.js";
 import { parsePaymentAuthorization } from "./payment-binding.js";
 import { verifyTransferAuthorization } from "./eip3009.js";
 import type { SeraMcpClient } from "./sera-client.js";
+import { atomicToUsdc } from "./money.js";
 
 export interface VerifyOutcome {
   ok: boolean;
@@ -71,7 +72,7 @@ function paymentRequirements(
   return {
     scheme: "exact",
     network: cfg.cdpNetwork,
-    maxAmountRequired: String(Math.ceil(pending.amount_usdc * 1e6)), // USDC base units
+    maxAmountRequired: pending.amount_usdc, // exact USDC base units
     resource: `https://${cfg.host}:${cfg.port}/x402/swap`,
     description: `Sera FX delivery: ${pending.swap_request.amount} ${pending.swap_request.to_currency} → ${pending.swap_request.recipient}`,
     mimeType: "application/json",
@@ -159,7 +160,7 @@ export async function confirmPayment(
   if (!auth) return { ok: false, reason: "payment authorization unparseable — cannot bind confirmation" };
 
   const asset = cfg.cdpUsdcAddress ?? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
-  const required = BigInt(String(Math.ceil(pending.amount_usdc * 1e6)));
+  const required = BigInt(pending.amount_usdc);
   if (auth.to !== cfg.vaultAddress!.toLowerCase()) {
     return { ok: false, reason: "authorization recipient is not the vault" };
   }
@@ -222,7 +223,7 @@ export async function executeSwap(
       arguments: {
         from: "USDC",
         to: pending.swap_request.to_currency,
-        amount: pending.amount_usdc,
+        amount: Number(atomicToUsdc(pending.amount_usdc)),
         owner_address: cfg.vaultAddress,
         recipient: pending.swap_request.recipient,
         gas_mode: "pay_more",

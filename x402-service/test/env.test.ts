@@ -90,6 +90,8 @@ describe("loadConfig — live-mode required envs", () => {
   function setLiveBase() {
     process.env.X402_MODE = "live";
     process.env.X402_LIVE_ACK = "true";
+    process.env.X402_MAINNET_ACK = "true";
+    process.env.X402_E2E_ATTESTATION_ID = "base-sepolia-e2e-2026-08-25";
     process.env.X402_FACILITATOR_URL = "https://api.cdp.coinbase.com/platform/v2/x402";
     process.env.X402_CDP_API_KEY_ID = "test-id";
     process.env.X402_CDP_API_KEY_SECRET = "test-secret";
@@ -219,6 +221,38 @@ describe("loadConfig — live-mode required envs", () => {
       expect(() => loadConfig()).toThrow();
       const msg = spyErr.mock.calls.map((c) => String(c[0])).join("");
       expect(msg).toMatch(/CONFIRMATION_DEPTH/);
+    } finally {
+      spyExit.mockRestore();
+      spyErr.mockRestore();
+    }
+  });
+
+  it("refuses Base mainnet without the separate X402_MAINNET_ACK", () => {
+    setLiveBase();
+    delete process.env.X402_MAINNET_ACK;
+    const spyExit = vi.spyOn(process, "exit").mockImplementation((() => {
+      throw new Error("exit");
+    }) as any);
+    const spyErr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    try {
+      expect(() => loadConfig()).toThrow();
+      expect(spyErr.mock.calls.map((c) => String(c[0])).join("")).toMatch(/X402_MAINNET_ACK/);
+    } finally {
+      spyExit.mockRestore();
+      spyErr.mockRestore();
+    }
+  });
+
+  it("refuses Base mainnet without a Base Sepolia E2E attestation ID", () => {
+    setLiveBase();
+    delete process.env.X402_E2E_ATTESTATION_ID;
+    const spyExit = vi.spyOn(process, "exit").mockImplementation((() => {
+      throw new Error("exit");
+    }) as any);
+    const spyErr = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    try {
+      expect(() => loadConfig()).toThrow();
+      expect(spyErr.mock.calls.map((c) => String(c[0])).join("")).toMatch(/X402_E2E_ATTESTATION_ID/);
     } finally {
       spyExit.mockRestore();
       spyErr.mockRestore();
