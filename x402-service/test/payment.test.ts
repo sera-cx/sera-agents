@@ -210,7 +210,7 @@ describe("executeSwap", () => {
 
 describe("state transition helpers", () => {
   it("transitionToVerified moves pending → verified atomically", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const p = makePending();
     store.save(p);
     expect(transitionToVerified(store, p)).toBe(true);
@@ -218,7 +218,7 @@ describe("state transition helpers", () => {
   });
 
   it("transitionToExecuting fails if not in verified state", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const p = makePending();
     store.save(p);
     expect(transitionToExecuting(store, p)).toBe(false);
@@ -226,7 +226,7 @@ describe("state transition helpers", () => {
   });
 
   it("transitionToDelivered persists delivered_payload + settlement_payload", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const p = makePending();
     store.save(p);
     transitionToVerified(store, p);
@@ -239,7 +239,7 @@ describe("state transition helpers", () => {
   });
 
   it("transitionToFailedRefundable persists last_error", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const p = makePending();
     store.save(p);
     transitionToVerified(store, p);
@@ -249,7 +249,7 @@ describe("state transition helpers", () => {
   });
 
   it("two concurrent verify CAS attempts: first wins, second loses", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const p = makePending();
     store.save(p);
     const first = transitionToVerified(store, p);

@@ -33,7 +33,7 @@ function makePending(overrides: Partial<PendingPayment> = {}): PendingPayment {
 
 describe("StateStore — basic save/load (in-memory mode)", () => {
   it("saves and loads a payment", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const p = makePending();
     store.save(p);
     const loaded = store.load(p.payment_id);
@@ -43,12 +43,12 @@ describe("StateStore — basic save/load (in-memory mode)", () => {
   });
 
   it("returns undefined for unknown payment_id", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     expect(store.load("nonexistent")).toBeUndefined();
   });
 
   it("reports current size", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     expect(store.size()).toBe(0);
     store.save(makePending({ payment_id: "p1" }));
     store.save(makePending({ payment_id: "p2" }));
@@ -61,7 +61,7 @@ describe("StateStore — atomic CAS (the load-bearing mitigation)", () => {
   let p: PendingPayment;
 
   beforeEach(() => {
-    store = makeStore(undefined, 100);
+    store = makeStore(undefined);
     p = makePending();
     store.save(p);
   });
@@ -121,14 +121,14 @@ describe("StateStore — atomic CAS (the load-bearing mitigation)", () => {
 
 describe("StateStore — listFailedRefundable (operator refund queue)", () => {
   it("returns empty when no failed_refundable payments", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     store.save(makePending({ status: "pending" }));
     store.save(makePending({ status: "delivered" }));
     expect(store.listFailedRefundable()).toHaveLength(0);
   });
 
   it("returns only failed_refundable payments", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     store.save(makePending({ payment_id: "fail-1", status: "failed_refundable" }));
     store.save(makePending({ payment_id: "ok-1", status: "delivered" }));
     store.save(makePending({ payment_id: "fail-2", status: "failed_refundable" }));
@@ -138,7 +138,7 @@ describe("StateStore — listFailedRefundable (operator refund queue)", () => {
   });
 
   it("respects the limit parameter", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     for (let i = 0; i < 10; i++) {
       store.save(makePending({ payment_id: `p-${i}`, status: "failed_refundable" }));
     }
@@ -148,7 +148,7 @@ describe("StateStore — listFailedRefundable (operator refund queue)", () => {
 
 describe("StateStore — gcExpired", () => {
   it("removes expired pending entries from memory", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const old = makePending({
       payment_id: "old-pending",
       status: "pending",
@@ -163,7 +163,7 @@ describe("StateStore — gcExpired", () => {
   });
 
   it("keeps expired failed_refundable entries (operator needs to see them)", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const expiredFailed = makePending({
       payment_id: "expired-failed",
       status: "failed_refundable",
@@ -175,7 +175,7 @@ describe("StateStore — gcExpired", () => {
   });
 
   it("keeps expired delivered entries (idempotent replay still works)", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const expiredDelivered = makePending({
       payment_id: "expired-delivered",
       status: "delivered",
@@ -190,7 +190,7 @@ describe("StateStore — gcExpired", () => {
 
 describe("double-swap regression — settlement write can't rewind the state machine", () => {
   it("status-conditional settlement CAS is a no-op on an executing/delivered row", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const p = makePending({ status: "verified" });
     store.save(p);
     // Winner progresses past verified.
@@ -211,7 +211,7 @@ describe("double-swap regression — settlement write can't rewind the state mac
   });
 
   it("verified→executing has exactly one winner (gate can't be re-opened)", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const p = makePending({ status: "verified" });
     store.save(p);
     const first = store.cas(p.payment_id, "verified", "executing");
@@ -220,7 +220,7 @@ describe("double-swap regression — settlement write can't rewind the state mac
   });
 
   it("settlement CAS records the payload while still verified (winner path)", () => {
-    const store = makeStore(undefined, 100);
+    const store = makeStore(undefined);
     const p = makePending({ status: "verified" });
     store.save(p);
     expect(
