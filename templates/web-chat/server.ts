@@ -97,8 +97,8 @@ function touchSession(id: string, history: any[]): void {
   sessions.set(id, history);
 }
 
-// Per-IP rate limit (60s window). Identifier comes from req.ip — only meaningful
-// when TRUST_PROXY=true behind a properly-configured reverse proxy.
+// Per-IP rate limit (60s window), keyed on req.ip. Behind a reverse proxy, set
+// TRUST_PROXY=true so the key is the real client rather than the proxy.
 const ipBuckets = new Map<string, { count: number; windowStart: number }>();
 function ipRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -170,7 +170,9 @@ async function main() {
   const expected = AUTH_TOKEN ? Buffer.from(`Bearer ${AUTH_TOKEN}`) : null;
   app.use("/api", (req, res, next) => {
     // Rate limit before auth check so we don't burn CPU on attacker traffic.
-    const ip = TRUST_PROXY ? (req.ip ?? "unknown") : "untrusted-proxy";
+    // req.ip is the socket peer when trust proxy is off, and the proxy-appended
+    // hop when it's on (`trust proxy` = 1). Never a client-chosen value.
+    const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
     if (!ipRateLimit(ip)) return res.status(429).json({ error: "rate_limited" });
     if (!expected) return next();
     const provided = Buffer.from(req.header("authorization") ?? "");

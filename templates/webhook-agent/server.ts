@@ -190,8 +190,9 @@ async function main() {
   });
 
   app.post("/trigger", async (req, res) => {
-    // Rate limit (only meaningful behind a configured trusted proxy)
-    const ip = TRUST_PROXY ? (req.ip ?? "unknown") : "untrusted-proxy";
+    // Per-client rate limit. req.ip is the socket peer when trust proxy is off,
+    // and the proxy-appended hop when it's on — never a client-chosen value.
+    const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
     if (!ipRateLimit(ip)) return res.status(429).json({ error: "rate_limited" });
 
     // HMAC verification (provider-specific)

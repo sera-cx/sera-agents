@@ -30,7 +30,8 @@
 
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { serve } from "@hono/node-server";
-import { Hono } from "hono";
+import { getConnInfo } from "@hono/node-server/conninfo";
+import { type Context, Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { z } from "zod";
 
@@ -91,14 +92,23 @@ function ipRateLimit(ip: string): boolean {
   return bucket.count <= cfg.rateLimitPerMin;
 }
 
-function clientIp(c: { req: { header: (n: string) => string | undefined } }): string {
-  if (!cfg.trustProxy) return "untrusted-proxy";
-  return (
-    c.req.header("cf-connecting-ip") ??
-    c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
-    c.req.header("x-real-ip") ??
-    "unknown"
-  );
+// Rate-limit key for a request.
+// - No trusted proxy (default): the TCP peer address. Headers are ignored, so a
+//   client cannot pick its own bucket. (Previously every client shared one
+//   bucket here, so a single caller could rate-limit everyone.)
+// - X402_TRUST_PROXY=true (exactly one reverse proxy in front): the LAST
+//   X-Forwarded-For entry, i.e. the address that proxy appended. Earlier entries
+//   and headers like cf-connecting-ip are client-controlled and never trusted.
+function clientIp(c: Context): string {
+  if (cfg.trustProxy) {
+    const hop = c.req.header("x-forwarded-for")?.split(",").at(-1)?.trim();
+    if (hop) return hop;
+  }
+  try {
+    return getConnInfo(c).remote.address ?? "unknown";
+  } catch {
+    return "unknown"; // not served by @hono/node-server (e.g. app.request in tests)
+  }
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────
