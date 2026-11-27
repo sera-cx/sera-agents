@@ -32,7 +32,7 @@ This repository ships **starter templates**, a **bundled agent**, **integration 
 - Payment state machine: `pending → verified → executing → delivered | failed_refundable`. Idempotent retries by `payment_id`; replay returns cached success body
 - SQLite persistence (optional via `X402_STATE_DB`) — payment state survives restart
 - Zod schemas at HTTP boundary (recipient must be 0x-prefixed 40-hex; amount bounded; supported currencies enforced)
-- Per-IP rate limit (only honored when `X402_TRUST_PROXY=true` — default off)
+- Per-client rate limit keyed on the TCP peer address; with `X402_TRUST_PROXY=true` (exactly one reverse proxy in front) it uses the last `X-Forwarded-For` hop instead. Client-set headers such as `cf-connecting-ip` are never trusted
 - Body cap 4kb; payment ID validated as UUID before Map lookup
 - Concurrency cap on swap execution (`X402_MAX_CONCURRENT_SWAPS`, default 8)
 
