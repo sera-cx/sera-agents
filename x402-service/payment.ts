@@ -103,6 +103,30 @@ export async function verifyPayment(
   return { ok: true };
 }
 
+/**
+ * Prefix every demo-mode transaction identifier carries.
+ *
+ * `0x`-prefixed 32-byte hex is the only shape a real settle hash takes, so a
+ * value starting with `demo_` cannot be mistaken for one by any consumer that
+ * validates at all — and stays obviously synthetic to one that doesn't. Exported
+ * so a downstream ledger can filter on it without re-deriving the convention.
+ */
+export const DEMO_TX_PREFIX = "demo_";
+
+/** True for any transaction identifier minted by the demo path. */
+export function isDemoTxHash(txHash: string | null | undefined): boolean {
+  return typeof txHash === "string" && txHash.startsWith(DEMO_TX_PREFIX);
+}
+
+/**
+ * Deterministic per payment: the same payment_id always yields the same demo
+ * hash, so a retry is idempotent through the anti-replay ledger the way a real
+ * settle hash is, and two payments never collide.
+ */
+export function demoTxHash(paymentId: string): string {
+  return `${DEMO_TX_PREFIX}${paymentId}`;
+}
+
 // ── Settle ───────────────────────────────────────────────────────────────
 // Two-phase: caller MUST have already moved state pending → verified via
 // atomic CAS. Settle returns the facilitator response (txHash, networkId)
@@ -113,7 +137,13 @@ export async function settlePayment(
   paymentHeader: string,
 ): Promise<SettleOutcome> {
   if (cfg.mode === "demo") {
-    return { ok: true, txHash: undefined, networkId: "demo" };
+    // Self-identifying in the value, not just in a header. `X-Sera-Demo-Mode`
+    // is transport that middleware rebuilds and clients drop on redirect/retry;
+    // a settlement record outlives all of that. Returning `undefined` here was
+    // honest but not defensive — an absent field is exactly the shape a
+    // downstream reconciler is most likely to backfill from elsewhere, so the
+    // demo receipt has to carry the marker itself.
+    return { ok: true, txHash: demoTxHash(pending.payment_id), networkId: "demo" };
   }
   const result = await facilitatorSettle(
     makeFacilitatorConfig(cfg),
@@ -210,7 +240,10 @@ export async function executeSwap(
   if (cfg.mode === "demo") {
     return {
       trade_id: `demo-${pending.payment_id.slice(0, 8)}`,
-      tx_hash: null,
+      // Was `null`. Same reasoning as the settle path: a positively marked
+      // value survives a record being copied into a ledger, an absent one
+      // invites a backfill that silently makes the row look live.
+      tx_hash: demoTxHash(pending.payment_id),
       min_output: pending.swap_request.amount,
       gas_mode: "receive_less",
       demo: true,

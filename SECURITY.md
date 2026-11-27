@@ -27,7 +27,7 @@ This repository ships **starter templates**, a **bundled agent**, **integration 
 
 ### x402-service
 - Demo mode bound to localhost unless `X402_DEMO_PUBLIC=true`
-- Demo responses include `demo: true`, `tx_hash: null`, and `X-Sera-Demo-Mode: true` header so artifacts can never be confused with real settlement
+- Demo responses include `demo: true`, a self-identifying `tx_hash` of the form `demo_<payment_id>`, and the `X-Sera-Demo-Mode: true` header, so an artifact stays identifiable as demo even when the header is dropped in transit. The persisted state row carries `demo = 1`, and a state file is refused at startup if it holds rows from the other mode
 - Live mode refuses to start without `X402_FACILITATOR_URL`
 - Payment state machine: `pending → verified → executing → delivered | failed_refundable`. Idempotent retries by `payment_id`; replay returns cached success body
 - SQLite persistence (optional via `X402_STATE_DB`) — payment state survives restart
