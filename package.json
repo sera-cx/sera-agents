@@ -32,14 +32,14 @@
     "check:css": "npm run build:css && git diff --exit-code -- assets/tailwind.css"
   },
   "overrides": {
-    "@hono/node-server": "^2.1.6",
-    "axios": "^1.21.0",
+    "@hono/node-server": "^2.1.11",
+    "axios": "^1.21.1",
     "fast-uri": "^3.1.9",
-    "follow-redirects": "^1.16.2",
-    "hono": "^4.12.34",
-    "ip-address": "^10.3.1",
+    "follow-redirects": "^1.16.3",
+    "hono": "^4.13.23",
+    "ip-address": "^10.7.4",
     "proxy-addr": "^2.0.8",
-    "qs": "^6.15.2",
+    "qs": "^6.17.0",
     "undici": "^6.29.1",
     "ws": "^8.21.0"
   },
@@ -47,7 +47,7 @@
     "node": ">=20"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.7",
+    "@biomejs/biome": "^2.6.9",
     "tailwindcss": "3.4.17"
   }
 }

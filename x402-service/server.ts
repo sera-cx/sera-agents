@@ -31,6 +31,7 @@
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { z } from "zod";
 
 import { loadConfig } from "./env.js";
@@ -220,6 +221,19 @@ app.use("/x402/*", async (c, next) => {
   c.header("Pragma", "no-cache");
 });
 
+// Hard body-size cap on the money-path routes. Enforced by streaming
+// byte-count (hono/body-limit), NOT the Content-Length header: a chunked
+// request — or one that simply omits Content-Length — cannot slip an
+// unbounded body past this and exhaust memory in c.req.json(). 4 KiB is
+// ample for a swap/quote body plus the X-PAYMENT authorization.
+app.use(
+  "/x402/*",
+  bodyLimit({
+    maxSize: 4 * 1024,
+    onError: (c) => c.json({ error: "payload_too_large" }, 413),
+  }),
+);
+
 app.get("/", (c) => c.json(SERVICE_INFO));
 
 app.get("/health", (c) =>
@@ -246,6 +260,10 @@ function timingSafeStrEqual(a: string, b: string): boolean {
 // Operator-only: list payments stuck in failed_refundable. Gate behind a
 // simple bearer header so this isn't public.
 app.get("/admin/refundables", (c) => {
+  // Same per-IP brake as the /x402/* routes so the admin bearer can't be
+  // brute-forced without tripping the limiter first.
+  const ip = clientIp(c);
+  if (!ipRateLimit(ip)) return c.json({ error: "rate_limited", retry_after_seconds: 60 }, 429);
   const adminToken = process.env.X402_ADMIN_TOKEN;
   if (!adminToken) return c.json({ error: "admin disabled (X402_ADMIN_TOKEN not set)" }, 503);
   const auth = c.req.header("authorization") ?? "";
@@ -260,9 +278,6 @@ app.get("/admin/refundables", (c) => {
 app.post("/x402/swap", async (c) => {
   const ip = clientIp(c);
   if (!ipRateLimit(ip)) return c.json({ error: "rate_limited", retry_after_seconds: 60 }, 429);
-
-  const cl = Number(c.req.header("content-length") ?? 0);
-  if (cl > 4096) return c.json({ error: "payload_too_large" }, 413);
 
   const raw = await c.req.json().catch(() => null);
   if (!raw) return c.json({ error: "invalid_body" }, 400);
@@ -561,8 +576,6 @@ app.post("/x402/swap", async (c) => {
 app.post("/x402/quote", async (c) => {
   const ip = clientIp(c);
   if (!ipRateLimit(ip)) return c.json({ error: "rate_limited", retry_after_seconds: 60 }, 429);
-  const cl = Number(c.req.header("content-length") ?? 0);
-  if (cl > 4096) return c.json({ error: "payload_too_large" }, 413);
 
   const raw = await c.req.json().catch(() => null);
   if (!raw) return c.json({ error: "invalid_body" }, 400);

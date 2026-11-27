@@ -48,8 +48,12 @@ agents.sera.cx {
 		-Server
 	}
 
-	# Dynamic — the gateway.
-	@gateway path /mcp /mcp/* /openapi.json /health /quote /settle /corridors /rates
+	# Dynamic — the gateway. This path list must name EVERY gateway route,
+	# including each keyless analytics tool from agents-gateway/src/proxy-tools.ts
+	# (registered as POST /<name> in src/server.ts). A route missing here falls
+	# through to the static `handle {}` below — it then never reaches the gateway
+	# AND bypasses the rate_limit zone. Keep this list in sync with PROXY_TOOLS.
+	@gateway path /mcp /mcp/* /openapi.json /health /quote /settle /corridors /rates /markets /mid /compare_fx /market_health /spread_radar /find_deals /scan_markets /probe_depth /round_trip_cost /fx_quote_diff /compare_corridors /maker_quote_ladder /quote_recipient_amount
 	handle @gateway {
 		# Coarse per-IP brake: 120 requests/min/IP across the API surface. This
 		# is defence-in-depth in front of Sera's own account-level limits.
